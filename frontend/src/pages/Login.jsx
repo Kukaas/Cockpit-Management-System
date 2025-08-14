@@ -17,20 +17,62 @@ const Login = () => {
 	// Redirect if already authenticated
 	useEffect(() => {
 		if (user && !loading) {
-			navigate('/admin', { replace: true })
+			redirectBasedOnRole(user.role)
 		}
-	}, [user, loading, navigate])
+	}, [user, loading])
+
+	// Function to redirect based on user role
+	const redirectBasedOnRole = (role) => {
+		switch (role) {
+			case 'admin':
+				navigate('/admin', { replace: true })
+				break
+			case 'entrance_staff':
+				navigate('/entrance-staff', { replace: true })
+				break
+			case 'tangkal_staff':
+				navigate('/tangkal-staff', { replace: true })
+				break
+			case 'event_staff':
+				navigate('/event-staff', { replace: true })
+				break
+			case 'registration_staff':
+				navigate('/registration-staff', { replace: true })
+				break
+			default:
+				navigate('/admin', { replace: true })
+		}
+	}
 
 	async function handleSubmit(e) {
 		e.preventDefault()
 		setError('')
 		setSubmitting(true)
 		try {
-			await login(form.username.trim(), form.password)
-			// Navigate after successful login
-			navigate('/admin', { replace: true })
+			const userData = await login(form.username.trim(), form.password)
+			// Redirect based on role after successful login
+			redirectBasedOnRole(userData.role)
 		} catch (err) {
-			setError(err?.message || 'Login failed')
+			console.error('Login error details:', err)
+
+			// Handle different types of errors
+			let errorMessage = 'Login failed'
+
+			if (err?.response?.data?.message) {
+				// Backend error message
+				errorMessage = err.response.data.message
+			} else if (err?.message) {
+				// Frontend error message
+				errorMessage = err.message
+			} else if (err?.response?.status === 401) {
+				// Generic 401 error
+				errorMessage = 'Invalid credentials'
+			} else if (err?.response?.status === 500) {
+				// Server error
+				errorMessage = 'Server error. Please try again.'
+			}
+
+			setError(errorMessage)
 		} finally {
 			setSubmitting(false)
 		}

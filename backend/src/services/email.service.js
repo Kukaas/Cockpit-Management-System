@@ -30,9 +30,6 @@ export const sendStaffAccountEmail = async (userData, verificationToken) => {
     try {
         const transporter = createTransporter();
 
-        // Generate a secure password for the new staff account
-        const generatedPassword = generateSecurePassword();
-
         const verificationUrl = `${ENV.FRONTEND_URL}/verify?token=${verificationToken}`;
 
         const mailOptions = {
@@ -254,10 +251,10 @@ export const sendStaffAccountEmail = async (userData, verificationToken) => {
                                     Please save these credentials securely. You can change your password after your first login.
                                 </p>
                                 <div class="password-display">
-                                    ${generatedPassword}
+                                    ${userData.password}
                                 </div>
                                 <p class="password-text" style="font-size: 14px; margin: 0;">
-                                    <strong>Username:</strong> ${userData.email}<br>
+                                    <strong>Username:</strong> ${userData.username}<br>
                                     <strong>Password:</strong> (shown above)
                                 </p>
                             </div>

@@ -60,15 +60,27 @@ export const login = async (req, res) => {
 
         // Find user by username or email
         const user = await User.findOne({
-            $or: [{ username }, { email: username }]
+            $or: [
+                { username },
+                { email: username.toLowerCase() } // Convert to lowercase for case-insensitive comparison
+            ]
         });
 
         if (!user) {
+            console.log('Login attempt failed - User not found for:', username);
             return res.status(401).json({
                 success: false,
                 message: 'Invalid credentials.'
             });
         }
+
+        console.log('User found:', {
+            username: user.username,
+            email: user.email,
+            role: user.role,
+            isActive: user.isActive,
+            emailVerified: user.emailVerified
+        });
 
         // Check if account is active
         if (!user.isActive) {

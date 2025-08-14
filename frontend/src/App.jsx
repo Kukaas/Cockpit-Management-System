@@ -9,6 +9,7 @@ import Login from './pages/Login'
 import VerifyEmail from './pages/VerifyEmail'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import UserManagement from './pages/admin/user-management/UserManagement'
+import EntranceDashboard from './pages/entrance-staff/EntranceDashboard'
 
 function PrivateRoute({ children }) {
 	const { user, loading } = useAuth()
@@ -45,6 +46,13 @@ function App() {
 					<Route path="/admin/users" element={
 						<PrivateRoute>
 							<UserManagement />
+						</PrivateRoute>
+					} />
+
+					{/* Entrance Staff Routes */}
+					<Route path="/entrance-staff" element={
+						<PrivateRoute>
+							<EntranceDashboard />
 						</PrivateRoute>
 					} />
 

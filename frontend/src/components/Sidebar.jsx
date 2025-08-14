@@ -17,7 +17,7 @@ const SidebarComponent = () => {
 		const baseItems = [
 			{
 				label: 'Dashboard',
-				path: `/${role}`,
+				path: `/${role.replace('_', '-')}`,
 				icon: <BarChart3 className="size-4" />
 			}
 		]
