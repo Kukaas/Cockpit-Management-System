@@ -4,7 +4,7 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupConte
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { LogOut, User, Settings, BarChart3, Users, Settings as SettingsIcon, TrendingUp, CheckSquare, ClipboardList, Shield, AlertTriangle, Calendar, PartyPopper, FileText, ClipboardCheck, UserPlus } from 'lucide-react'
+import { LogOut, User, Settings, BarChart3, Users, Settings as SettingsIcon, TrendingUp, CheckSquare, ClipboardList, Shield, AlertTriangle, Calendar, PartyPopper, FileText, ClipboardCheck, UserPlus, Swords } from 'lucide-react'
 import useAuth from '@/hooks/useAuth'
 import logo from '@/assets/logo.png'
 
@@ -74,9 +74,9 @@ const SidebarComponent = () => {
 						icon: <Calendar className="size-4" />
 					},
 					{
-						label: 'Participant Registration',
-						path: '/event-staff/participant-registration',
-						icon: <UserPlus className="size-4" />
+						label: 'Fight Schedule',
+						path: '/event-staff/fight-schedule',
+						icon: <Swords className="size-4" />
 					}
 				]
 			case 'registration_staff':
@@ -84,14 +84,9 @@ const SidebarComponent = () => {
 					...baseItems,
 					{
 						label: 'Registrations',
-						path: '/registration-staff/registrations',
+						path: '/registration-staff/participant-registration',
 						icon: <FileText className="size-4" />
 					},
-					{
-						label: 'Applications',
-						path: '/registration-staff/applications',
-						icon: <ClipboardCheck className="size-4" />
-					}
 				]
 			default:
 				return baseItems

@@ -364,18 +364,6 @@ const Events = () => {
             size="sm"
             onClick={(e) => {
               e.stopPropagation()
-              navigate(`/event-staff/participant-registration/${row._id}`)
-            }}
-            className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700"
-            title="Register Participants"
-          >
-            <UserPlus className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation()
               handleEditEventClick(row)
             }}
             className="h-8 w-8 p-0"

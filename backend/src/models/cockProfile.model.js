@@ -11,7 +11,6 @@ const cockProfileSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true,
-    unique: true,
     maxlength: 50
   },
   entryNo: {

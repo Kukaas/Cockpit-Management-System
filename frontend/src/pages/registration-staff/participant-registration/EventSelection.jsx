@@ -125,7 +125,7 @@ const EventSelection = () => {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => navigate(`/event-staff/participant-registration/${row._id}`)}
+          onClick={() => navigate(`/registration-staff/participant-registration/${row._id}`)}
           className="flex items-center gap-2"
         >
           <UserPlus className="h-4 w-4" />
@@ -136,7 +136,7 @@ const EventSelection = () => {
   ]
 
   const handleRowClick = (event) => {
-    navigate(`/event-staff/participant-registration/${event._id}`)
+    navigate(`/registration-staff/participant-registration/${event._id}`)
   }
 
   return (

@@ -13,8 +13,11 @@ import UserManagement from './pages/admin/user-management/UserManagement'
 import EntranceDashboard from './pages/entrance-staff/EntranceDashboard'
 import Events from './pages/admin/events/Events'
 import EventDashboard from './pages/event-staff/EventDashboard'
-import ParticipantRegistration from './pages/event-staff/participant-registration/ParticipantRegistration'
-import EventSelection from './pages/event-staff/participant-registration/EventSelection'
+import RegistrationDashboard from './pages/registration-staff/RegistrationDashboard'
+import EventSelection from './pages/registration-staff/participant-registration/EventSelection'
+import ParticipantRegistration from './pages/registration-staff/participant-registration/ParticipantRegistration'
+import StaffEventSelection from './pages/event-staff/fight-schedule/EventSelection'
+import FightSchedule from './pages/event-staff/fight-schedule/FightSchedule'
 
 function PrivateRoute({ children }) {
 	const { user, loading } = useAuth()
@@ -66,6 +69,23 @@ function App() {
 						</PrivateRoute>
 					} />
 
+					{/* Event Staff Routes */}
+					<Route path="/event-staff" element={
+						<PrivateRoute>
+							<EventDashboard />
+						</PrivateRoute>
+					} />
+					<Route path="/event-staff/fight-schedule" element={
+						<PrivateRoute>
+							<StaffEventSelection />
+						</PrivateRoute>
+					} />
+					<Route path="/event-staff/fight-schedule/:eventId" element={
+						<PrivateRoute>
+							<FightSchedule />
+						</PrivateRoute>
+					} />
+
 					{/* Entrance Staff Routes */}
 					<Route path="/entrance-staff" element={
 						<PrivateRoute>
@@ -73,19 +93,19 @@ function App() {
 						</PrivateRoute>
 					} />
 
-					{/* Event Staff Routes */}
-					<Route path="/event-staff" element={
+					{/* Registration Staff Routes */}
+					<Route path="/registration-staff" element={
 						<PrivateRoute>
-							<EventDashboard />
+							<RegistrationDashboard />
 						</PrivateRoute>
 					} />
 
-					<Route path="/event-staff/participant-registration" element={
+					<Route path="/registration-staff/participant-registration" element={
 						<PrivateRoute>
 							<EventSelection />
 						</PrivateRoute>
 					} />
-					<Route path="/event-staff/participant-registration/:eventId" element={
+					<Route path="/registration-staff/participant-registration/:eventId" element={
 						<PrivateRoute>
 							<ParticipantRegistration />
 						</PrivateRoute>

@@ -280,7 +280,6 @@ export const getParticipantsByEvent = async (req, res) => {
 
     const participants = await Participant.find(query)
       .populate('eventID', 'eventName date location')
-      .populate('cockProfileID', 'legband entryNo weight')
       .populate('registeredBy', 'username')
       .sort({ registrationDate: -1 });
 
