@@ -23,15 +23,15 @@ const generateTokens = (userId) => {
 const setAuthCookies = (res, accessToken, refreshToken) => {
     const isProduction = process.env.NODE_ENV === 'production';
 
-    // Access token cookie
+    // Access token cookie - accessible to JavaScript for client-side token management
     res.cookie('accessToken', accessToken, {
-        httpOnly: true,
+        httpOnly: false, // Allow JavaScript access
         secure: isProduction,
         sameSite: isProduction ? 'strict' : 'lax',
         maxAge: 15 * 60 * 1000 // 15 minutes
     });
 
-    // Refresh token cookie
+    // Refresh token cookie - httpOnly for security
     res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
         secure: isProduction,

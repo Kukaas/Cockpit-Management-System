@@ -2,10 +2,22 @@ import jwt from 'jsonwebtoken';
 import User from '../models/user.model.js';
 import { ENV } from '../config/env.js';
 
-// Verify JWT token from cookies
+// Verify JWT token from cookies or Authorization header
 export const verifyToken = async (req, res, next) => {
     try {
-        const accessToken = req.cookies.accessToken;
+        // Check for token in Authorization header first, then cookies
+        let accessToken = null;
+
+        // Check Authorization header
+        const authHeader = req.headers.authorization;
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            accessToken = authHeader.substring(7);
+        }
+
+        // If no token in header, check cookies
+        if (!accessToken) {
+            accessToken = req.cookies.accessToken;
+        }
 
         if (!accessToken) {
             return res.status(401).json({
