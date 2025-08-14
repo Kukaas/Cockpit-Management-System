@@ -115,11 +115,11 @@ const SidebarComponent = () => {
 								<SidebarMenuItem key={item.path}>
 									<SidebarMenuButton
 										asChild
-										className={location.pathname === item.path ? 'bg-accent' : ''}
+										className={`transition-colors duration-200 ${location.pathname === item.path ? 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}`}
 									>
 									<Link to={item.path}>
-										<span className="mr-2 text-muted-foreground">{item.icon}</span>
-										{item.label}
+										<span className={`mr-2 ${location.pathname === item.path ? 'text-gray-700 dark:text-gray-300' : 'text-muted-foreground'}`}>{item.icon}</span>
+										<span className={location.pathname === item.path ? 'font-medium' : ''}>{item.label}</span>
 									</Link>
 									</SidebarMenuButton>
 								</SidebarMenuItem>
