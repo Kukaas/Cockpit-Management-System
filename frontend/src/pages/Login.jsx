@@ -17,13 +17,20 @@ const Login = () => {
 	// Redirect if already authenticated
 	useEffect(() => {
 		if (user && !loading) {
-			redirectBasedOnRole(user.role)
+			redirectBasedOnRole(user)
 		}
 	}, [user, loading])
 
-	// Function to redirect based on user role
-	const redirectBasedOnRole = (role) => {
-		switch (role) {
+	// Function to redirect based on user role and password status
+	const redirectBasedOnRole = (userData) => {
+		// Check if user needs to change password
+		if (!userData.passwordChanged) {
+			navigate('/change-password', { replace: true })
+			return
+		}
+
+		// Redirect to appropriate dashboard
+		switch (userData.role) {
 			case 'admin':
 				navigate('/admin', { replace: true })
 				break

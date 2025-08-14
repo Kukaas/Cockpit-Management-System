@@ -137,7 +137,8 @@ export const login = async (req, res) => {
                 firstName: user.firstName,
                 lastName: user.lastName,
                 role: user.role,
-                fullName: user.fullName
+                fullName: user.fullName,
+                passwordChanged: user.passwordChanged
             }
         });
 
@@ -271,6 +272,73 @@ export const getCurrentUser = async (req, res) => {
 
     } catch (error) {
         console.error('Get current user error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error.'
+        });
+    }
+};
+
+// Change password
+export const changePassword = async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        const userId = req.user._id;
+
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({
+                success: false,
+                message: 'Current password and new password are required.'
+            });
+        }
+
+        if (newPassword.length < 6) {
+            return res.status(400).json({
+                success: false,
+                message: 'New password must be at least 6 characters long.'
+            });
+        }
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found.'
+            });
+        }
+
+        // Verify current password
+        const isCurrentPasswordValid = await user.comparePassword(currentPassword);
+        if (!isCurrentPasswordValid) {
+            return res.status(400).json({
+                success: false,
+                message: 'Current password is incorrect.'
+            });
+        }
+
+        // Update password
+        user.password = newPassword;
+        user.passwordChanged = true;
+        user.passwordChangedAt = new Date();
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Password changed successfully.',
+            user: {
+                id: user._id,
+                username: user.username,
+                email: user.email,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                role: user.role,
+                fullName: user.fullName,
+                passwordChanged: user.passwordChanged
+            }
+        });
+
+    } catch (error) {
+        console.error('Change password error:', error);
         res.status(500).json({
             success: false,
             message: 'Internal server error.'

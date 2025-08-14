@@ -7,6 +7,7 @@ import useAuth from './hooks/useAuth'
 // Pages
 import Login from './pages/Login'
 import VerifyEmail from './pages/VerifyEmail'
+import ChangePassword from './pages/ChangePassword'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import UserManagement from './pages/admin/user-management/UserManagement'
 import EntranceDashboard from './pages/entrance-staff/EntranceDashboard'
@@ -25,6 +26,11 @@ function PrivateRoute({ children }) {
 		)
 	}
 
+	// Check if user needs to change password
+	if (user && !user.passwordChanged) {
+		return <Navigate to="/change-password" replace />
+	}
+
 	return user ? children : <Navigate to="/login" replace />
 }
 
@@ -35,6 +41,7 @@ function App() {
 				<Routes>
 					<Route path="/login" element={<Login />} />
 					<Route path="/verify" element={<VerifyEmail />} />
+					<Route path="/change-password" element={<ChangePassword />} />
 					<Route path="/" element={<Navigate to="/admin" replace />} />
 
 					{/* Admin Routes */}

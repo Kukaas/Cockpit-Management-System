@@ -37,6 +37,8 @@ const debugSeedAdmin = async () => {
             lastName: 'Administrator',
             role: 'admin',
             isActive: true,
+            passwordChanged: true,
+            passwordChangedAt: new Date(),
             emailVerified: true
         };
 

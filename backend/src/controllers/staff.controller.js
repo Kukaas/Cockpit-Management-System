@@ -69,7 +69,8 @@ export const createStaffAccount = async (req, res) => {
             isActive: true,
             emailVerified: false,
             verificationToken,
-            verificationTokenExpires
+            verificationTokenExpires,
+            passwordChanged: false // Mark as default password
         });
 
         await staffUser.save();
@@ -108,7 +109,8 @@ export const createStaffAccount = async (req, res) => {
                 role: staffUser.role,
                 fullName: staffUser.fullName,
                 isActive: staffUser.isActive,
-                emailVerified: staffUser.emailVerified
+                emailVerified: staffUser.emailVerified,
+                passwordChanged: staffUser.passwordChanged
             }
         });
 

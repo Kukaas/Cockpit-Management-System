@@ -67,6 +67,14 @@ const userSchema = new mongoose.Schema({
     lastLogin: {
         type: Date,
         default: null
+    },
+    passwordChanged: {
+        type: Boolean,
+        default: false
+    },
+    passwordChangedAt: {
+        type: Date,
+        default: null
     }
 }, {
     timestamps: true
@@ -79,6 +87,13 @@ userSchema.pre('save', async function(next) {
     try {
         const salt = await bcrypt.genSalt(12);
         this.password = await bcrypt.hash(this.password, salt);
+
+        // Mark password as changed if this is not the initial save
+        if (this._id) {
+            this.passwordChanged = true;
+            this.passwordChangedAt = new Date();
+        }
+
         next();
     } catch (error) {
         next(error);
