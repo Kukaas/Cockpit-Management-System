@@ -11,10 +11,12 @@ import PageLayout from '@/layouts/PageLayout'
 import { toast } from 'sonner'
 import NativeSelect from '@/components/custom/NativeSelect'
 import { useGetAll } from '@/hooks/useApiQueries'
-import { useCreateMutation, usePutMutation } from '@/hooks/useApiMutations'
+import { useCreateMutation, usePutMutation, useCustomMutation } from '@/hooks/useApiMutations'
+import api from '@/services/api'
 
 const UserManagement = () => {
   const [addUserDialogOpen, setAddUserDialogOpen] = useState(false)
+  const [editUserDialogOpen, setEditUserDialogOpen] = useState(false)
   const [statusToggleDialogOpen, setStatusToggleDialogOpen] = useState(false)
   const [selectedUser, setSelectedUser] = useState(null)
   const [formData, setFormData] = useState({
@@ -23,9 +25,14 @@ const UserManagement = () => {
     email: '',
     role: ''
   })
+  const [editFormData, setEditFormData] = useState({
+    firstName: '',
+    lastName: '',
+    role: ''
+  })
 
   // Fetch users with general hook
-  const { data: users = [], isLoading, error } = useGetAll('/staff')
+  const { data: users = [], isLoading, error, refetch } = useGetAll('/staff')
 
   // Handle query error
   React.useEffect(() => {
@@ -38,8 +45,22 @@ const UserManagement = () => {
   const createUserMutation = useCreateMutation('/staff', {
     successMessage: 'User created successfully',
     errorMessage: 'Failed to create user',
-    queryKey: ['staff'],
-    onSuccess: () => handleDialogClose(),
+    queryKey: ['/staff'],
+    onSuccess: () => {
+      handleDialogClose()
+      refetch() // Manually refetch to ensure table is updated
+    },
+  })
+
+  // Update user mutation with general hook
+  const updateUserMutation = usePutMutation('/staff', {
+    successMessage: 'User updated successfully',
+    errorMessage: 'Failed to update user',
+    queryKey: ['/staff'],
+    onSuccess: () => {
+      handleEditDialogClose()
+      refetch() // Manually refetch to ensure table is updated
+    },
   })
 
   const handleAddUser = async () => {
@@ -59,12 +80,35 @@ const UserManagement = () => {
     createUserMutation.mutate(formData)
   }
 
+  const handleEditUser = async () => {
+    // Validate required fields
+    if (!editFormData.firstName || !editFormData.lastName || !editFormData.role) {
+      toast.error('Please fill in all required fields')
+      return
+    }
+
+    if (!selectedUser) return
+
+    updateUserMutation.mutate({
+      id: selectedUser._id,
+      data: editFormData
+    })
+  }
+
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
+  const handleEditInputChange = (field, value) => {
+    setEditFormData(prev => ({ ...prev, [field]: value }))
+  }
+
   const resetForm = () => {
     setFormData({ firstName: '', lastName: '', email: '', role: '' })
+  }
+
+  const resetEditForm = () => {
+    setEditFormData({ firstName: '', lastName: '', role: '' })
   }
 
   const handleDialogClose = () => {
@@ -72,20 +116,33 @@ const UserManagement = () => {
     resetForm()
   }
 
-  // Toggle user status mutation with general hook
-  const toggleStatusMutation = usePutMutation('/staff', {
-    successMessage: (data) => data.message,
-    errorMessage: 'Failed to update user status',
-    queryKey: ['staff'],
-    onSuccess: () => {
-      setStatusToggleDialogOpen(false)
-      setSelectedUser(null)
+  const handleEditDialogClose = () => {
+    setEditUserDialogOpen(false)
+    setSelectedUser(null)
+    resetEditForm()
+  }
+
+  // Toggle user status mutation with custom endpoint
+  const toggleStatusMutation = useCustomMutation(
+    async ({ id }) => {
+      const response = await api.patch(`/staff/${id}/status`)
+      return response.data
     },
-  })
+    {
+      successMessage: (data) => data.message,
+      errorMessage: 'Failed to update user status',
+      queryKey: ['/staff'],
+      onSuccess: () => {
+        setStatusToggleDialogOpen(false)
+        setSelectedUser(null)
+        refetch() // Manually refetch to ensure table is updated
+      },
+    }
+  )
 
   const handleStatusToggle = async () => {
     if (!selectedUser) return
-    toggleStatusMutation.mutate({ id: selectedUser._id, data: {} })
+    toggleStatusMutation.mutate({ id: selectedUser._id })
   }
 
   const handleStatusToggleClose = () => {
@@ -178,7 +235,7 @@ const UserManagement = () => {
             size="sm"
             onClick={(e) => {
               e.stopPropagation()
-              handleEditUser(row)
+              handleEditUserClick(row)
             }}
             className="h-8 w-8 p-0"
           >
@@ -201,9 +258,14 @@ const UserManagement = () => {
   ]
 
   // Action handlers
-  const handleEditUser = (user) => {
-    console.log('Edit user:', user)
-    // Implement edit user logic
+  const handleEditUserClick = (user) => {
+    setSelectedUser(user)
+    setEditFormData({
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.role
+    })
+    setEditUserDialogOpen(true)
   }
 
   const handleToggleStatus = (user) => {
@@ -313,7 +375,77 @@ const UserManagement = () => {
         </div>
       </CustomAlertDialog>
 
-             {/* Status Toggle Confirmation Dialog */}
+      {/* Edit User Dialog */}
+      <CustomAlertDialog
+        open={editUserDialogOpen}
+        onOpenChange={setEditUserDialogOpen}
+        title="Edit User"
+        description="Update staff account information."
+        maxHeight="max-h-[500px]"
+        actions={
+          <>
+            <Button variant="outline" onClick={handleEditDialogClose}>
+              Cancel
+            </Button>
+            <Button onClick={handleEditUser} disabled={updateUserMutation.isPending}>
+              {updateUserMutation.isPending ? 'Updating...' : 'Update User'}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-6">
+          {/* Name Fields */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="editFirstName" className="text-sm font-medium">
+                First Name *
+              </Label>
+              <Input
+                id="editFirstName"
+                value={editFormData.firstName}
+                onChange={(e) => handleEditInputChange('firstName', e.target.value)}
+                placeholder="Enter first name"
+                className="h-10"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="editLastName" className="text-sm font-medium">
+                Last Name *
+              </Label>
+              <Input
+                id="editLastName"
+                value={editFormData.lastName}
+                onChange={(e) => handleEditInputChange('lastName', e.target.value)}
+                placeholder="Enter last name"
+                className="h-10"
+                required
+              />
+            </div>
+          </div>
+
+          {/* Role Field */}
+          <div className="space-y-2">
+            <Label htmlFor="editRole" className="text-sm font-medium">
+              Role *
+            </Label>
+            <NativeSelect
+              id="editRole"
+              value={editFormData.role}
+              onChange={(e) => handleEditInputChange('role', e.target.value)}
+              placeholder="Select a role"
+              required
+            >
+              <option value="entrance_staff">Entrance Staff</option>
+              <option value="tangkal_staff">Tangkal Staff</option>
+              <option value="event_staff">Event Staff</option>
+              <option value="registration_staff">Registration Staff</option>
+            </NativeSelect>
+          </div>
+        </div>
+      </CustomAlertDialog>
+
+      {/* Status Toggle Confirmation Dialog */}
        <ConfirmationDialog
          open={statusToggleDialogOpen}
          onOpenChange={setStatusToggleDialogOpen}

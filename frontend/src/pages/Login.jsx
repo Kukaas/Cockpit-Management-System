@@ -19,6 +19,7 @@ const Login = () => {
 		if (user && !loading) {
 			redirectBasedOnRole(user)
 		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [user, loading])
 
 	// Function to redirect based on user role and password status
