@@ -48,7 +48,16 @@ const DataTable = ({
     Object.entries(filters).forEach(([key, value]) => {
       if (value && value !== 'all') {
         filtered = filtered.filter(item => {
+          const column = columns.find(col => col.key === key)
           const itemValue = item[key]
+
+          // If column has filterValueMap, use it to map display value back to data value
+          if (column?.filterValueMap) {
+            const dataValue = column.filterValueMap[value]
+            return itemValue === dataValue
+          }
+
+          // Otherwise, use direct comparison
           if (typeof itemValue === 'string') {
             return itemValue.toLowerCase().includes(value.toLowerCase())
           }
@@ -102,6 +111,14 @@ const DataTable = ({
 
   // Get unique values for filter options
   const getFilterOptions = (key) => {
+    const column = columns.find(col => col.key === key)
+
+    // If column has custom filter options, use them
+    if (column?.filterOptions) {
+      return column.filterOptions
+    }
+
+    // Otherwise, get unique values from data
     const values = [...new Set(data.map(item => item[key]))]
     return values.filter(value => value !== null && value !== undefined)
   }
@@ -199,7 +216,7 @@ const DataTable = ({
           {filterable && columns.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {columns
-                .filter(col => col.filterable !== false)
+                .filter(col => col.filterable === true)
                 .map((col) => (
                   <div key={col.key} className="flex items-center space-x-2">
                     <Select

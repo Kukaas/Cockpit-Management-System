@@ -5,11 +5,11 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Edit, Trash2, Eye, UserPlus } from 'lucide-react'
 import PageLayout from '@/layouts/PageLayout'
 import api from '@/services/api'
 import { toast } from 'sonner'
+import NativeSelect from '@/components/custom/NativeSelect'
 
 const UserManagement = () => {
   const [loading, setLoading] = useState(false)
@@ -91,19 +91,26 @@ const UserManagement = () => {
       key: 'email',
       label: 'Email',
       sortable: true,
-      filterable: true
+      filterable: false
     },
     {
       key: 'fullName',
       label: 'Full Name',
       sortable: true,
-      filterable: true
+      filterable: false
     },
     {
       key: 'role',
       label: 'Role',
       sortable: true,
       filterable: true,
+      filterOptions: ['Entrance Staff', 'Tangkal Staff', 'Event Staff', 'Registration Staff'],
+      filterValueMap: {
+        'Entrance Staff': 'entrance_staff',
+        'Tangkal Staff': 'tangkal_staff',
+        'Event Staff': 'event_staff',
+        'Registration Staff': 'registration_staff'
+      },
       render: (value) => (
         <Badge
           variant={value === 'admin' ? 'destructive' : value === 'manager' ? 'default' : 'secondary'}
@@ -118,6 +125,11 @@ const UserManagement = () => {
       label: 'Status',
       sortable: true,
       filterable: true,
+      filterOptions: ['Active', 'Inactive'],
+      filterValueMap: {
+        'Active': true,
+        'Inactive': false
+      },
       render: (value) => (
         <Badge
           variant={value ? 'default' : 'outline'}
@@ -132,6 +144,11 @@ const UserManagement = () => {
       label: 'Verified',
       sortable: true,
       filterable: true,
+      filterOptions: ['Yes', 'No'],
+      filterValueMap: {
+        'Yes': true,
+        'No': false
+      },
       render: (value) => (
         <Badge
           variant={value ? 'default' : 'secondary'}
@@ -224,7 +241,7 @@ const UserManagement = () => {
         onOpenChange={setAddUserDialogOpen}
         title="Add New User"
         description="Create a new staff account. An email will be sent with login credentials."
-        maxHeight="max-h-[600px]"
+        maxHeight="max-h-[500px]"
         actions={
           <>
             <Button variant="outline" onClick={handleDialogClose}>
@@ -236,55 +253,70 @@ const UserManagement = () => {
           </>
         }
       >
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-6">
+          {/* Name Fields */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="firstName">First Name *</Label>
+              <Label htmlFor="firstName" className="text-sm font-medium">
+                First Name *
+              </Label>
               <Input
                 id="firstName"
                 value={formData.firstName}
                 onChange={(e) => handleInputChange('firstName', e.target.value)}
                 placeholder="Enter first name"
+                className="h-10"
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="lastName">Last Name *</Label>
+              <Label htmlFor="lastName" className="text-sm font-medium">
+                Last Name *
+              </Label>
               <Input
                 id="lastName"
                 value={formData.lastName}
                 onChange={(e) => handleInputChange('lastName', e.target.value)}
                 placeholder="Enter last name"
+                className="h-10"
                 required
               />
             </div>
           </div>
 
+          {/* Email Field */}
           <div className="space-y-2">
-            <Label htmlFor="email">Email *</Label>
+            <Label htmlFor="email" className="text-sm font-medium">
+              Email Address *
+            </Label>
             <Input
               id="email"
               type="email"
               value={formData.email}
               onChange={(e) => handleInputChange('email', e.target.value)}
               placeholder="Enter email address"
+              className="h-10"
               required
             />
           </div>
 
+          {/* Role Field */}
           <div className="space-y-2">
-            <Label htmlFor="role">Role *</Label>
-            <Select value={formData.role} onValueChange={(value) => handleInputChange('role', value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a role" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="entrance_staff">Entrance Staff</SelectItem>
-                <SelectItem value="tangkal_staff">Tangkal Staff</SelectItem>
-                <SelectItem value="event_staff">Event Staff</SelectItem>
-                <SelectItem value="registration_staff">Registration Staff</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label htmlFor="role" className="text-sm font-medium">
+              Role *
+            </Label>
+            <NativeSelect
+              id="role"
+              value={formData.role}
+              onChange={(e) => handleInputChange('role', e.target.value)}
+              placeholder="Select a role"
+              required
+            >
+              <option value="entrance_staff">Entrance Staff</option>
+              <option value="tangkal_staff">Tangkal Staff</option>
+              <option value="event_staff">Event Staff</option>
+              <option value="registration_staff">Registration Staff</option>
+            </NativeSelect>
           </div>
         </div>
       </CustomAlertDialog>
