@@ -4,7 +4,10 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "seed:admin": "node src/seeder/admin.seeder.js",
+    "test:db": "node src/seeder/test.seeder.js",
+    "debug:admin": "node src/seeder/debug-admin.seeder.js"
   },
   "keywords": [],
   "author": "",
