@@ -62,7 +62,7 @@ const Login = () => {
 					<form onSubmit={handleSubmit} className="space-y-4">
 						<div className="grid gap-2">
 							<Label htmlFor="username">Username or Email</Label>
-							<Input id="username" autoComplete="username" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} placeholder="jdoe" required />
+							<Input id="username" autoComplete="username" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} placeholder="jdoe or jdoe@gmail.com" required />
 						</div>
 						<div className="grid gap-2">
 							<Label htmlFor="password">Password</Label>

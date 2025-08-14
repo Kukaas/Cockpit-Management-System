@@ -1,10 +1,14 @@
 import './App.css'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import Login from './pages/Login'
-import PrivateLayout from './layouts/PrivateLayout'
-import AdminDashboard from './pages/admin/AdminDashboard'
 import { AuthProvider } from './components/AuthContext'
+import { Toaster } from './components/ui/sonner'
 import useAuth from './hooks/useAuth'
+
+// Pages
+import Login from './pages/Login'
+import VerifyEmail from './pages/VerifyEmail'
+import AdminDashboard from './pages/admin/AdminDashboard'
+import UserManagement from './pages/admin/user-management/UserManagement'
 
 function PrivateRoute({ children }) {
 	const { user, loading } = useAuth()
@@ -29,12 +33,24 @@ function App() {
 			<BrowserRouter>
 				<Routes>
 					<Route path="/login" element={<Login />} />
+					<Route path="/verify" element={<VerifyEmail />} />
 					<Route path="/" element={<Navigate to="/admin" replace />} />
-					<Route path="/admin" element={<PrivateRoute><PrivateLayout /></PrivateRoute>}>
-						<Route index element={<AdminDashboard />} />
-					</Route>
+
+					{/* Admin Routes */}
+					<Route path="/admin" element={
+						<PrivateRoute>
+							<AdminDashboard />
+						</PrivateRoute>
+					} />
+					<Route path="/admin/users" element={
+						<PrivateRoute>
+							<UserManagement />
+						</PrivateRoute>
+					} />
+
 				</Routes>
 			</BrowserRouter>
+			<Toaster position="top-center" closeButton />
 		</AuthProvider>
 	)
 }

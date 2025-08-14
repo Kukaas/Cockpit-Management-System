@@ -58,7 +58,7 @@ const HeaderBar = () => {
 	)
 }
 
-const PrivateLayout = () => {
+const PrivateLayout = ({ children }) => {
 	return (
 		<SidebarProvider>
 			<div className="flex min-h-svh w-full">
@@ -66,7 +66,7 @@ const PrivateLayout = () => {
 				<SidebarInset>
 					<HeaderBar />
 					<div className="p-4">
-						<Outlet />
+						{children}
 					</div>
 				</SidebarInset>
 			</div>

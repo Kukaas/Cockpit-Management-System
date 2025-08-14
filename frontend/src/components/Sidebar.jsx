@@ -97,12 +97,12 @@ const SidebarComponent = () => {
 
 	return (
 		<Sidebar>
-			<SidebarHeader className="px-4 py-3">
+			<SidebarHeader className="px-3 py-3">
 				<div className="flex items-center gap-3">
 					<div className="size-8 rounded bg-black grid place-items-center">
 						<img src={logo} alt="Cockpit" className="size-6 object-contain invert" />
 					</div>
-					<div className="font-semibold">Cockpit</div>
+					<div className="font-semibold">Cockpit Management</div>
 				</div>
 			</SidebarHeader>
 
