@@ -1,20 +1,22 @@
 import React, { useState } from 'react'
 import DataTable from '@/components/custom/DataTable'
 import CustomAlertDialog from '@/components/custom/CustomAlertDialog'
+import ConfirmationDialog from '@/components/custom/ConfirmationDialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Edit, Trash2, Eye, UserPlus } from 'lucide-react'
+import { Edit, UserPlus, Lock, Unlock } from 'lucide-react'
 import PageLayout from '@/layouts/PageLayout'
-import api from '@/services/api'
 import { toast } from 'sonner'
 import NativeSelect from '@/components/custom/NativeSelect'
+import { useGetAll } from '@/hooks/useApiQueries'
+import { useCreateMutation, usePutMutation } from '@/hooks/useApiMutations'
 
 const UserManagement = () => {
-  const [loading, setLoading] = useState(false)
   const [addUserDialogOpen, setAddUserDialogOpen] = useState(false)
-  const [users, setUsers] = useState([])
+  const [statusToggleDialogOpen, setStatusToggleDialogOpen] = useState(false)
+  const [selectedUser, setSelectedUser] = useState(null)
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -22,23 +24,23 @@ const UserManagement = () => {
     role: ''
   })
 
-  // Fetch users on component mount
-  React.useEffect(() => {
-    fetchUsers()
-  }, [])
+  // Fetch users with general hook
+  const { data: users = [], isLoading, error } = useGetAll('/staff')
 
-  const fetchUsers = async () => {
-    try {
-      setLoading(true)
-      const response = await api.get('/staff')
-      setUsers(response.data.data || [])
-    } catch (error) {
-      console.error('Error fetching users:', error)
+  // Handle query error
+  React.useEffect(() => {
+    if (error) {
       toast.error('Failed to fetch users')
-    } finally {
-      setLoading(false)
     }
-  }
+  }, [error])
+
+  // Create user mutation with general hook
+  const createUserMutation = useCreateMutation('/staff', {
+    successMessage: 'User created successfully',
+    errorMessage: 'Failed to create user',
+    queryKey: ['staff'],
+    onSuccess: () => handleDialogClose(),
+  })
 
   const handleAddUser = async () => {
     // Validate required fields
@@ -54,22 +56,7 @@ const UserManagement = () => {
       return
     }
 
-    try {
-      setLoading(true)
-      const response = await api.post('/staff', formData)
-
-      if (response.data.success) {
-        toast.success('User created successfully')
-        handleDialogClose()
-        fetchUsers() // Refresh the list
-      }
-    } catch (error) {
-      console.error('Error creating user:', error)
-      const message = error.response?.data?.message || 'Failed to create user'
-      toast.error(message)
-    } finally {
-      setLoading(false)
-    }
+    createUserMutation.mutate(formData)
   }
 
   const handleInputChange = (field, value) => {
@@ -83,6 +70,27 @@ const UserManagement = () => {
   const handleDialogClose = () => {
     setAddUserDialogOpen(false)
     resetForm()
+  }
+
+  // Toggle user status mutation with general hook
+  const toggleStatusMutation = usePutMutation('/staff', {
+    successMessage: (data) => data.message,
+    errorMessage: 'Failed to update user status',
+    queryKey: ['staff'],
+    onSuccess: () => {
+      setStatusToggleDialogOpen(false)
+      setSelectedUser(null)
+    },
+  })
+
+  const handleStatusToggle = async () => {
+    if (!selectedUser) return
+    toggleStatusMutation.mutate({ id: selectedUser._id, data: {} })
+  }
+
+  const handleStatusToggleClose = () => {
+    setStatusToggleDialogOpen(false)
+    setSelectedUser(null)
   }
 
   // Column configuration
@@ -170,53 +178,37 @@ const UserManagement = () => {
             size="sm"
             onClick={(e) => {
               e.stopPropagation()
-              handleViewUser(row)
-            }}
-            className="h-8 w-8 p-0"
-          >
-            <Eye className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation()
               handleEditUser(row)
             }}
             className="h-8 w-8 p-0"
           >
             <Edit className="h-4 w-4" />
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation()
-              handleDeleteUser(row)
-            }}
-            className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+                     <Button
+             variant="ghost"
+             size="sm"
+             onClick={(e) => {
+               e.stopPropagation()
+               handleToggleStatus(row)
+             }}
+             className={`h-8 w-8 p-0 ${row.isActive ? 'text-orange-600 hover:text-orange-700' : 'text-green-600 hover:text-green-700'}`}
+           >
+             {row.isActive ? <Lock className="h-4 w-4" /> : <Unlock className="h-4 w-4" />}
+           </Button>
         </div>
       )
     }
   ]
 
   // Action handlers
-  const handleViewUser = (user) => {
-    console.log('View user:', user)
-    // Implement view user logic
-  }
-
   const handleEditUser = (user) => {
     console.log('Edit user:', user)
     // Implement edit user logic
   }
 
-  const handleDeleteUser = (user) => {
-    console.log('Delete user:', user)
-    // Implement delete user logic with confirmation
+  const handleToggleStatus = (user) => {
+    setSelectedUser(user)
+    setStatusToggleDialogOpen(true)
   }
 
   const handleRowClick = (user) => {
@@ -247,9 +239,9 @@ const UserManagement = () => {
             <Button variant="outline" onClick={handleDialogClose}>
               Cancel
             </Button>
-            <Button onClick={handleAddUser} disabled={loading}>
-              {loading ? 'Creating...' : 'Create User'}
-            </Button>
+                         <Button onClick={handleAddUser} disabled={createUserMutation.isPending}>
+               {createUserMutation.isPending ? 'Creating...' : 'Create User'}
+             </Button>
           </>
         }
       >
@@ -321,6 +313,23 @@ const UserManagement = () => {
         </div>
       </CustomAlertDialog>
 
+             {/* Status Toggle Confirmation Dialog */}
+       <ConfirmationDialog
+         open={statusToggleDialogOpen}
+         onOpenChange={setStatusToggleDialogOpen}
+         title={selectedUser?.isActive ? "Disable Staff Account" : "Enable Staff Account"}
+         description={
+           selectedUser?.isActive
+             ? `Are you sure you want to disable ${selectedUser?.fullName}'s account? They will not be able to log in until the account is re-enabled.`
+             : `Are you sure you want to enable ${selectedUser?.fullName}'s account? They will be able to log in again.`
+         }
+         confirmText={selectedUser?.isActive ? 'Disable Account' : 'Enable Account'}
+         onConfirm={handleStatusToggle}
+         onCancel={handleStatusToggleClose}
+         variant={selectedUser?.isActive ? "destructive" : "default"}
+         loading={toggleStatusMutation.isPending}
+       />
+
       {/* Data Table */}
       <DataTable
         data={users}
@@ -330,8 +339,8 @@ const UserManagement = () => {
         filterable={true}
         title="Users"
         onRowClick={handleRowClick}
-        loading={loading}
-        emptyMessage="No users found"
+                 loading={isLoading}
+         emptyMessage="No users found"
         className="shadow-sm"
       />
     </PageLayout>
