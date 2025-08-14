@@ -58,7 +58,8 @@ export const createStaffAccount = async (req, res) => {
         const verificationToken = generateVerificationToken();
         const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
-        // Create new staff user
+        // Create new staff user with default password
+        // passwordChanged: false ensures the user must change their password on first login
         const staffUser = new User({
             username: finalUsername,
             email,
@@ -70,7 +71,7 @@ export const createStaffAccount = async (req, res) => {
             emailVerified: false,
             verificationToken,
             verificationTokenExpires,
-            passwordChanged: false // Mark as default password
+            passwordChanged: false // This prevents the pre-save middleware from setting it to true
         });
 
         await staffUser.save();

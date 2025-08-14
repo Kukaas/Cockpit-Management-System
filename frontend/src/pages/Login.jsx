@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
 import useAuth from '@/hooks/useAuth'
+import InputField from '@/components/custom/InputField'
+import { User, Lock } from 'lucide-react'
 import logo from '@/assets/logo.png'
 
 const Login = () => {
@@ -108,17 +108,36 @@ const Login = () => {
 					<CardDescription>Sign in to continue</CardDescription>
 				</CardHeader>
 				<CardContent>
-					<form onSubmit={handleSubmit} className="space-y-4">
-						<div className="grid gap-2">
-							<Label htmlFor="username">Username or Email</Label>
-							<Input id="username" autoComplete="username" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} placeholder="jdoe or jdoe@gmail.com" required />
-						</div>
-						<div className="grid gap-2">
-							<Label htmlFor="password">Password</Label>
-							<Input id="password" type="password" autoComplete="current-password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required />
-						</div>
-						{error ? <p className="text-red-600 text-sm">{error}</p> : null}
-						<Button type="submit" className="w-full" disabled={submitting}>{submitting ? 'Signing in...' : 'Sign in'}</Button>
+					<form onSubmit={handleSubmit} className="space-y-6">
+						<InputField
+							id="username"
+							label="Username or Email"
+							icon={User}
+							value={form.username}
+							onChange={(e) => setForm({ ...form, username: e.target.value })}
+							placeholder="jdoe or jdoe@gmail.com"
+							autoComplete="username"
+							required
+						/>
+						<InputField
+							id="password"
+							label="Password"
+							icon={Lock}
+							type="password"
+							showPasswordToggle={true}
+							value={form.password}
+							onChange={(e) => setForm({ ...form, password: e.target.value })}
+							autoComplete="current-password"
+							required
+						/>
+						{error ? (
+							<div className="p-3 bg-red-50 border border-red-200 rounded-md">
+								<p className="text-red-600 text-sm">{error}</p>
+							</div>
+						) : null}
+						<Button type="submit" className="w-full" disabled={submitting}>
+							{submitting ? 'Signing in...' : 'Sign in'}
+						</Button>
 					</form>
 				</CardContent>
 			</Card>

@@ -193,7 +193,8 @@ export const register = async (req, res) => {
             firstName,
             lastName,
             role,
-            emailVerified: role === 'admin' ? true : false // Admin doesn't need email verification
+            emailVerified: role === 'admin' ? true : false, // Admin doesn't need email verification
+            passwordChanged: role === 'admin' ? true : false // Admin accounts start with changed password, staff accounts need to change
         });
 
         await user.save();
@@ -316,7 +317,7 @@ export const changePassword = async (req, res) => {
             });
         }
 
-        // Update password
+        // Update password and mark as changed
         user.password = newPassword;
         user.passwordChanged = true;
         user.passwordChangedAt = new Date();

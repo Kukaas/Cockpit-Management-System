@@ -2,11 +2,11 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
 import useAuth from '@/hooks/useAuth'
 import api from '@/services/api'
+import InputField from '@/components/custom/InputField'
+import { Lock, Eye, EyeOff } from 'lucide-react'
 import logo from '@/assets/logo.png'
 
 const ChangePassword = () => {
@@ -19,6 +19,7 @@ const ChangePassword = () => {
 	})
 	const [submitting, setSubmitting] = useState(false)
 	const [error, setError] = useState('')
+
 
 	// Redirect if user has already changed password
 	if (user?.passwordChanged) {
@@ -86,41 +87,52 @@ const ChangePassword = () => {
 					</CardDescription>
 				</CardHeader>
 				<CardContent>
-					<form onSubmit={handleSubmit} className="space-y-4">
-						<div className="grid gap-2">
-							<Label htmlFor="currentPassword">Current Password</Label>
-							<Input
-								id="currentPassword"
-								type="password"
-								value={form.currentPassword}
-								onChange={(e) => setForm({ ...form, currentPassword: e.target.value })}
-								placeholder="Enter your current password"
-								required
-							/>
-						</div>
-						<div className="grid gap-2">
-							<Label htmlFor="newPassword">New Password</Label>
-							<Input
-								id="newPassword"
-								type="password"
-								value={form.newPassword}
-								onChange={(e) => setForm({ ...form, newPassword: e.target.value })}
-								placeholder="Enter new password (min. 6 characters)"
-								required
-							/>
-						</div>
-						<div className="grid gap-2">
-							<Label htmlFor="confirmPassword">Confirm New Password</Label>
-							<Input
-								id="confirmPassword"
-								type="password"
-								value={form.confirmPassword}
-								onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
-								placeholder="Confirm new password"
-								required
-							/>
-						</div>
-						{error ? <p className="text-red-600 text-sm">{error}</p> : null}
+					<form onSubmit={handleSubmit} className="space-y-6">
+						<InputField
+							id="currentPassword"
+							label="Current Password"
+							icon={Lock}
+							type="password"
+							showPasswordToggle={true}
+							value={form.currentPassword}
+							onChange={(e) => setForm({ ...form, currentPassword: e.target.value })}
+							placeholder="Enter your current password"
+							required
+							description="Enter your current password to verify your identity"
+						/>
+
+						<InputField
+							id="newPassword"
+							label="New Password"
+							icon={Lock}
+							type="password"
+							showPasswordToggle={true}
+							value={form.newPassword}
+							onChange={(e) => setForm({ ...form, newPassword: e.target.value })}
+							placeholder="Enter new password (min. 6 characters)"
+							required
+							description="Choose a strong password with at least 6 characters"
+						/>
+
+						<InputField
+							id="confirmPassword"
+							label="Confirm New Password"
+							icon={Lock}
+							type="password"
+							showPasswordToggle={true}
+							value={form.confirmPassword}
+							onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
+							placeholder="Confirm new password"
+							required
+							description="Re-enter your new password to confirm"
+						/>
+
+						{error ? (
+							<div className="p-3 bg-red-50 border border-red-200 rounded-md">
+								<p className="text-red-600 text-sm">{error}</p>
+							</div>
+						) : null}
+
 						<Button type="submit" className="w-full" disabled={submitting}>
 							{submitting ? 'Changing Password...' : 'Change Password'}
 						</Button>

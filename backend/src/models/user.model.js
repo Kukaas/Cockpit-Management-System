@@ -88,8 +88,10 @@ userSchema.pre('save', async function(next) {
         const salt = await bcrypt.genSalt(12);
         this.password = await bcrypt.hash(this.password, salt);
 
-        // Mark password as changed if this is not the initial save
-        if (this._id) {
+        // Mark password as changed only if this is an update (not initial creation)
+        // and the passwordChanged field is not explicitly set to false
+        // This ensures new staff accounts start with passwordChanged: false
+        if (this._id && this.passwordChanged !== false) {
             this.passwordChanged = true;
             this.passwordChangedAt = new Date();
         }
