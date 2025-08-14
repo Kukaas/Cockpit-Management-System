@@ -4,7 +4,7 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupConte
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { LogOut, User, Settings, BarChart3, Users, Settings as SettingsIcon, TrendingUp, CheckSquare, ClipboardList, Shield, AlertTriangle, Calendar, PartyPopper, FileText, ClipboardCheck } from 'lucide-react'
+import { LogOut, User, Settings, BarChart3, Users, Settings as SettingsIcon, TrendingUp, CheckSquare, ClipboardList, Shield, AlertTriangle, Calendar, PartyPopper, FileText, ClipboardCheck, UserPlus } from 'lucide-react'
 import useAuth from '@/hooks/useAuth'
 import logo from '@/assets/logo.png'
 
@@ -30,6 +30,11 @@ const SidebarComponent = () => {
 						label: 'User Management',
 						path: '/admin/users',
 						icon: <Users className="size-4" />
+					},
+					{
+						label: 'Event Management',
+						path: '/admin/events',
+						icon: <Calendar className="size-4" />
 					},
 				]
 			case 'entrance_staff':
@@ -69,9 +74,9 @@ const SidebarComponent = () => {
 						icon: <Calendar className="size-4" />
 					},
 					{
-						label: 'Event Management',
-						path: '/event-staff/events',
-						icon: <PartyPopper className="size-4" />
+						label: 'Participant Registration',
+						path: '/event-staff/participant-registration',
+						icon: <UserPlus className="size-4" />
 					}
 				]
 			case 'registration_staff':

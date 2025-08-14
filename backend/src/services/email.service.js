@@ -524,5 +524,287 @@ export const sendAccountStatusEmail = async (userData, isEnabled) => {
     }
 };
 
+// Send participant registration confirmation email
+export const sendParticipantRegistrationEmail = async (participantData, eventData) => {
+    try {
+        const transporter = createTransporter();
+
+        const mailOptions = {
+            from: ENV.SMTP_FROM,
+            to: participantData.email,
+            subject: `Registration Confirmed - ${eventData.eventName}`,
+            html: `
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Registration Confirmed</title>
+                    <style>
+                        body {
+                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                            line-height: 1.6;
+                            color: #1f2937;
+                            background-color: #f8fafc;
+                            margin: 0;
+                            padding: 20px;
+                        }
+                        .container {
+                            max-width: 650px;
+                            margin: 0 auto;
+                            background-color: #ffffff;
+                            border-radius: 12px;
+                            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+                            overflow: hidden;
+                        }
+                        .header {
+                            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+                            color: white;
+                            padding: 40px 32px;
+                            text-align: center;
+                        }
+                        .header h1 {
+                            margin: 0;
+                            font-size: 28px;
+                            font-weight: 700;
+                            letter-spacing: -0.025em;
+                        }
+                        .content {
+                            padding: 40px 32px;
+                        }
+                        .welcome-text {
+                            font-size: 18px;
+                            margin-bottom: 32px;
+                            color: #475569;
+                            line-height: 1.7;
+                        }
+                        .success-banner {
+                            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+                            border: 3px solid #a7f3d0;
+                            border-radius: 12px;
+                            padding: 32px;
+                            margin: 32px 0;
+                            text-align: center;
+                        }
+                        .success-icon {
+                            font-size: 48px;
+                            margin-bottom: 20px;
+                        }
+                        .success-text {
+                            font-size: 24px;
+                            font-weight: 700;
+                            color: #059669;
+                            margin: 0;
+                        }
+                        .event-details {
+                            background-color: #f1f5f9;
+                            border: 2px solid #e2e8f0;
+                            border-radius: 10px;
+                            padding: 28px;
+                            margin: 32px 0;
+                        }
+                        .detail-row {
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            margin-bottom: 20px;
+                            padding-bottom: 16px;
+                            border-bottom: 2px solid #e2e8f0;
+                        }
+                        .detail-row:last-child {
+                            border-bottom: none;
+                            margin-bottom: 0;
+                        }
+                        .detail-label {
+                            font-weight: 600;
+                            color: #1e293b;
+                            font-size: 16px;
+                        }
+                        .detail-value {
+                            color: #475569;
+                            font-size: 16px;
+                            font-weight: 500;
+                        }
+                        .participant-info {
+                            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+                            border: 2px solid #3b82f6;
+                            border-radius: 10px;
+                            padding: 28px;
+                            margin: 32px 0;
+                        }
+                        .participant-title {
+                            color: #1e40af;
+                            font-weight: 700;
+                            font-size: 20px;
+                            margin: 0 0 16px 0;
+                        }
+                        .important-section {
+                            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+                            border: 2px solid #f59e0b;
+                            border-radius: 10px;
+                            padding: 28px;
+                            margin: 32px 0;
+                        }
+                        .important-title {
+                            color: #92400e;
+                            font-weight: 700;
+                            font-size: 20px;
+                            margin: 0 0 16px 0;
+                        }
+                        .important-text {
+                            color: #92400e;
+                            margin: 0;
+                            font-size: 16px;
+                            line-height: 1.6;
+                        }
+                        .footer {
+                            background-color: #f8fafc;
+                            padding: 32px;
+                            text-align: center;
+                            border-top: 2px solid #e2e8f0;
+                        }
+                        .footer-text {
+                            color: #64748b;
+                            font-size: 14px;
+                            margin: 0;
+                            line-height: 1.6;
+                        }
+                        .highlight {
+                            color: #059669;
+                            font-weight: 600;
+                        }
+                        .currency {
+                            color: #dc2626;
+                            font-weight: 700;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="header">
+                            <h1>🐓 Cockpit Management System</h1>
+                        </div>
+
+                        <div class="content">
+                            <p class="welcome-text">
+                                Dear <strong>${participantData.participantName}</strong>,
+                            </p>
+
+                            <div class="success-banner">
+                                <div class="success-icon">🎉</div>
+                                <p class="success-text">
+                                    Registration Successful!
+                                </p>
+                            </div>
+
+                            <p class="welcome-text">
+                                Congratulations! Your registration for the cockfighting event has been successfully confirmed.
+                                Below are your registration details:
+                            </p>
+
+                            <div class="participant-info">
+                                <p class="participant-title">👤 Participant Information</p>
+                                <div class="detail-row">
+                                    <span class="detail-label">Full Name:</span>
+                                    <span class="detail-value">${participantData.participantName}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Contact Number:</span>
+                                    <span class="detail-value">${participantData.contactNumber}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Email:</span>
+                                    <span class="detail-value">${participantData.email}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Address:</span>
+                                    <span class="detail-value">${participantData.address}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Registration Status:</span>
+                                    <span class="detail-value highlight">Confirmed</span>
+                                </div>
+                            </div>
+
+                            <div class="event-details">
+                                <p style="font-weight: 700; color: #1e293b; font-size: 20px; margin: 0 0 16px 0;">🏆 Event Details</p>
+                                <div class="detail-row">
+                                    <span class="detail-label">Event Name:</span>
+                                    <span class="detail-value">${eventData.eventName}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Date & Time:</span>
+                                    <span class="detail-value">${new Date(eventData.date).toLocaleDateString('en-US', {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                    })}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Location:</span>
+                                    <span class="detail-value">${eventData.location}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Event Type:</span>
+                                    <span class="detail-value">${participantData.eventType.charAt(0).toUpperCase() + participantData.eventType.slice(1)}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Entry Fee:</span>
+                                    <span class="detail-value currency">₱${participantData.entryFee.toLocaleString('en-PH')}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Win Requirements:</span>
+                                    <span class="detail-value">${participantData.matchWinRequirements} matches</span>
+                                </div>
+                            </div>
+
+                            <div class="important-section">
+                                <p class="important-title">📋 Important Information</p>
+                                <div class="important-text">
+                                    <p style="margin: 0 0 12px 0;"><strong>• Registration ID:</strong> ${participantData._id || 'Will be provided separately'}</p>
+                                    <p style="margin: 0 0 12px 0;"><strong>• Entry Fee:</strong> Please ensure your entry fee payment is completed before the event</p>
+                                    <p style="margin: 0 0 12px 0;"><strong>• Arrival Time:</strong> Please arrive at least 1 hour before the event starts</p>
+                                    <p style="margin: 0 0 12px 0;"><strong>• Requirements:</strong> Bring valid ID and proof of payment</p>
+                                    <p style="margin: 0;"><strong>• Contact:</strong> For any questions, contact the event organizers</p>
+                                </div>
+                            </div>
+
+                            ${participantData.notes ? `
+                                <div style="background-color: #f1f5f9; border: 2px solid #e2e8f0; border-radius: 10px; padding: 20px; margin: 24px 0;">
+                                    <p style="font-weight: 600; color: #1e293b; margin: 0 0 12px 0;">📝 Additional Notes:</p>
+                                    <p style="color: #475569; margin: 0; font-style: italic;">${participantData.notes}</p>
+                                </div>
+                            ` : ''}
+
+                            <p style="margin: 32px 0 0 0; color: #64748b; font-size: 16px; line-height: 1.6;">
+                                Thank you for your registration! We look forward to seeing you at the event.
+                                If you have any questions or need to make changes to your registration, please contact us immediately.
+                            </p>
+                        </div>
+
+                        <div class="footer">
+                            <p class="footer-text">
+                                This is an automated confirmation from the Cockpit Management System.<br>
+                                Please save this email for your records.
+                            </p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `
+        };
+
+        const info = await transporter.sendMail(mailOptions);
+        console.log('Participant registration email sent:', info.messageId);
+        return true;
+
+    } catch (error) {
+        console.error('Error sending participant registration email:', error);
+        return false;
+    }
+};
+
 // Generate secure password for staff accounts
 export { generateSecurePassword };

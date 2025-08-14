@@ -11,8 +11,10 @@ import ChangePassword from './pages/ChangePassword'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import UserManagement from './pages/admin/user-management/UserManagement'
 import EntranceDashboard from './pages/entrance-staff/EntranceDashboard'
-import Events from './pages/event-staff/events/Events'
+import Events from './pages/admin/events/Events'
 import EventDashboard from './pages/event-staff/EventDashboard'
+import ParticipantRegistration from './pages/event-staff/participant-registration/ParticipantRegistration'
+import EventSelection from './pages/event-staff/participant-registration/EventSelection'
 
 function PrivateRoute({ children }) {
 	const { user, loading } = useAuth()
@@ -58,6 +60,12 @@ function App() {
 						</PrivateRoute>
 					} />
 
+					<Route path="/admin/events" element={
+						<PrivateRoute>
+							<Events />
+						</PrivateRoute>
+					} />
+
 					{/* Entrance Staff Routes */}
 					<Route path="/entrance-staff" element={
 						<PrivateRoute>
@@ -72,9 +80,14 @@ function App() {
 						</PrivateRoute>
 					} />
 
-					<Route path="/event-staff/events" element={
+					<Route path="/event-staff/participant-registration" element={
 						<PrivateRoute>
-							<Events />
+							<EventSelection />
+						</PrivateRoute>
+					} />
+					<Route path="/event-staff/participant-registration/:eventId" element={
+						<PrivateRoute>
+							<ParticipantRegistration />
 						</PrivateRoute>
 					} />
 

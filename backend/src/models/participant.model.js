@@ -1,0 +1,83 @@
+import mongoose from "mongoose";
+
+const participantSchema = new mongoose.Schema({
+  // Participant Information
+  participantName: {
+    type: String,
+    required: true,
+    trim: true,
+    maxlength: 100
+  },
+  contactNumber: {
+    type: String,
+    required: true,
+    trim: true,
+    maxlength: 20
+  },
+  email: {
+    type: String,
+    required: true,
+    trim: true,
+    lowercase: true,
+    maxlength: 100
+  },
+  address: {
+    type: String,
+    required: true,
+    trim: true,
+    maxlength: 200
+  },
+
+  // Event Information
+  eventID: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Event',
+    required: true
+  },
+  entryFee: {
+    type: Number,
+    required: true,
+    min: 0
+  },
+  matchWinRequirements: {
+    type: Number,
+    required: true,
+    min: 1,
+    max: 10
+  },
+  eventType: {
+    type: String,
+    required: true,
+    enum: ['regular', 'special', 'championship', 'exhibition']
+  },
+
+  // Registration Details
+  registeredBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  status: {
+    type: String,
+    enum: ['registered', 'confirmed', 'withdrawn', 'disqualified'],
+    default: 'registered'
+  },
+  registrationDate: {
+    type: Date,
+    default: Date.now
+  },
+  notes: {
+    type: String,
+    trim: true,
+    maxlength: 500
+  }
+}, { timestamps: true });
+
+participantSchema.index({ eventID: 1, participantName: 1 }, { unique: true });
+participantSchema.index({ eventID: 1, status: 1 });
+participantSchema.index({ registeredBy: 1 });
+participantSchema.index({ registrationDate: -1 });
+participantSchema.index({ participantName: 1 });
+participantSchema.index({ email: 1 });
+
+export default mongoose.model('Participant', participantSchema);

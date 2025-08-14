@@ -7,18 +7,21 @@ import { Button } from '@/components/ui/button'
 import InputField from '@/components/custom/InputField'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Edit, Plus, Trash2, Calendar, MapPin, DollarSign, Users, FileText, Hash, Clock, Users as UsersIcon } from 'lucide-react'
+import { Edit, Plus, Trash2, Calendar, MapPin, DollarSign, Users, FileText, Hash, Clock, Users as UsersIcon, UserPlus, Users as UsersIcon2 } from 'lucide-react'
 import PageLayout from '@/layouts/PageLayout'
 import { toast } from 'sonner'
 import NativeSelect from '@/components/custom/NativeSelect'
 import { useGetAll } from '@/hooks/useApiQueries'
 import { useCreateMutation, usePutMutation, useCustomMutation } from '@/hooks/useApiMutations'
 import api from '@/services/api'
+import { useNavigate } from 'react-router-dom'
 
 const Events = () => {
+  const navigate = useNavigate()
   const [addEventDialogOpen, setAddEventDialogOpen] = useState(false)
   const [editEventDialogOpen, setEditEventDialogOpen] = useState(false)
   const [deleteEventDialogOpen, setDeleteEventDialogOpen] = useState(false)
+
   const [selectedEvent, setSelectedEvent] = useState(null)
   const [formData, setFormData] = useState({
     eventName: '',
@@ -356,6 +359,18 @@ const Events = () => {
       filterable: false,
       render: (_, row) => (
         <div className="flex items-center space-x-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation()
+              navigate(`/event-staff/participant-registration/${row._id}`)
+            }}
+            className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700"
+            title="Register Participants"
+          >
+            <UserPlus className="h-4 w-4" />
+          </Button>
           <Button
             variant="ghost"
             size="sm"

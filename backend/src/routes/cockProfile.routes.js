@@ -1,0 +1,20 @@
+import express from 'express';
+import { createCockProfile, getAllCockProfiles, getCockProfileById, updateCockProfile, deleteCockProfile, getCockProfilesByOwnerName } from '../controllers/cockProfile.controller.js';
+import { verifyToken, requireRole } from '../middleware/auth.middleware.js';
+
+const router = express.Router();
+
+// Public routes (if needed)
+// router.get('/public', getPublicCockProfiles);
+
+// Protected routes - require authentication
+router.get('/', verifyToken, getAllCockProfiles);
+router.get('/:id', verifyToken, getCockProfileById);
+router.get('/owner/:ownerName', verifyToken, getCockProfilesByOwnerName);
+
+// Routes requiring admin or event_staff role
+router.post('/', verifyToken, requireRole(['admin', 'event_staff']), createCockProfile);
+router.put('/:id', verifyToken, requireRole(['admin', 'event_staff']), updateCockProfile);
+router.delete('/:id', verifyToken, requireRole(['admin', 'event_staff']), deleteCockProfile);
+
+export default router;
