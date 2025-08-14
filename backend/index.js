@@ -9,6 +9,7 @@ import { ENV } from "./src/config/env.js";
 // Routes
 import authRoutes from "./src/routes/auth.routes.js";
 import staffRoutes from "./src/routes/staff.routes.js";
+import eventRoutes from "./src/routes/event.routes.js";
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use(cors(corsOptions));
 // API Routes
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/staff', staffRoutes);
+app.use('/api/v1/events', eventRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
