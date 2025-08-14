@@ -67,20 +67,11 @@ export const login = async (req, res) => {
         });
 
         if (!user) {
-            console.log('Login attempt failed - User not found for:', username);
             return res.status(401).json({
                 success: false,
                 message: 'Invalid credentials.'
             });
         }
-
-        console.log('User found:', {
-            username: user.username,
-            email: user.email,
-            role: user.role,
-            isActive: user.isActive,
-            emailVerified: user.emailVerified
-        });
 
         // Check if account is active
         if (!user.isActive) {
