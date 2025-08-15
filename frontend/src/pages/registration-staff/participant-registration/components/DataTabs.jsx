@@ -12,7 +12,8 @@ const DataTabs = ({
   participantColumns,
   cockProfileColumns,
   onAddParticipant,
-  onAddCockProfile
+  onAddCockProfile,
+  isEventCompleted = false
 }) => {
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
@@ -30,7 +31,7 @@ const DataTabs = ({
       <TabsContent value="participants" className="space-y-4">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold">Registered Participants</h3>
-          <Button onClick={onAddParticipant}>
+          <Button onClick={onAddParticipant} disabled={isEventCompleted}>
             <Plus className="h-4 w-4 mr-2" />
             Add Participant
           </Button>
@@ -51,7 +52,7 @@ const DataTabs = ({
       <TabsContent value="cock-profiles" className="space-y-4">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold">Cock Profiles</h3>
-          <Button onClick={onAddCockProfile}>
+          <Button onClick={onAddCockProfile} disabled={isEventCompleted}>
             <Plus className="h-4 w-4 mr-2" />
             Add Cock Profile
           </Button>

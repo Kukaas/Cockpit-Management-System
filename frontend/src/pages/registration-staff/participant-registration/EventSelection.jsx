@@ -127,6 +127,7 @@ const EventSelection = () => {
           size="sm"
           onClick={() => navigate(`/registration-staff/participant-registration/${row._id}`)}
           className="flex items-center gap-2"
+          disabled={row.status === 'completed' || row.status === 'cancelled'}
         >
           <UserPlus className="h-4 w-4" />
           Register Participants

@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Edit, Trash2 } from 'lucide-react'
 
-export const createParticipantColumns = (formatCurrency, handleEditClick, handleDeleteClick) => [
+export const createParticipantColumns = (formatCurrency, handleEditClick, handleDeleteClick, isEventCompleted = false) => [
   {
     key: 'participantName',
     label: 'Participant Name',
@@ -63,6 +63,7 @@ export const createParticipantColumns = (formatCurrency, handleEditClick, handle
             handleEditClick(row)
           }}
           className="h-8 w-8 p-0"
+          disabled={isEventCompleted}
         >
           <Edit className="h-4 w-4" />
         </Button>
@@ -74,6 +75,7 @@ export const createParticipantColumns = (formatCurrency, handleEditClick, handle
             handleDeleteClick(row)
           }}
           className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+          disabled={isEventCompleted}
         >
           <Trash2 className="h-4 w-4" />
         </Button>
@@ -82,7 +84,7 @@ export const createParticipantColumns = (formatCurrency, handleEditClick, handle
   }
 ]
 
-export const createCockProfileColumns = (handleEditClick, handleDeleteClick) => [
+export const createCockProfileColumns = (handleEditClick, handleDeleteClick, isEventCompleted = false) => [
   {
     key: 'legband',
     label: 'Legband',
@@ -142,6 +144,7 @@ export const createCockProfileColumns = (handleEditClick, handleDeleteClick) => 
             handleEditClick(row)
           }}
           className="h-8 w-8 p-0"
+          disabled={isEventCompleted}
         >
           <Edit className="h-4 w-4" />
         </Button>
@@ -153,6 +156,7 @@ export const createCockProfileColumns = (handleEditClick, handleDeleteClick) => 
             handleDeleteClick(row)
           }}
           className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+          disabled={isEventCompleted}
         >
           <Trash2 className="h-4 w-4" />
         </Button>

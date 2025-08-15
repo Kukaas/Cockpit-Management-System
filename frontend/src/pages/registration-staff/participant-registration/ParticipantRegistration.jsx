@@ -363,16 +363,21 @@ const ParticipantRegistration = () => {
     }).format(amount)
   }
 
+  // Check if event is completed or cancelled
+  const isEventCompleted = selectedEvent?.status === 'completed' || selectedEvent?.status === 'cancelled'
+
   // Create table columns
   const participantColumns = createParticipantColumns(
     formatCurrency,
     handleEditParticipantClick,
-    handleDeleteParticipantClick
+    handleDeleteParticipantClick,
+    isEventCompleted
   )
 
   const cockProfileColumns = createCockProfileColumns(
     handleEditCockProfileClick,
-    handleDeleteCockProfileClick
+    handleDeleteCockProfileClick,
+    isEventCompleted
   )
 
   if (eventLoading) {
@@ -423,6 +428,7 @@ const ParticipantRegistration = () => {
         cockProfileColumns={cockProfileColumns}
         onAddParticipant={() => setAddParticipantDialogOpen(true)}
         onAddCockProfile={() => setAddCockProfileDialogOpen(true)}
+        isEventCompleted={isEventCompleted}
       />
 
       {/* Add Participant Dialog */}
