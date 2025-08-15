@@ -3,15 +3,16 @@ import CockProfile from '../models/cockProfile.model.js';
 // Create new cock profile
 export const createCockProfile = async (req, res) => {
   try {
-    const { weight, legband, entryNo, ownerName, notes } = req.body;
+    const { eventID, weight, legband, entryNo, ownerName, notes } = req.body;
 
-    // Check if legband already exists
-    const existingCock = await CockProfile.findOne({ legband });
+    // Check if legband already exists for this event
+    const existingCock = await CockProfile.findOne({ eventID, legband });
     if (existingCock) {
-      return res.status(400).json({ message: 'Cock with this legband already exists' });
+      return res.status(400).json({ message: 'Cock with this legband already exists for this event' });
     }
 
     const cockProfile = new CockProfile({
+      eventID,
       weight,
       legband,
       entryNo,
@@ -29,10 +30,15 @@ export const createCockProfile = async (req, res) => {
 // Get all cock profiles (with filtering)
 export const getAllCockProfiles = async (req, res) => {
   try {
-    const { page = 1, limit = 10, ownerName, isActive, search } = req.query;
+    const { page = 1, limit = 10, eventID, ownerName, isActive, search } = req.query;
     const skip = (page - 1) * limit;
 
     let query = {};
+
+    // Filter by event
+    if (eventID) {
+      query.eventID = eventID;
+    }
 
     // Filter by owner name
     if (ownerName) {
@@ -54,6 +60,7 @@ export const getAllCockProfiles = async (req, res) => {
     }
 
     const cockProfiles = await CockProfile.find(query)
+      .populate('eventID', 'eventName date location')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit));
@@ -77,7 +84,8 @@ export const getAllCockProfiles = async (req, res) => {
 export const getCockProfileById = async (req, res) => {
   try {
     const { id } = req.params;
-    const cockProfile = await CockProfile.findById(id);
+    const cockProfile = await CockProfile.findById(id)
+      .populate('eventID', 'eventName date location');
 
     if (!cockProfile) {
       return res.status(404).json({ message: 'Cock profile not found' });
@@ -93,26 +101,30 @@ export const getCockProfileById = async (req, res) => {
 export const updateCockProfile = async (req, res) => {
   try {
     const { id } = req.params;
-    const { weight, legband, entryNo, ownerName, isActive, notes } = req.body;
+    const { eventID, weight, legband, entryNo, ownerName, isActive, notes } = req.body;
 
     const cockProfile = await CockProfile.findById(id);
     if (!cockProfile) {
       return res.status(404).json({ message: 'Cock profile not found' });
     }
 
-    // Check if legband is being changed and if it already exists
+    // Check if legband is being changed and if it already exists for this event
     if (legband && legband !== cockProfile.legband) {
-      const existingCock = await CockProfile.findOne({ legband, _id: { $ne: id } });
+      const existingCock = await CockProfile.findOne({
+        eventID: eventID || cockProfile.eventID,
+        legband,
+        _id: { $ne: id }
+      });
       if (existingCock) {
-        return res.status(400).json({ message: 'Cock with this legband already exists' });
+        return res.status(400).json({ message: 'Cock with this legband already exists for this event' });
       }
     }
 
     const updatedCockProfile = await CockProfile.findByIdAndUpdate(
       id,
-      { weight, legband, entryNo, ownerName, isActive, notes },
+      { eventID, weight, legband, entryNo, ownerName, isActive, notes },
       { new: true, runValidators: true }
-    );
+    ).populate('eventID', 'eventName date location');
 
     res.json({ message: 'Cock profile updated successfully', data: updatedCockProfile });
   } catch (error) {
@@ -136,19 +148,62 @@ export const deleteCockProfile = async (req, res) => {
   }
 };
 
-// Get cock profiles by owner name
-export const getCockProfilesByOwnerName = async (req, res) => {
+// Get cock profiles by event
+export const getCockProfilesByEvent = async (req, res) => {
   try {
-    const { ownerName } = req.params;
-    const { isActive } = req.query;
+    const { eventID } = req.params;
+    const { page = 1, limit = 10, ownerName, isActive } = req.query;
+    const skip = (page - 1) * limit;
 
-    let query = { ownerName: { $regex: ownerName, $options: 'i' } };
+    let query = { eventID };
+
+    if (ownerName) {
+      query.ownerName = { $regex: ownerName, $options: 'i' };
+    }
 
     if (isActive !== undefined) {
       query.isActive = isActive === 'true';
     }
 
     const cockProfiles = await CockProfile.find(query)
+      .populate('eventID', 'eventName date location')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    const total = await CockProfile.countDocuments(query);
+
+    res.json({
+      data: cockProfiles,
+      pagination: {
+        current: parseInt(page),
+        total: Math.ceil(total / limit),
+        totalRecords: total
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch cock profiles by event', error: error.message });
+  }
+};
+
+// Get cock profiles by owner name
+export const getCockProfilesByOwnerName = async (req, res) => {
+  try {
+    const { ownerName } = req.params;
+    const { eventID, isActive } = req.query;
+
+    let query = { ownerName: { $regex: ownerName, $options: 'i' } };
+
+    if (eventID) {
+      query.eventID = eventID;
+    }
+
+    if (isActive !== undefined) {
+      query.isActive = isActive === 'true';
+    }
+
+    const cockProfiles = await CockProfile.find(query)
+      .populate('eventID', 'eventName date location')
       .sort({ createdAt: -1 });
 
     res.json({ data: cockProfiles });

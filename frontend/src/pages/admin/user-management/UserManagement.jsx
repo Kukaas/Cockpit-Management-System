@@ -44,7 +44,10 @@ const UserManagement = () => {
   // Create user mutation with general hook
   const createUserMutation = useCreateMutation('/staff', {
     successMessage: 'User created successfully',
-    errorMessage: 'Failed to create user',
+    errorMessage: (error) => {
+      // Extract the actual error message from the backend response
+      return error?.response?.data?.message || 'Failed to create user'
+    },
     queryKey: ['/staff'],
     onSuccess: () => {
       handleDialogClose()
@@ -55,7 +58,10 @@ const UserManagement = () => {
   // Update user mutation with general hook
   const updateUserMutation = usePutMutation('/staff', {
     successMessage: 'User updated successfully',
-    errorMessage: 'Failed to update user',
+    errorMessage: (error) => {
+      // Extract the actual error message from the backend response
+      return error?.response?.data?.message || 'Failed to update user'
+    },
     queryKey: ['/staff'],
     onSuccess: () => {
       handleEditDialogClose()
@@ -130,7 +136,10 @@ const UserManagement = () => {
     },
     {
       successMessage: (data) => data.message,
-      errorMessage: 'Failed to update user status',
+      errorMessage: (error) => {
+        // Extract the actual error message from the backend response
+        return error?.response?.data?.message || 'Failed to update user status'
+      },
       queryKey: ['/staff'],
       onSuccess: () => {
         setStatusToggleDialogOpen(false)

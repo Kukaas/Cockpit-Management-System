@@ -1,5 +1,5 @@
 import express from 'express';
-import { createCockProfile, getAllCockProfiles, getCockProfileById, updateCockProfile, deleteCockProfile, getCockProfilesByOwnerName } from '../controllers/cockProfile.controller.js';
+import { createCockProfile, getAllCockProfiles, getCockProfileById, updateCockProfile, deleteCockProfile, getCockProfilesByOwnerName, getCockProfilesByEvent } from '../controllers/cockProfile.controller.js';
 import { verifyToken, requireRole } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
@@ -9,6 +9,7 @@ const router = express.Router();
 
 // Protected routes - require authentication
 router.get('/', verifyToken, getAllCockProfiles);
+router.get('/event/:eventID', verifyToken, getCockProfilesByEvent);
 router.get('/:id', verifyToken, getCockProfileById);
 router.get('/owner/:ownerName', verifyToken, getCockProfilesByOwnerName);
 

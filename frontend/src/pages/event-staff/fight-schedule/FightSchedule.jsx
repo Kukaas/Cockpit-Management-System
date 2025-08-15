@@ -83,7 +83,10 @@ const FightSchedule = () => {
   // Mutations for fights
   const createFightMutation = useCreateMutation('/fight-schedules', {
     successMessage: 'Fight scheduled successfully',
-    errorMessage: 'Failed to schedule fight',
+    errorMessage: (error) => {
+      // Extract the actual error message from the backend response
+      return error?.response?.data?.message || 'Failed to schedule fight'
+    },
     onSuccess: () => {
       setAddFightDialogOpen(false)
       resetFightForm()
@@ -93,7 +96,10 @@ const FightSchedule = () => {
 
   const updateFightMutation = usePutMutation('/fight-schedules', {
     successMessage: 'Fight updated successfully',
-    errorMessage: 'Failed to update fight',
+    errorMessage: (error) => {
+      // Extract the actual error message from the backend response
+      return error?.response?.data?.message || 'Failed to update fight'
+    },
     onSuccess: () => {
       setEditFightDialogOpen(false)
       setSelectedFight(null)
@@ -109,7 +115,10 @@ const FightSchedule = () => {
     },
     {
       successMessage: 'Fight deleted successfully',
-      errorMessage: 'Failed to delete fight',
+      errorMessage: (error) => {
+        // Extract the actual error message from the backend response
+        return error?.response?.data?.message || 'Failed to delete fight'
+      },
       onSuccess: () => {
         setDeleteFightDialogOpen(false)
         setSelectedFight(null)
@@ -121,7 +130,10 @@ const FightSchedule = () => {
   // Mutations for match results
   const createResultMutation = useCreateMutation('/match-results', {
     successMessage: 'Match result recorded successfully',
-    errorMessage: 'Failed to record match result',
+    errorMessage: (error) => {
+      // Extract the actual error message from the backend response
+      return error?.response?.data?.message || 'Failed to record match result'
+    },
     onSuccess: () => {
       setAddResultDialogOpen(false)
       resetResultForm()
@@ -132,7 +144,10 @@ const FightSchedule = () => {
 
   const updateResultMutation = usePutMutation('/match-results', {
     successMessage: 'Match result updated successfully',
-    errorMessage: 'Failed to update match result',
+    errorMessage: (error) => {
+      // Extract the actual error message from the backend response
+      return error?.response?.data?.message || 'Failed to update match result'
+    },
     onSuccess: () => {
       setEditResultDialogOpen(false)
       setSelectedResult(null)
@@ -148,7 +163,10 @@ const FightSchedule = () => {
     },
     {
       successMessage: 'Match result deleted successfully',
-      errorMessage: 'Failed to delete match result',
+      errorMessage: (error) => {
+        // Extract the actual error message from the backend response
+        return error?.response?.data?.message || 'Failed to delete match result'
+      },
       onSuccess: () => {
         setDeleteResultDialogOpen(false)
         setSelectedResult(null)
@@ -165,7 +183,10 @@ const FightSchedule = () => {
     },
     {
       successMessage: 'Match result status updated successfully',
-      errorMessage: 'Failed to update match result status',
+      errorMessage: (error) => {
+        // Extract the actual error message from the backend response
+        return error?.response?.data?.message || 'Failed to update match result status'
+      },
       onSuccess: () => {
         setStatusChangeDialogOpen(false)
         setPendingStatusChange(null)

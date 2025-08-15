@@ -65,7 +65,10 @@ const Events = () => {
   // Create event mutation with general hook
   const createEventMutation = useCreateMutation('/events', {
     successMessage: 'Event created successfully',
-    errorMessage: 'Failed to create event',
+    errorMessage: (error) => {
+      // Extract the actual error message from the backend response
+      return error?.response?.data?.message || 'Failed to create event'
+    },
     queryKey: ['/events'],
     onSuccess: () => {
       handleDialogClose()
@@ -76,7 +79,10 @@ const Events = () => {
   // Update event mutation with general hook
   const updateEventMutation = usePutMutation('/events', {
     successMessage: 'Event updated successfully',
-    errorMessage: 'Failed to update event',
+    errorMessage: (error) => {
+      // Extract the actual error message from the backend response
+      return error?.response?.data?.message || 'Failed to update event'
+    },
     queryKey: ['/events'],
     onSuccess: () => {
       handleEditDialogClose()
@@ -92,7 +98,10 @@ const Events = () => {
     },
     {
       successMessage: 'Event deleted successfully',
-      errorMessage: 'Failed to delete event',
+      errorMessage: (error) => {
+        // Extract the actual error message from the backend response
+        return error?.response?.data?.message || 'Failed to delete event'
+      },
       queryKey: ['/events'],
       onSuccess: () => {
         setDeleteEventDialogOpen(false)
@@ -110,7 +119,10 @@ const Events = () => {
     },
     {
       successMessage: 'Event status updated successfully',
-      errorMessage: 'Failed to update event status',
+      errorMessage: (error) => {
+        // Extract the actual error message from the backend response
+        return error?.response?.data?.message || 'Failed to update event status'
+      },
       queryKey: ['/events'],
       onSuccess: () => {
         setStatusChangeDialogOpen(false)
@@ -155,7 +167,7 @@ const Events = () => {
     if (formData.eventType !== 'regular') {
       numericFields.push('prize', 'minimumBet', 'noCockRequirements')
     }
-    
+
     for (const field of numericFields) {
       if (isNaN(formData[field]) || Number(formData[field]) < 0) {
         toast.error(`${field} must be a valid positive number`)
@@ -207,7 +219,7 @@ const Events = () => {
     if (editFormData.eventType !== 'regular') {
       numericFields.push('prize', 'minimumBet', 'noCockRequirements')
     }
-    
+
     for (const field of numericFields) {
       if (isNaN(editFormData[field]) || Number(editFormData[field]) < 0) {
         toast.error(`${field} must be a valid positive number`)

@@ -49,7 +49,10 @@ const Entrance = () => {
   // Mutations
   const createEntranceMutation = useCreateMutation('/entrances', {
     successMessage: 'Entrance fee recorded successfully',
-    errorMessage: 'Failed to record entrance fee',
+    errorMessage: (error) => {
+      // Extract the actual error message from the backend response
+      return error?.response?.data?.message || 'Failed to record entrance fee'
+    },
     onSuccess: () => {
       setAddEntranceDialogOpen(false)
       resetEntranceForm()
@@ -59,7 +62,10 @@ const Entrance = () => {
 
   const updateEntranceMutation = usePutMutation('/entrances', {
     successMessage: 'Entrance record updated successfully',
-    errorMessage: 'Failed to update entrance record',
+    errorMessage: (error) => {
+      // Extract the actual error message from the backend response
+      return error?.response?.data?.message || 'Failed to update entrance record'
+    },
     onSuccess: () => {
       setEditEntranceDialogOpen(false)
       setSelectedEntrance(null)
@@ -75,7 +81,10 @@ const Entrance = () => {
     },
     {
       successMessage: 'Entrance record deleted successfully',
-      errorMessage: 'Failed to delete entrance record',
+      errorMessage: (error) => {
+        // Extract the actual error message from the backend response
+        return error?.response?.data?.message || 'Failed to delete entrance record'
+      },
       onSuccess: () => {
         setDeleteEntranceDialogOpen(false)
         setSelectedEntrance(null)

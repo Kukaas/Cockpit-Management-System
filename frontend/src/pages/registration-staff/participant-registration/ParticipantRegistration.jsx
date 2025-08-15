@@ -61,13 +61,16 @@ const ParticipantRegistration = () => {
   // Fetch participants for this event
   const { data: participantsData = [], refetch: refetchParticipants } = useGetAll(`/participants?eventID=${eventId}`)
 
-  // Fetch cock profiles
-  const { data: cockProfilesData = [], refetch: refetchCockProfiles } = useGetAll('/cock-profiles')
+  // Fetch cock profiles for this specific event
+  const { data: cockProfilesData = [], refetch: refetchCockProfiles } = useGetAll(`/cock-profiles?eventID=${eventId}`)
 
   // Mutations
   const createParticipantMutation = useCreateMutation('/participants', {
     successMessage: 'Participant registered successfully',
-    errorMessage: 'Failed to register participant',
+    errorMessage: (error) => {
+      // Extract the actual error message from the backend response
+      return error?.response?.data?.message || 'Failed to register participant'
+    },
     onSuccess: () => {
       setAddParticipantDialogOpen(false)
       resetParticipantForm()
@@ -77,7 +80,10 @@ const ParticipantRegistration = () => {
 
   const createCockProfileMutation = useCreateMutation('/cock-profiles', {
     successMessage: 'Cock profile created successfully',
-    errorMessage: 'Failed to create cock profile',
+    errorMessage: (error) => {
+      // Extract the actual error message from the backend response
+      return error?.response?.data?.message || 'Failed to create cock profile'
+    },
     onSuccess: () => {
       setAddCockProfileDialogOpen(false)
       resetCockProfileForm()
@@ -87,7 +93,10 @@ const ParticipantRegistration = () => {
 
   const updateParticipantMutation = usePutMutation('/participants', {
     successMessage: 'Participant updated successfully',
-    errorMessage: 'Failed to update participant',
+    errorMessage: (error) => {
+      // Extract the actual error message from the backend response
+      return error?.response?.data?.message || 'Failed to update participant'
+    },
     onSuccess: () => {
       setEditParticipantDialogOpen(false)
       setSelectedParticipant(null)
@@ -99,7 +108,10 @@ const ParticipantRegistration = () => {
 
   const updateCockProfileMutation = usePutMutation('/cock-profiles', {
     successMessage: 'Cock profile updated successfully',
-    errorMessage: 'Failed to update cock profile',
+    errorMessage: (error) => {
+      // Extract the actual error message from the backend response
+      return error?.response?.data?.message || 'Failed to update cock profile'
+    },
     onSuccess: () => {
       setEditCockProfileDialogOpen(false)
       setSelectedCockProfile(null)
@@ -138,7 +150,10 @@ const ParticipantRegistration = () => {
     },
     {
       successMessage: 'Cock profile deleted successfully',
-      errorMessage: 'Failed to delete cock profile',
+      errorMessage: (error) => {
+        // Extract the actual error message from the backend response
+        return error?.response?.data?.message || 'Failed to delete cock profile'
+      },
       onSuccess: () => {
         setDeleteCockProfileDialogOpen(false)
         setSelectedCockProfile(null)
@@ -202,6 +217,7 @@ const ParticipantRegistration = () => {
 
   const resetCockProfileForm = () => {
     setCockProfileFormData({
+      eventID: eventId,
       weight: '',
       legband: '',
       entryNo: '',
@@ -240,6 +256,7 @@ const ParticipantRegistration = () => {
 
     const cockProfileData = {
       ...cockProfileFormData,
+      eventID: eventId, // Automatically set the event ID
       weight: parseFloat(cockProfileFormData.weight)
     }
 
@@ -249,7 +266,7 @@ const ParticipantRegistration = () => {
   const handleEditParticipant = async () => {
     if (!selectedParticipant) return
 
-    const requiredFields = ['participantName', 'contactNumber', 'email', 'address', 'entryFee', 'matchWinRequirements', 'eventType']
+    const requiredFields = ['participantName', 'contactNumber', 'email', 'address', 'entryFee', 'eventType']
     const missingFields = requiredFields.filter(field => !participantFormData[field])
 
     if (missingFields.length > 0) {
@@ -259,8 +276,7 @@ const ParticipantRegistration = () => {
 
     const participantData = {
       ...participantFormData,
-      entryFee: parseFloat(participantFormData.entryFee),
-      matchWinRequirements: parseInt(participantFormData.matchWinRequirements)
+      entryFee: parseFloat(participantFormData.entryFee)
     }
 
     updateParticipantMutation.mutate({
@@ -310,7 +326,6 @@ const ParticipantRegistration = () => {
       email: participant.email,
       address: participant.address,
       entryFee: participant.entryFee.toString(),
-      matchWinRequirements: participant.matchWinRequirements.toString(),
       eventType: participant.eventType,
       notes: participant.notes || ''
     })
@@ -320,6 +335,7 @@ const ParticipantRegistration = () => {
   const handleEditCockProfileClick = (cockProfile) => {
     setSelectedCockProfile(cockProfile)
     setCockProfileFormData({
+      eventID: cockProfile.eventID,
       weight: cockProfile.weight.toString(),
       legband: cockProfile.legband,
       entryNo: cockProfile.entryNo,
@@ -440,20 +456,20 @@ const ParticipantRegistration = () => {
         eventId={eventId}
       />
 
-      {/* Add Cock Profile Dialog */}
-      <CockProfileForm
-        open={addCockProfileDialogOpen}
-        onOpenChange={setAddCockProfileDialogOpen}
-        title="Create New Cock Profile"
-        description="Add a new cock profile with details"
-        formData={cockProfileFormData}
-        onInputChange={handleCockProfileInputChange}
-        onSubmit={handleAddCockProfile}
-        onCancel={() => setAddCockProfileDialogOpen(false)}
-        isPending={createCockProfileMutation.isPending}
-        participants={participants}
-        isEdit={false}
-      />
+                           {/* Add Cock Profile Dialog */}
+        <CockProfileForm
+          open={addCockProfileDialogOpen}
+          onOpenChange={setAddCockProfileDialogOpen}
+          title="Create New Cock Profile"
+          description="Add a new cock profile with details"
+          formData={cockProfileFormData}
+          onInputChange={handleCockProfileInputChange}
+          onSubmit={handleAddCockProfile}
+          onCancel={() => setAddCockProfileDialogOpen(false)}
+          isPending={createCockProfileMutation.isPending}
+          isEdit={false}
+          eventId={eventId}
+        />
 
       {/* Edit Participant Dialog */}
       <ParticipantForm
@@ -470,20 +486,20 @@ const ParticipantRegistration = () => {
         eventId={eventId}
       />
 
-      {/* Edit Cock Profile Dialog */}
-      <CockProfileForm
-        open={editCockProfileDialogOpen}
-        onOpenChange={setEditCockProfileDialogOpen}
-        title="Edit Cock Profile"
-        description="Update cock profile information"
-        formData={cockProfileFormData}
-        onInputChange={handleCockProfileInputChange}
-        onSubmit={handleEditCockProfile}
-        onCancel={() => setEditCockProfileDialogOpen(false)}
-        isPending={updateCockProfileMutation.isPending}
-        participants={participants}
-        isEdit={true}
-      />
+                           {/* Edit Cock Profile Dialog */}
+        <CockProfileForm
+          open={editCockProfileDialogOpen}
+          onOpenChange={setEditCockProfileDialogOpen}
+          title="Edit Cock Profile"
+          description="Update cock profile information"
+          formData={cockProfileFormData}
+          onInputChange={handleCockProfileInputChange}
+          onSubmit={handleEditCockProfile}
+          onCancel={() => setEditCockProfileDialogOpen(false)}
+          isPending={updateCockProfileMutation.isPending}
+          isEdit={true}
+          eventId={eventId}
+        />
 
       {/* Delete Participant Confirmation Dialog */}
       <ConfirmationDialog

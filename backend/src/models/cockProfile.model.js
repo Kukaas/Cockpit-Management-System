@@ -1,6 +1,13 @@
 import mongoose from "mongoose";
 
 const cockProfileSchema = new mongoose.Schema({
+  // Event association
+  eventID: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Event',
+    required: true
+  },
+
   weight: {
     type: Number,
     required: true,
@@ -36,8 +43,10 @@ const cockProfileSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-cockProfileSchema.index({ ownerName: 1, legband: 1 });
+cockProfileSchema.index({ eventID: 1, ownerName: 1 });
+cockProfileSchema.index({ eventID: 1, legband: 1 });
 cockProfileSchema.index({ legband: 1 }, { unique: true });
 cockProfileSchema.index({ isActive: 1 });
+cockProfileSchema.index({ eventID: 1 });
 
 export default mongoose.model('CockProfile', cockProfileSchema);

@@ -76,7 +76,6 @@ export const createParticipantColumns = (formatCurrency, handleEditClick, handle
 
       return (
         <div className="flex items-center gap-2">
-          {getStatusIcon(value)}
           <Badge
             variant={
               value === 'confirmed' ? 'default' :
@@ -188,11 +187,6 @@ export const createCockProfileColumns = (handleEditClick, handleDeleteClick, isE
     },
     render: (value) => (
       <div className="flex items-center gap-2">
-        {value ? (
-          <CheckCircle className="h-3 w-3 text-green-600" />
-        ) : (
-          <XCircle className="h-3 w-3 text-red-600" />
-        )}
         <Badge
           variant={value ? 'default' : 'secondary'}
           className="text-xs"
