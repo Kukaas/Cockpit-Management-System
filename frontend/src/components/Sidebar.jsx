@@ -36,6 +36,11 @@ const SidebarComponent = () => {
 						path: '/admin/events',
 						icon: <Calendar className="size-4" />
 					},
+					{
+						label: 'Fight Schedule',
+						path: '/admin/fight-schedule',
+						icon: <Swords className="size-4" />
+					},
 				]
 			case 'entrance_staff':
 				return [
@@ -63,11 +68,6 @@ const SidebarComponent = () => {
 			case 'event_staff':
 				return [
 					...baseItems,
-					{
-						label: 'Event Schedule',
-						path: '/event-staff/schedule',
-						icon: <Calendar className="size-4" />
-					},
 					{
 						label: 'Fight Schedule',
 						path: '/event-staff/fight-schedule',

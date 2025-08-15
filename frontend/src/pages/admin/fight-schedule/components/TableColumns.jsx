@@ -1,9 +1,9 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Edit, Trash2, Trophy, Clock, Users, Target, Award, Calendar, Info, Eye } from 'lucide-react'
+import { Trophy, Clock, Users, Target, Award, Calendar, Info, Eye } from 'lucide-react'
 
-export const createFightColumns = (formatCurrency, formatDate, handleEditClick, handleDeleteClick, handleAddResultClick, handleViewDetails) => [
+export const createFightColumns = (formatCurrency, formatDate, handleViewDetails) => [
   {
     key: 'fightNumber',
     label: 'Fight #',
@@ -109,7 +109,7 @@ export const createFightColumns = (formatCurrency, formatDate, handleEditClick, 
           case 'in_progress':
             return <Clock className="h-3 w-3 text-blue-600" />
           case 'cancelled':
-            return <Edit className="h-3 w-3 text-red-600" />
+            return <Info className="h-3 w-3 text-red-600" />
           case 'scheduled':
           default:
             return <Calendar className="h-3 w-3 text-muted-foreground" />
@@ -139,61 +139,22 @@ export const createFightColumns = (formatCurrency, formatDate, handleEditClick, 
     sortable: false,
     filterable: false,
     render: (_, row) => (
-      <div className="flex items-center space-x-2">
-        {row.status === 'scheduled' && (
-          <>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation()
-                handleEditClick(row)
-              }}
-              className="h-8 w-8 p-0"
-            >
-              <Edit className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation()
-                handleAddResultClick(row)
-              }}
-              className="h-8 w-8 p-0 text-green-600 hover:text-green-700"
-            >
-              <Trophy className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation()
-                handleDeleteClick(row)
-              }}
-              className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </>
-        )}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={(e) => {
-            e.stopPropagation()
-            handleViewDetails(row, 'fight')
-          }}
-          className="h-8 w-8 p-0"
-        >
-          <Eye className="h-4 w-4" />
-        </Button>
-      </div>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={(e) => {
+          e.stopPropagation()
+          handleViewDetails(row, 'fight')
+        }}
+        className="h-8 w-8 p-0"
+      >
+        <Eye className="h-4 w-4" />
+      </Button>
     )
   }
 ]
 
-export const createMatchResultColumns = (formatCurrency, formatDate, handleDeleteClick, handleViewDetails) => [
+export const createMatchResultColumns = (formatCurrency, formatDate, handleViewDetails) => [
   {
     key: 'matchID',
     label: 'Fight #',
@@ -301,21 +262,11 @@ export const createMatchResultColumns = (formatCurrency, formatDate, handleDelet
       'Disputed': 'disputed',
       'Final': 'final'
     },
-  render: (value, row) => {
-    // If status is final, show only a status badge
-    if (value === 'final') {
-      return (
-        <Badge variant="default" className="text-xs">
-          Final
-        </Badge>
-      )
-    }
-
-    // Otherwise show the full status with verification
-    return (
+    render: (value, row) => (
       <div className="space-y-1">
         <Badge
           variant={
+            value === 'final' ? 'default' :
             value === 'confirmed' ? 'secondary' :
             value === 'disputed' ? 'destructive' : 'outline'
           }
@@ -330,42 +281,24 @@ export const createMatchResultColumns = (formatCurrency, formatDate, handleDelet
         )}
       </div>
     )
-  }
-},
+  },
   {
     key: 'actions',
     label: 'Actions',
     sortable: false,
     filterable: false,
     render: (_, row) => (
-      <div className="flex items-center space-x-2">
-        {!row.verified && row.status !== 'final' && (
-          <>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation()
-                handleDeleteClick(row)
-              }}
-              className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </>
-        )}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={(e) => {
-            e.stopPropagation()
-            handleViewDetails(row, 'matchResult')
-          }}
-          className="h-8 w-8 p-0"
-        >
-          <Eye className="h-4 w-4" />
-        </Button>
-      </div>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={(e) => {
+          e.stopPropagation()
+          handleViewDetails(row, 'matchResult')
+        }}
+        className="h-8 w-8 p-0"
+      >
+        <Eye className="h-4 w-4" />
+      </Button>
     )
   }
 ]

@@ -13,6 +13,8 @@ import UserManagement from './pages/admin/user-management/UserManagement'
 import EntranceDashboard from './pages/entrance-staff/EntranceDashboard'
 import Events from './pages/admin/events/Events'
 import EventDetails from './pages/admin/events/EventDetails'
+import AdminEventSelection from './pages/admin/fight-schedule/EventSelection'
+import AdminFightSchedule from './pages/admin/fight-schedule/FightSchedule'
 import EventDashboard from './pages/event-staff/EventDashboard'
 import RegistrationDashboard from './pages/registration-staff/RegistrationDashboard'
 import EventSelection from './pages/registration-staff/participant-registration/EventSelection'
@@ -77,6 +79,18 @@ function App() {
 					<Route path="/admin/events/:eventId" element={
 						<PrivateRoute>
 							<EventDetails />
+						</PrivateRoute>
+					} />
+
+					{/* Admin Fight Schedule Routes */}
+					<Route path="/admin/fight-schedule" element={
+						<PrivateRoute>
+							<AdminEventSelection />
+						</PrivateRoute>
+					} />
+					<Route path="/admin/fight-schedule/:eventId" element={
+						<PrivateRoute>
+							<AdminFightSchedule />
 						</PrivateRoute>
 					} />
 
