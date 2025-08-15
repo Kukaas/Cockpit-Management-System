@@ -14,10 +14,7 @@ import NativeSelect from '@/components/custom/NativeSelect'
 import { useGetAll } from '@/hooks/useApiQueries'
 import { useCreateMutation, usePutMutation, useCustomMutation } from '@/hooks/useApiMutations'
 import api from '@/services/api'
-import { useNavigate } from 'react-router-dom'
-
 const Events = () => {
-  const navigate = useNavigate()
   const [addEventDialogOpen, setAddEventDialogOpen] = useState(false)
   const [editEventDialogOpen, setEditEventDialogOpen] = useState(false)
   const [deleteEventDialogOpen, setDeleteEventDialogOpen] = useState(false)
@@ -458,15 +455,23 @@ const Events = () => {
            />
 
                        {/* Location */}
-            <InputField
-              id="location"
-              label="Location *"
-              icon={MapPin}
-              value={formData.location}
-              onChange={(e) => handleInputChange('location', e.target.value)}
-              placeholder="Enter event location"
-              required
-            />
+            <div className="space-y-2">
+              <Label htmlFor="location" className="text-sm font-medium">
+                Location *
+              </Label>
+              <NativeSelect
+                id="location"
+                value={formData.location}
+                onChange={(e) => handleInputChange('location', e.target.value)}
+                placeholder="Select event location"
+                required
+              >
+                <option value="">Select location...</option>
+                <option value="Mogpog Cockpit Arena">Mogpog Cockpit Arena</option>
+                <option value="Buenavista Cocpit Arena">Buenavista Cocpit Arena</option>
+                <option value="Boac Cockpit Arena">Boac Cockpit Arena</option>
+              </NativeSelect>
+            </div>
 
                         {/* Date and Time */}
             <InputField
@@ -560,7 +565,7 @@ const Events = () => {
                value={formData.noCockRequirements}
                onChange={(e) => handleInputChange('noCockRequirements', e.target.value)}
                placeholder="Enter number of cocks required"
-               min="1"
+               min="0"
                max="1000"
                required
              />
@@ -638,15 +643,23 @@ const Events = () => {
            />
 
                        {/* Location */}
-            <InputField
-              id="editLocation"
-              label="Location *"
-              icon={MapPin}
-              value={editFormData.location}
-              onChange={(e) => handleEditInputChange('location', e.target.value)}
-              placeholder="Enter event location"
-              required
-            />
+            <div className="space-y-2">
+              <Label htmlFor="editLocation" className="text-sm font-medium">
+                Location *
+              </Label>
+              <NativeSelect
+                id="editLocation"
+                value={editFormData.location}
+                onChange={(e) => handleEditInputChange('location', e.target.value)}
+                placeholder="Select event location"
+                required
+              >
+                <option value="">Select location...</option>
+                <option value="Mogpog Cockpit Arena">Mogpog Cockpit Arena</option>
+                <option value="Buenavista Cocpit Arena">Buenavista Cocpit Arena</option>
+                <option value="Boac Cockpit Arena">Boac Cockpit Arena</option>
+              </NativeSelect>
+            </div>
 
                         {/* Date and Time */}
             <InputField
@@ -740,7 +753,7 @@ const Events = () => {
                value={editFormData.noCockRequirements}
                onChange={(e) => handleEditInputChange('noCockRequirements', e.target.value)}
                placeholder="Enter number of cocks required"
-               min="1"
+               min="0"
                max="1000"
                required
              />

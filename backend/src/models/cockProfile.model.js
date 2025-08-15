@@ -4,7 +4,7 @@ const cockProfileSchema = new mongoose.Schema({
   weight: {
     type: Number,
     required: true,
-    min: 0.1,
+    min: 0.01,
     max: 10.0
   },
   legband: {

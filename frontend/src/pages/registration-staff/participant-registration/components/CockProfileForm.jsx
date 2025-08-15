@@ -82,10 +82,10 @@ const CockProfileForm = ({
           type="number"
           value={formData.weight}
           onChange={(e) => onInputChange('weight', e.target.value)}
-          placeholder="Enter weight in kg"
-          min="0.1"
+          placeholder="Enter weight in kg (e.g., 2.24)"
+          min="0.01"
           max="10.0"
-          step="0.1"
+          step="0.01"
           required
         />
 
