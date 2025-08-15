@@ -12,8 +12,10 @@ import api from '@/services/api'
 // Import custom components
 import EventForm from './components/EventForm'
 import { createEventColumns } from './components/EventTableColumns'
+import { useNavigate } from 'react-router-dom'
 
 const Events = () => {
+  const navigate = useNavigate()
   const [addEventDialogOpen, setAddEventDialogOpen] = useState(false)
   const [editEventDialogOpen, setEditEventDialogOpen] = useState(false)
   const [deleteEventDialogOpen, setDeleteEventDialogOpen] = useState(false)
@@ -315,9 +317,10 @@ const Events = () => {
   }
 
   const handleRowClick = (event) => {
-    console.log('Row clicked:', event)
-    // Implement row click logic (e.g., navigate to event detail page)
+    navigate(`/admin/events/${event._id}`)
   }
+
+
 
   // Create table columns after all handlers are defined
   const columns = createEventColumns(

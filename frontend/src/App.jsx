@@ -12,6 +12,7 @@ import AdminDashboard from './pages/admin/AdminDashboard'
 import UserManagement from './pages/admin/user-management/UserManagement'
 import EntranceDashboard from './pages/entrance-staff/EntranceDashboard'
 import Events from './pages/admin/events/Events'
+import EventDetails from './pages/admin/events/EventDetails'
 import EventDashboard from './pages/event-staff/EventDashboard'
 import RegistrationDashboard from './pages/registration-staff/RegistrationDashboard'
 import EventSelection from './pages/registration-staff/participant-registration/EventSelection'
@@ -66,6 +67,11 @@ function App() {
 					<Route path="/admin/events" element={
 						<PrivateRoute>
 							<Events />
+						</PrivateRoute>
+					} />
+					<Route path="/admin/events/:eventId" element={
+						<PrivateRoute>
+							<EventDetails />
 						</PrivateRoute>
 					} />
 
