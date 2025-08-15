@@ -74,11 +74,11 @@ const FightSchedule = () => {
   const { data: resultsData = [], refetch: refetchResults } = useGetAll(`/match-results/event/${eventId}`)
 
   // Fetch available participants and their active cock profiles for this event
-  const { data: availableData = {} } = useGetAll(`/fight-schedules/available-participants/${eventId}`)
+  const { data: availableData = {} } = useGetAll(`/fight-schedules/event/${eventId}/available-participants`)
   const participantsData = availableData.participants || []
   const cockProfilesData = availableData.cockProfiles || []
 
-  // Use API data directly instead of local state
+  // Show all participants, but only active cock profiles
   const availableParticipants = participantsData || []
   const availableCockProfiles = cockProfilesData || []
 

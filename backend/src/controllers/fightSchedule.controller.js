@@ -310,8 +310,11 @@ export const getAvailableParticipants = async (req, res) => {
   try {
     const { eventID } = req.params;
 
-    // Get all participants registered for this event
-    const participants = await Participant.find({ eventID, status: 'confirmed' })
+    // Get all participants registered for this event (regardless of cock status)
+    const participants = await Participant.find({
+      eventID,
+      status: { $in: ['registered', 'confirmed'] }
+    })
       .select('participantName contactNumber email')
       .sort({ participantName: 1 });
 
