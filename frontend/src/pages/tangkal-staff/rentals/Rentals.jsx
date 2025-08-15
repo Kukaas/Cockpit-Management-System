@@ -13,7 +13,6 @@ import DataTable from '@/components/custom/DataTable'
 // Import custom components
 import RentalForm from './components/RentalForm'
 import { createRentalColumns } from './components/TableColumns'
-import RentalSummary from './components/RentalSummary'
 
 const Rentals = () => {
   const navigate = useNavigate()
@@ -326,13 +325,10 @@ const Rentals = () => {
         </Button>
       }
     >
-      {/* Rental Summary Section */}
-      <RentalSummary summaryData={summaryData?.data} />
 
       {/* Cage Rentals Section */}
       <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold">Cage Rentals ({rentals.length})</h3>
+        <div className="flex justify-end items-center">
           <Button onClick={() => setAddRentalDialogOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Add Rental
