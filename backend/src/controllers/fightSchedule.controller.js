@@ -315,9 +315,10 @@ export const getAvailableParticipants = async (req, res) => {
       .select('participantName contactNumber email')
       .sort({ participantName: 1 });
 
-    // Get their cock profiles
+    // Get their active cock profiles (only cocks that haven't fought yet)
     const participantNames = participants.map(p => p.participantName);
     const cockProfiles = await CockProfile.find({
+      eventID,
       ownerName: { $in: participantNames },
       isActive: true
     }).select('legband weight ownerName entryNo');

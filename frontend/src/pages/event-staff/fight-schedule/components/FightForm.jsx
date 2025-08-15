@@ -26,8 +26,9 @@ const FightForm = ({
     if (!participant) return []
 
     // Filter cock profiles by owner name matching the participant's name
+    // Only show active cocks (those that haven't fought yet)
     return availableCockProfiles.filter(
-      cock => cock.ownerName === participant.participantName && cock.isActive
+      cock => cock.ownerName === participant.participantName && cock.isActive === true
     )
   }
 
@@ -137,6 +138,11 @@ const FightForm = ({
                     : "Select Participant 1 first"
                   }
                 </option>
+                {participant1CockProfiles.length === 0 && formData.participant1 && (
+                  <option value="" disabled>
+                    No available cocks for this participant
+                  </option>
+                )}
                 {participant1CockProfiles.map((cock) => (
                   <option key={cock._id} value={cock._id}>
                     {cock.legband} - {cock.weight}kg - Entry: {cock.entryNo}
@@ -162,6 +168,11 @@ const FightForm = ({
                     : "Select Participant 2 first"
                   }
                 </option>
+                {participant2CockProfiles.length === 0 && formData.participant2 && (
+                  <option value="" disabled>
+                    No available cocks for this participant
+                  </option>
+                )}
                 {participant2CockProfiles.map((cock) => (
                   <option key={cock._id} value={cock._id}>
                     {cock.legband} - {cock.weight}kg - Entry: {cock.entryNo}
@@ -202,7 +213,23 @@ const FightForm = ({
           </div>
         )}
 
-                        {/* Bet Amounts */}
+        {/* Cock Availability Warning */}
+        {(participant1CockProfiles.length === 0 || participant2CockProfiles.length === 0) && (
+          <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <h4 className="font-medium text-yellow-800 mb-2">⚠️ Cock Availability Warning</h4>
+            <div className="text-sm text-yellow-700 space-y-1">
+              {participant1CockProfiles.length === 0 && formData.participant1 && (
+                <p>• <strong>{availableParticipants.find(p => p._id === formData.participant1)?.participantName}</strong> has no available cocks (all cocks have already fought)</p>
+              )}
+              {participant2CockProfiles.length === 0 && formData.participant2 && (
+                <p>• <strong>{availableParticipants.find(p => p._id === formData.participant2)?.participantName}</strong> has no available cocks (all cocks have already fought)</p>
+              )}
+              <p className="text-xs mt-2">Note: Cocks become unavailable after participating in a completed fight.</p>
+            </div>
+          </div>
+        )}
+
+        {/* Bet Amounts */}
         <div className="space-y-4">
           <h4 className="font-medium">Betting System</h4>
           <p className="text-sm text-gray-600">Select the base bettor and enter the base bet amount. The selected participant becomes MERON (base + 10% plazada), the other becomes WALA (base amount only).</p>

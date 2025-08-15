@@ -177,6 +177,28 @@ matchResultSchema.pre('save', function(next) {
   next();
 });
 
+// Post-save middleware to deactivate cocks after fight completion
+matchResultSchema.post('save', async function(doc) {
+  // Only deactivate cocks if this is a new result (not an update)
+  if (this.isNew) {
+    try {
+      const CockProfile = mongoose.model('CockProfile');
+
+      // Deactivate both winner and loser cock profiles
+      await CockProfile.updateMany(
+        {
+          _id: {
+            $in: [doc.resultMatch.winnerCockProfileID, doc.resultMatch.loserCockProfileID]
+          }
+        },
+        { isActive: false }
+      );
+    } catch (error) {
+      console.error('Error deactivating cock profiles:', error);
+    }
+  }
+});
+
 // Method to determine the winning side based on participant
 matchResultSchema.methods.determineBetWinner = function(fightSchedule) {
   const winnerPosition = fightSchedule.position.find(

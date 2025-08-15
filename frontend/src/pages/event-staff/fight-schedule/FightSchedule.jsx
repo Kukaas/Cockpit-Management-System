@@ -73,11 +73,10 @@ const FightSchedule = () => {
   // Fetch match results for this event
   const { data: resultsData = [], refetch: refetchResults } = useGetAll(`/match-results/event/${eventId}`)
 
-  // Fetch participants for this event (get all registered participants)
-  const { data: participantsData = [] } = useGetAll(`/participants/event/${eventId}`)
-
-  // Fetch all cock profiles
-  const { data: cockProfilesData = [] } = useGetAll('/cock-profiles?isActive=true')
+  // Fetch available participants and their active cock profiles for this event
+  const { data: availableData = {} } = useGetAll(`/fight-schedules/available-participants/${eventId}`)
+  const participantsData = availableData.participants || []
+  const cockProfilesData = availableData.cockProfiles || []
 
   // Use API data directly instead of local state
   const availableParticipants = participantsData || []
@@ -333,21 +332,8 @@ const FightSchedule = () => {
     setAddResultDialogOpen(true)
   }
 
-  const handleEditResultClick = (result) => {
-    setSelectedResult(result)
-    setResultFormData({
-      winnerParticipantID: result.resultMatch.winnerParticipantID._id,
-      loserParticipantID: result.resultMatch.loserParticipantID._id,
-      winnerCockProfileID: result.resultMatch.winnerCockProfileID._id,
-      loserCockProfileID: result.resultMatch.loserCockProfileID._id,
-      matchStartTime: formatDateTimeLocal(result.matchStartTime),
-      matchEndTime: formatDateTimeLocal(result.matchEndTime),
-      matchType: result.resultMatch.matchType,
-      description: result.resultMatch.description || '',
-      notes: result.notes || ''
-    })
-    setEditResultDialogOpen(true)
-  }
+  // Note: handleEditResultClick is not used in the current implementation
+  // as match results are typically not edited after creation
 
   const handleDeleteResultClick = (result) => {
     setSelectedResult(result)

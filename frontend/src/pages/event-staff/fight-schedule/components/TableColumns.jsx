@@ -101,24 +101,8 @@ export const createFightColumns = (formatCurrency, formatDate, handleEditClick, 
       'Cancelled': 'cancelled'
     },
     render: (value) => {
-      // Helper function to get status icon
-      const getStatusIcon = (status) => {
-        switch (status) {
-          case 'completed':
-            return <Trophy className="h-3 w-3 text-green-600" />
-          case 'in_progress':
-            return <Clock className="h-3 w-3 text-blue-600" />
-          case 'cancelled':
-            return <Edit className="h-3 w-3 text-red-600" />
-          case 'scheduled':
-          default:
-            return <Calendar className="h-3 w-3 text-muted-foreground" />
-        }
-      }
-
       return (
         <div className="flex items-center gap-2">
-          {getStatusIcon(value)}
           <Badge
             variant={
               value === 'completed' ? 'default' :
@@ -193,7 +177,7 @@ export const createFightColumns = (formatCurrency, formatDate, handleEditClick, 
   }
 ]
 
-export const createMatchResultColumns = (formatCurrency, formatDate, handleDeleteClick, handleViewDetails) => [
+export const createMatchResultColumns = (formatCurrency, formatDate, handleDeleteClick, handleViewDetails, handleStatusChange) => [
   {
     key: 'matchID',
     label: 'Fight #',
@@ -314,21 +298,39 @@ export const createMatchResultColumns = (formatCurrency, formatDate, handleDelet
     // Otherwise show the full status with verification
     return (
       <div className="space-y-1">
-        <Badge
-          variant={
-            value === 'confirmed' ? 'secondary' :
-            value === 'disputed' ? 'destructive' : 'outline'
-          }
-          className="text-xs capitalize"
-        >
-          {value}
-        </Badge>
         {row.verified && (
           <div className="text-xs text-green-600">
             ✓ Verified
           </div>
         )}
+        {/* Status Change Dropdown - Only show when status is pending */}
+        {(row.status === 'pending' || row.status === 'confirmed') && (
+          <select
+            value={row.status}
+            onChange={(e) => {
+              e.stopPropagation()
+              handleStatusChange(row._id, e.target.value, row.status)
+            }}
+            className="text-xs px-2 py-1 border rounded bg-white"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <option value="pending">Pending</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="final">Final</option>
+          </select>
+        )}
+        {row.status === 'disputed' && (
+          <Badge variant="destructive" className="text-xs">
+            Disputed
+          </Badge>
+        )}
+        {row.status === 'final' && (
+          <Badge variant="default" className="text-xs">
+            Final
+          </Badge>
+        )}
       </div>
+
     )
   }
 },

@@ -96,6 +96,20 @@ export const createMatchResult = async (req, res) => {
       console.error('Failed to update fight schedule status to completed');
     }
 
+    // Deactivate the cock profiles that participated in this fight
+    try {
+      await CockProfile.updateMany(
+        {
+          _id: {
+            $in: [winnerCockProfileID, loserCockProfileID]
+          }
+        },
+        { isActive: false }
+      );
+    } catch (error) {
+      console.error('Error deactivating cock profiles:', error);
+    }
+
     // Populate references for response
     await matchResult.populate([
       { path: 'matchID', select: 'fightNumber eventID' },
@@ -300,6 +314,20 @@ export const deleteMatchResult = async (req, res) => {
       new: true,
       runValidators: true
     });
+
+    // Reactivate the cock profiles since the result is being deleted
+    try {
+      await CockProfile.updateMany(
+        {
+          _id: {
+            $in: [matchResult.resultMatch.winnerCockProfileID, matchResult.resultMatch.loserCockProfileID]
+          }
+        },
+        { isActive: true }
+      );
+    } catch (error) {
+      console.error('Error reactivating cock profiles:', error);
+    }
 
     await MatchResult.findByIdAndDelete(id);
     res.json({ message: 'Match result deleted successfully' });
