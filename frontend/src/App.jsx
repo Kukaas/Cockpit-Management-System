@@ -19,6 +19,8 @@ import EventSelection from './pages/registration-staff/participant-registration/
 import ParticipantRegistration from './pages/registration-staff/participant-registration/ParticipantRegistration'
 import StaffEventSelection from './pages/event-staff/fight-schedule/EventSelection'
 import FightSchedule from './pages/event-staff/fight-schedule/FightSchedule'
+import EntranceEventSelection from './pages/entrance-staff/entrance-registration/EventSelection'
+import Entrance from './pages/entrance-staff/entrance-registration/Entrance'
 
 function PrivateRoute({ children }) {
 	const { user, loading } = useAuth()
@@ -96,6 +98,16 @@ function App() {
 					<Route path="/entrance-staff" element={
 						<PrivateRoute>
 							<EntranceDashboard />
+						</PrivateRoute>
+					} />
+					<Route path="/entrance-staff/entrance-registration" element={
+						<PrivateRoute>
+							<EntranceEventSelection />
+						</PrivateRoute>
+					} />
+					<Route path="/entrance-staff/entrance-registration/:eventId" element={
+						<PrivateRoute>
+							<Entrance />
 						</PrivateRoute>
 					} />
 

@@ -14,6 +14,7 @@ import cockProfileRoutes from "./src/routes/cockProfile.routes.js";
 import participantRoutes from "./src/routes/participant.routes.js";
 import fightScheduleRoutes from "./src/routes/fightSchedule.routes.js";
 import matchResultRoutes from "./src/routes/matchResult.routes.js";
+import entranceRoutes from "./src/routes/entrance.routes.js";
 
 const app = express();
 
@@ -39,6 +40,7 @@ app.use('/api/v1/cock-profiles', cockProfileRoutes);
 app.use('/api/v1/participants', participantRoutes);
 app.use('/api/v1/fight-schedules', fightScheduleRoutes);
 app.use('/api/v1/match-results', matchResultRoutes);
+app.use('/api/v1/entrances', entranceRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

@@ -1,5 +1,5 @@
 import express from 'express';
-import { registerParticipant, getAllParticipants, getParticipantById, updateParticipant, updateParticipantStatus, deleteParticipant, getParticipantsByEvent, getParticipantsByName } from '../controllers/participant.controller.js';
+import { registerParticipant, getAllParticipants, getParticipantById, updateParticipant, updateParticipantStatus, deleteParticipant, getParticipantsByEvent } from '../controllers/participant.controller.js';
 import { verifyToken, requireRole } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
@@ -8,7 +8,6 @@ const router = express.Router();
 router.get('/', verifyToken, getAllParticipants);
 router.get('/:id', verifyToken, getParticipantById);
 router.get('/event/:eventID', verifyToken, getParticipantsByEvent);
-router.get('/name/:participantName', verifyToken, getParticipantsByName);
 
 // Routes requiring admin, event_staff, or registration_staff role
 router.post('/', verifyToken, requireRole(['admin', 'registration_staff']), registerParticipant);

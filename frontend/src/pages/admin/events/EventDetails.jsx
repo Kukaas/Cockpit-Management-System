@@ -7,7 +7,7 @@ import { useGetAll, useGetById } from '@/hooks/useApiQueries'
 import CustomAlertDialog from '@/components/custom/CustomAlertDialog'
 
 // Import custom components
-import EventDetailsCard from '../../registration-staff/participant-registration/components/EventDetailsCard'
+import EventDetailsCard from '../../entrance-staff/entrance-registration/components/EventDetailsCard'
 import AdminEventTabs from './components/AdminEventTabs'
 import { createViewOnlyParticipantColumns, createViewOnlyCockProfileColumns, createViewOnlyFightScheduleColumns } from './components/ViewOnlyTableColumns'
 

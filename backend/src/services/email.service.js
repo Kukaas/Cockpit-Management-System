@@ -754,10 +754,6 @@ export const sendParticipantRegistrationEmail = async (participantData, eventDat
                                     <span class="detail-label">Entry Fee:</span>
                                     <span class="detail-value currency">₱${participantData.entryFee.toLocaleString('en-PH')}</span>
                                 </div>
-                                <div class="detail-row">
-                                    <span class="detail-label">Win Requirements:</span>
-                                    <span class="detail-value">${participantData.matchWinRequirements} matches</span>
-                                </div>
                             </div>
 
                             <div class="important-section">

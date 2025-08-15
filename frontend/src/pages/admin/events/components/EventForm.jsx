@@ -19,6 +19,9 @@ const EventForm = ({
   isPending,
   isEdit = false
 }) => {
+  // Check if this is a regular event (simplified form)
+  const isRegularEvent = formData.eventType === 'regular'
+
   return (
     <CustomAlertDialog
       open={open}
@@ -38,6 +41,25 @@ const EventForm = ({
       }
     >
       <div className="space-y-6 overflow-y-auto pr-2">
+        {/* Event Type - This should come early to determine other fields */}
+        <div className="space-y-2">
+          <Label htmlFor={isEdit ? "editEventType" : "eventType"} className="text-sm font-medium">
+            Event Type *
+          </Label>
+          <NativeSelect
+            id={isEdit ? "editEventType" : "eventType"}
+            value={formData.eventType}
+            onChange={(e) => onInputChange('eventType', e.target.value)}
+            placeholder="Select event type"
+            required
+          >
+            <option value="">Select event type...</option>
+            <option value="regular">Regular</option>
+            <option value="special">Special</option>
+            <option value="championship">Championship</option>
+            <option value="exhibition">Exhibition</option>
+          </NativeSelect>
+        </div>
         {/* Event Name */}
         <InputField
           id={isEdit ? "editEventName" : "eventName"}
@@ -48,6 +70,7 @@ const EventForm = ({
           placeholder="Enter event name"
           required
         />
+
 
         {/* Location */}
         <div className="space-y-2">
@@ -68,6 +91,20 @@ const EventForm = ({
           </NativeSelect>
         </div>
 
+        {/* Entry Fee - Always required */}
+        <InputField
+          id={isEdit ? "editEntryFee" : "entryFee"}
+          label="Entry Fee (PHP) *"
+          icon={DollarSign}
+          type="number"
+          value={formData.entryFee}
+          onChange={(e) => onInputChange('entryFee', e.target.value)}
+          placeholder="Enter entry fee"
+          min="0"
+          step="0.01"
+          required
+        />
+
         {/* Date and Time */}
         <InputField
           id={isEdit ? "editDate" : "date"}
@@ -79,102 +116,79 @@ const EventForm = ({
           required
         />
 
-        {/* Registration Deadline */}
-        <InputField
-          id={isEdit ? "editRegistrationDeadline" : "registrationDeadline"}
-          label="Registration Deadline"
-          icon={Clock}
-          type="datetime-local"
-          value={formData.registrationDeadline}
-          onChange={(e) => onInputChange('registrationDeadline', e.target.value)}
-        />
 
-        {/* Prize and Entry Fee */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <InputField
-            id={isEdit ? "editPrize" : "prize"}
-            label="Prize Pool (PHP) *"
-            icon={DollarSign}
-            type="number"
-            value={formData.prize}
-            onChange={(e) => onInputChange('prize', e.target.value)}
-            placeholder="Enter prize amount"
-            min="0"
-            step="0.01"
-            required
-          />
-          <InputField
-            id={isEdit ? "editEntryFee" : "entryFee"}
-            label="Entry Fee (PHP) *"
-            icon={DollarSign}
-            type="number"
-            value={formData.entryFee}
-            onChange={(e) => onInputChange('entryFee', e.target.value)}
-            placeholder="Enter entry fee"
-            min="0"
-            step="0.01"
-            required
-          />
-        </div>
+        {/* Conditional fields - Only show for non-regular events */}
+        {!isRegularEvent && (
+          <>
+            {/* Registration Deadline */}
+            <InputField
+              id={isEdit ? "editRegistrationDeadline" : "registrationDeadline"}
+              label="Registration Deadline"
+              icon={Clock}
+              type="datetime-local"
+              value={formData.registrationDeadline}
+              onChange={(e) => onInputChange('registrationDeadline', e.target.value)}
+            />
 
-        {/* Minimum Bet and Event Type */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <InputField
-            id={isEdit ? "editMinimumBet" : "minimumBet"}
-            label="Minimum Bet (PHP) *"
-            icon={Hash}
-            type="number"
-            value={formData.minimumBet}
-            onChange={(e) => onInputChange('minimumBet', e.target.value)}
-            placeholder="Enter minimum bet"
-            min="0"
-            step="0.01"
-            required
-          />
-          <div className="space-y-2">
-            <Label htmlFor={isEdit ? "editEventType" : "eventType"} className="text-sm font-medium">
-              Event Type *
-            </Label>
-            <NativeSelect
-              id={isEdit ? "editEventType" : "eventType"}
-              value={formData.eventType}
-              onChange={(e) => onInputChange('eventType', e.target.value)}
-              placeholder="Select event type"
-              required
-            >
-              <option value="regular">Regular</option>
-              <option value="special">Special</option>
-              <option value="championship">Championship</option>
-              <option value="exhibition">Exhibition</option>
-            </NativeSelect>
-          </div>
-        </div>
+            <div className='grid grid-cols-2 gap-4'>
+              {/* Prize Pool */}
+              <InputField
+                id={isEdit ? "editPrize" : "prize"}
+                label="Prize Pool (PHP) *"
+                icon={DollarSign}
+                type="number"
+                value={formData.prize}
+                onChange={(e) => onInputChange('prize', e.target.value)}
+                placeholder="Enter prize amount"
+                min="0"
+                step="0.01"
+                required
+              />
 
-        {/* Cock Requirements and Max Participants */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <InputField
-            id={isEdit ? "editNoCockRequirements" : "noCockRequirements"}
-            label="Cock Requirements *"
-            icon={Users}
-            type="number"
-            value={formData.noCockRequirements}
-            onChange={(e) => onInputChange('noCockRequirements', e.target.value)}
-            placeholder="Enter number of cocks required"
-            min="0"
-            max="1000"
-            required
-          />
-          <InputField
-            id={isEdit ? "editMaxParticipants" : "maxParticipants"}
-            label="Max Participants"
-            icon={Users}
-            type="number"
-            value={formData.maxParticipants}
-            onChange={(e) => onInputChange('maxParticipants', e.target.value)}
-            placeholder="Enter max participants (optional)"
-            min="1"
-          />
-        </div>
+              {/* Minimum Bet */}
+              <InputField
+                id={isEdit ? "editMinimumBet" : "minimumBet"}
+                label="Minimum Bet (PHP) *"
+                icon={Hash}
+                type="number"
+                value={formData.minimumBet}
+                onChange={(e) => onInputChange('minimumBet', e.target.value)}
+                placeholder="Enter minimum bet"
+                min="0"
+                step="0.01"
+                required
+              />
+            </div>
+
+            <div className='grid grid-cols-2 gap-4'>
+              {/* Cock Requirements */}
+              <InputField
+                id={isEdit ? "editNoCockRequirements" : "noCockRequirements"}
+                label="Cock Requirements *"
+                icon={Users}
+                type="number"
+                value={formData.noCockRequirements}
+                onChange={(e) => onInputChange('noCockRequirements', e.target.value)}
+                placeholder="Enter number of cocks required"
+                min="0"
+                max="1000"
+                required
+              />
+
+              {/* Max Participants */}
+              <InputField
+                id={isEdit ? "editMaxParticipants" : "maxParticipants"}
+                label="Max Participants"
+                icon={Users}
+                type="number"
+                value={formData.maxParticipants}
+                onChange={(e) => onInputChange('maxParticipants', e.target.value)}
+                placeholder="Enter max participants (optional)"
+                min="1"
+              />
+            </div>
+          </>
+        )}
 
         {/* Public Toggle */}
         <div className="space-y-2">

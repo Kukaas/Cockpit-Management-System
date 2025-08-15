@@ -18,12 +18,28 @@ export const createEvent = async (req, res) => {
             isPublic
         } = req.body;
 
-        // Validate required fields
-        if (!eventName || !location || !date || !prize || !entryFee || !minimumBet || !eventType || !noCockRequirements) {
+        // Validate required fields based on event type
+        const basicRequiredFields = ['eventName', 'location', 'date', 'entryFee', 'eventType'];
+        const missingBasicFields = basicRequiredFields.filter(field => !req.body[field]);
+
+        if (missingBasicFields.length > 0) {
             return res.status(400).json({
                 success: false,
-                message: 'Missing required fields'
+                message: `Missing required fields: ${missingBasicFields.join(', ')}`
             });
+        }
+
+        // Additional required fields for non-regular events
+        if (eventType !== 'regular') {
+            const additionalRequiredFields = ['prize', 'minimumBet', 'noCockRequirements'];
+            const missingAdditionalFields = additionalRequiredFields.filter(field => !req.body[field]);
+
+            if (missingAdditionalFields.length > 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: `For ${eventType} events, missing required fields: ${missingAdditionalFields.join(', ')}`
+                });
+            }
         }
 
         // Validate date is in the future
@@ -40,11 +56,11 @@ export const createEvent = async (req, res) => {
             eventName,
             location,
             date: eventDate,
-            prize: Number(prize),
+            prize: prize ? Number(prize) : undefined,
             entryFee: Number(entryFee),
-            minimumBet: Number(minimumBet),
+            minimumBet: minimumBet ? Number(minimumBet) : undefined,
             eventType,
-            noCockRequirements: Number(noCockRequirements),
+            noCockRequirements: noCockRequirements ? Number(noCockRequirements) : undefined,
             adminID: req.user._id,
             description,
             maxParticipants: maxParticipants ? Number(maxParticipants) : null,
@@ -206,6 +222,31 @@ export const updateEvent = async (req, res) => {
             });
         }
 
+        // Validate required fields based on event type
+        const eventType = updateData.eventType || event.eventType;
+        const basicRequiredFields = ['eventName', 'location', 'date', 'entryFee', 'eventType'];
+        const missingBasicFields = basicRequiredFields.filter(field => !updateData[field] && !event[field]);
+
+        if (missingBasicFields.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: `Missing required fields: ${missingBasicFields.join(', ')}`
+            });
+        }
+
+        // Additional required fields for non-regular events
+        if (eventType !== 'regular') {
+            const additionalRequiredFields = ['prize', 'minimumBet', 'noCockRequirements'];
+            const missingAdditionalFields = additionalRequiredFields.filter(field => !updateData[field] && !event[field]);
+
+            if (missingAdditionalFields.length > 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: `For ${eventType} events, missing required fields: ${missingAdditionalFields.join(', ')}`
+                });
+            }
+        }
+
         // Validate date if it's being updated
         if (updateData.date) {
             const eventDate = new Date(updateData.date);
@@ -217,9 +258,9 @@ export const updateEvent = async (req, res) => {
             }
         }
 
-        // Convert numeric fields
-        if (updateData.prize) updateData.prize = Number(updateData.prize);
+        // Convert numeric fields conditionally
         if (updateData.entryFee) updateData.entryFee = Number(updateData.entryFee);
+        if (updateData.prize) updateData.prize = Number(updateData.prize);
         if (updateData.minimumBet) updateData.minimumBet = Number(updateData.minimumBet);
         if (updateData.noCockRequirements) updateData.noCockRequirements = Number(updateData.noCockRequirements);
         if (updateData.maxParticipants) updateData.maxParticipants = Number(updateData.maxParticipants);

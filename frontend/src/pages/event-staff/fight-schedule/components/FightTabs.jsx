@@ -11,8 +11,12 @@ const FightTabs = ({
   results,
   fightColumns,
   resultColumns,
-  onAddFight
+  onAddFight,
+  eventStatus = 'active' // Add event status prop with default value
 }) => {
+  // Check if event is completed or cancelled
+  const isEventCompleted = eventStatus === 'completed' || eventStatus === 'cancelled'
+
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
       <TabsList className="grid w-full grid-cols-2">
@@ -29,7 +33,11 @@ const FightTabs = ({
       <TabsContent value="fights" className="space-y-4">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold">Scheduled Fights</h3>
-          <Button onClick={onAddFight}>
+          <Button
+            onClick={onAddFight}
+            disabled={isEventCompleted}
+            title={isEventCompleted ? "Cannot schedule fights for completed/cancelled events" : "Schedule a new fight"}
+          >
             <Plus className="h-4 w-4 mr-2" />
             Schedule Fight
           </Button>

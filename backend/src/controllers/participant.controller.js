@@ -13,9 +13,9 @@ export const registerParticipant = async (req, res) => {
       address,
       eventID,
       entryFee,
-      matchWinRequirements,
       eventType,
-      notes
+      notes,
+      isExistingParticipant = false
     } = req.body;
     const registeredBy = req.user.id;
 
@@ -39,6 +39,11 @@ export const registerParticipant = async (req, res) => {
       return res.status(400).json({ message: 'Entry fee does not match event requirement' });
     }
 
+    // Validate event type matches event
+    if (eventType !== event.eventType) {
+      return res.status(400).json({ message: 'Event type does not match event requirement' });
+    }
+
     const participant = new Participant({
       participantName,
       contactNumber,
@@ -46,7 +51,6 @@ export const registerParticipant = async (req, res) => {
       address,
       eventID,
       entryFee,
-      matchWinRequirements,
       eventType,
       registeredBy,
       notes
@@ -56,7 +60,7 @@ export const registerParticipant = async (req, res) => {
 
     // Populate references for response
     await participant.populate([
-      { path: 'eventID', select: 'eventName date location' },
+      { path: 'eventID', select: 'eventName date location noCockRequirements' },
       { path: 'registeredBy', select: 'username' }
     ]);
 
@@ -68,7 +72,11 @@ export const registerParticipant = async (req, res) => {
       // Don't fail the registration if email fails, just log it
     }
 
-    res.status(201).json({ message: 'Participant registered successfully', data: participant });
+    res.status(201).json({
+      message: 'Participant registered successfully',
+      data: participant,
+      isExistingParticipant
+    });
   } catch (error) {
     res.status(500).json({ message: 'Failed to register participant', error: error.message });
   }
@@ -151,7 +159,6 @@ export const updateParticipant = async (req, res) => {
       email,
       address,
       entryFee,
-      matchWinRequirements,
       eventType,
       notes
     } = req.body;
@@ -166,6 +173,14 @@ export const updateParticipant = async (req, res) => {
       const event = await Event.findById(participant.eventID);
       if (event && entryFee !== event.entryFee) {
         return res.status(400).json({ message: 'Entry fee does not match event requirement' });
+      }
+    }
+
+    // If event type is being updated, validate it matches the event requirement
+    if (eventType !== undefined) {
+      const event = await Event.findById(participant.eventID);
+      if (event && eventType !== event.eventType) {
+        return res.status(400).json({ message: 'Event type does not match event requirement' });
       }
     }
 
@@ -195,13 +210,12 @@ export const updateParticipant = async (req, res) => {
         email,
         address,
         entryFee,
-        matchWinRequirements,
         eventType,
         notes
       },
       { new: true, runValidators: true }
     ).populate([
-      { path: 'eventID', select: 'eventName date location' },
+      { path: 'eventID', select: 'eventName date location noCockRequirements' },
       { path: 'registeredBy', select: 'username' }
     ]);
 
@@ -273,29 +287,6 @@ export const getParticipantsByEvent = async (req, res) => {
     const { status } = req.query;
 
     let query = { eventID };
-
-    if (status) {
-      query.status = status;
-    }
-
-    const participants = await Participant.find(query)
-      .populate('eventID', 'eventName date location')
-      .populate('registeredBy', 'username')
-      .sort({ registrationDate: -1 });
-
-    res.json({ data: participants });
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to fetch participants', error: error.message });
-  }
-};
-
-// Get participants by name
-export const getParticipantsByName = async (req, res) => {
-  try {
-    const { participantName } = req.params;
-    const { status } = req.query;
-
-    let query = { participantName };
 
     if (status) {
       query.status = status;

@@ -19,7 +19,9 @@ const eventSchema = new mongoose.Schema({
     },
     prize: {
         type: Number,
-        required: true,
+        required: function() {
+            return this.eventType !== 'regular';
+        },
         min: 0
     },
     entryFee: {
@@ -29,7 +31,9 @@ const eventSchema = new mongoose.Schema({
     },
     minimumBet: {
         type: Number,
-        required: true,
+        required: function() {
+            return this.eventType !== 'regular';
+        },
         min: 0
     },
     eventType: {
@@ -40,7 +44,9 @@ const eventSchema = new mongoose.Schema({
     },
     noCockRequirements: {
         type: Number,
-        required: true,
+        required: function() {
+            return this.eventType !== 'regular';
+        },
         min: 0,
         max: 1000
     },

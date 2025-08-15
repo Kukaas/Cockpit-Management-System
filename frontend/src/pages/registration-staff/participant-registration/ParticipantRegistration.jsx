@@ -43,7 +43,6 @@ const ParticipantRegistration = () => {
     email: '',
     address: '',
     entryFee: '',
-    matchWinRequirements: '',
     eventType: '',
     notes: ''
   })
@@ -161,23 +160,20 @@ const ParticipantRegistration = () => {
       setParticipantFormData(prev => {
         const newEntryFee = selectedEvent.entryFee?.toString() || ''
         const newEventType = selectedEvent.eventType || ''
-        const newMatchWinRequirements = selectedEvent.noCockRequirements?.toString() || ''
 
         // Only update if values have actually changed
         if (prev.entryFee !== newEntryFee ||
-            prev.eventType !== newEventType ||
-            prev.matchWinRequirements !== newMatchWinRequirements) {
+            prev.eventType !== newEventType) {
           return {
             ...prev,
             entryFee: newEntryFee,
-            eventType: newEventType,
-            matchWinRequirements: newMatchWinRequirements
+            eventType: newEventType
           }
         }
         return prev
       })
     }
-  }, [selectedEvent?._id, selectedEvent?.entryFee, selectedEvent?.eventType, selectedEvent?.noCockRequirements])
+  }, [selectedEvent?._id, selectedEvent?.entryFee, selectedEvent?.eventType])
 
   // Use the API data directly instead of local state
   const participants = participantsData || []
@@ -199,7 +195,6 @@ const ParticipantRegistration = () => {
       email: '',
       address: '',
       entryFee: selectedEvent?.entryFee?.toString() || '',
-      matchWinRequirements: selectedEvent?.noCockRequirements?.toString() || '',
       eventType: selectedEvent?.eventType || '',
       notes: ''
     })
@@ -217,7 +212,7 @@ const ParticipantRegistration = () => {
 
   // Submit handlers
   const handleAddParticipant = async () => {
-    const requiredFields = ['participantName', 'contactNumber', 'email', 'address', 'entryFee', 'matchWinRequirements', 'eventType']
+    const requiredFields = ['participantName', 'contactNumber', 'email', 'address', 'entryFee','eventType']
     const missingFields = requiredFields.filter(field => !participantFormData[field])
 
     if (missingFields.length > 0) {
@@ -229,7 +224,6 @@ const ParticipantRegistration = () => {
       ...participantFormData,
       eventID: eventId,
       entryFee: parseFloat(participantFormData.entryFee),
-      matchWinRequirements: parseInt(participantFormData.matchWinRequirements)
     }
 
     createParticipantMutation.mutate(participantData)
@@ -442,8 +436,8 @@ const ParticipantRegistration = () => {
         onSubmit={handleAddParticipant}
         onCancel={() => setAddParticipantDialogOpen(false)}
         isPending={createParticipantMutation.isPending}
-        participants={participants}
         isEdit={false}
+        eventId={eventId}
       />
 
       {/* Add Cock Profile Dialog */}
@@ -472,8 +466,8 @@ const ParticipantRegistration = () => {
         onSubmit={handleEditParticipant}
         onCancel={() => setEditParticipantDialogOpen(false)}
         isPending={updateParticipantMutation.isPending}
-        participants={participants}
         isEdit={true}
+        eventId={eventId}
       />
 
       {/* Edit Cock Profile Dialog */}

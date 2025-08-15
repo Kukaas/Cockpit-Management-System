@@ -1,7 +1,7 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Edit, Trash2, Trophy, Clock, Users, Target } from 'lucide-react'
+import { Edit, Trash2, Trophy, Clock, Users, Target, Award, Calendar, Info } from 'lucide-react'
 
 export const createFightColumns = (formatCurrency, formatDate, handleEditClick, handleDeleteClick, handleAddResultClick) => [
   {
@@ -9,7 +9,12 @@ export const createFightColumns = (formatCurrency, formatDate, handleEditClick, 
     label: 'Fight #',
     sortable: true,
     filterable: false,
-    render: (value) => `#${value}`
+    render: (value) => (
+      <div className="flex items-center gap-2">
+        <Target className="h-4 w-4 text-muted-foreground" />
+        <span className="font-medium">#{value}</span>
+      </div>
+    )
   },
   {
     key: 'participantsID',
@@ -64,7 +69,12 @@ export const createFightColumns = (formatCurrency, formatDate, handleEditClick, 
     label: 'Plazada Fee',
     sortable: true,
     filterable: false,
-    render: (value) => formatCurrency(value)
+    render: (value) => (
+      <div className="flex items-center gap-1">
+        <Trophy className="h-4 w-4 text-blue-600" />
+        <span>{formatCurrency(value)}</span>
+      </div>
+    )
   },
   {
     key: 'scheduledTime',
@@ -90,18 +100,38 @@ export const createFightColumns = (formatCurrency, formatDate, handleEditClick, 
       'Completed': 'completed',
       'Cancelled': 'cancelled'
     },
-    render: (value) => (
-      <Badge
-        variant={
-          value === 'completed' ? 'default' :
-          value === 'in_progress' ? 'secondary' :
-          value === 'cancelled' ? 'destructive' : 'outline'
+    render: (value) => {
+      // Helper function to get status icon
+      const getStatusIcon = (status) => {
+        switch (status) {
+          case 'completed':
+            return <Trophy className="h-3 w-3 text-green-600" />
+          case 'in_progress':
+            return <Clock className="h-3 w-3 text-blue-600" />
+          case 'cancelled':
+            return <Edit className="h-3 w-3 text-red-600" />
+          case 'scheduled':
+          default:
+            return <Calendar className="h-3 w-3 text-muted-foreground" />
         }
-        className="text-xs capitalize"
-      >
-        {value.replace('_', ' ')}
-      </Badge>
-    )
+      }
+
+      return (
+        <div className="flex items-center gap-2">
+          {getStatusIcon(value)}
+          <Badge
+            variant={
+              value === 'completed' ? 'default' :
+              value === 'in_progress' ? 'secondary' :
+              value === 'cancelled' ? 'destructive' : 'outline'
+            }
+            className="text-xs capitalize"
+          >
+            {value.replace('_', ' ')}
+          </Badge>
+        </div>
+      )
+    }
   },
   {
     key: 'actions',
@@ -163,7 +193,12 @@ export const createMatchResultColumns = (formatCurrency, formatDate, handleEditC
     label: 'Fight #',
     sortable: true,
     filterable: false,
-    render: (value) => `#${value.fightNumber}`
+    render: (value) => (
+      <div className="flex items-center gap-2">
+        <Target className="h-4 w-4 text-muted-foreground" />
+        <span className="font-medium">#{value.fightNumber}</span>
+      </div>
+    )
   },
   {
     key: 'resultMatch',
@@ -189,12 +224,15 @@ export const createMatchResultColumns = (formatCurrency, formatDate, handleEditC
     filterable: true,
     filterOptions: ['Meron', 'Wala', 'Draw'],
     render: (value) => (
-      <Badge
-        variant={value === 'Meron' ? 'default' : value === 'Wala' ? 'secondary' : 'outline'}
-        className="text-xs"
-      >
-        {value}
-      </Badge>
+      <div className="flex items-center gap-2">
+        <Award className="h-3 w-3 text-yellow-600" />
+        <Badge
+          variant={value === 'Meron' ? 'default' : value === 'Wala' ? 'secondary' : 'outline'}
+          className="text-xs"
+        >
+          {value}
+        </Badge>
+      </div>
     )
   },
   {
@@ -202,7 +240,12 @@ export const createMatchResultColumns = (formatCurrency, formatDate, handleEditC
     label: 'Total Bet',
     sortable: true,
     filterable: false,
-    render: (value) => formatCurrency(value)
+    render: (value) => (
+      <div className="flex items-center gap-1">
+        <Target className="h-4 w-4 text-green-600" />
+        <span className="font-medium">{formatCurrency(value)}</span>
+      </div>
+    )
   },
   {
     key: 'prize',
@@ -212,6 +255,7 @@ export const createMatchResultColumns = (formatCurrency, formatDate, handleEditC
     render: (value) => (
       <div className="space-y-1 text-sm">
         <div className="flex items-center gap-1">
+          <Trophy className="h-3 w-3 text-yellow-600" />
           <span className="text-green-600 font-medium">{formatCurrency(value.winnerPrize)}</span>
         </div>
         <div className="text-muted-foreground">

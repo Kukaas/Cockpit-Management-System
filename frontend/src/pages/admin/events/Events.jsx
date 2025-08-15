@@ -123,13 +123,24 @@ const Events = () => {
 
 
   const handleAddEvent = async () => {
-    // Validate required fields
-    const requiredFields = ['eventName', 'location', 'date', 'prize', 'entryFee', 'minimumBet', 'eventType', 'noCockRequirements']
-    const missingFields = requiredFields.filter(field => !formData[field])
+    // Basic required fields for all events
+    const basicRequiredFields = ['eventName', 'location', 'date', 'entryFee', 'eventType']
+    const missingBasicFields = basicRequiredFields.filter(field => !formData[field])
 
-    if (missingFields.length > 0) {
-      toast.error(`Please fill in all required fields: ${missingFields.join(', ')}`)
+    if (missingBasicFields.length > 0) {
+      toast.error(`Please fill in all required fields: ${missingBasicFields.join(', ')}`)
       return
+    }
+
+    // Additional required fields for non-regular events
+    if (formData.eventType !== 'regular') {
+      const additionalRequiredFields = ['prize', 'minimumBet', 'noCockRequirements']
+      const missingAdditionalFields = additionalRequiredFields.filter(field => !formData[field])
+
+      if (missingAdditionalFields.length > 0) {
+        toast.error(`For ${formData.eventType} events, please fill in: ${missingAdditionalFields.join(', ')}`)
+        return
+      }
     }
 
     // Validate date is in the future
@@ -140,7 +151,11 @@ const Events = () => {
     }
 
     // Validate numeric fields
-    const numericFields = ['prize', 'entryFee', 'minimumBet', 'noCockRequirements']
+    const numericFields = ['entryFee']
+    if (formData.eventType !== 'regular') {
+      numericFields.push('prize', 'minimumBet', 'noCockRequirements')
+    }
+    
     for (const field of numericFields) {
       if (isNaN(formData[field]) || Number(formData[field]) < 0) {
         toast.error(`${field} must be a valid positive number`)
@@ -148,17 +163,34 @@ const Events = () => {
       }
     }
 
+    // Validate maxParticipants if provided
+    if (formData.maxParticipants && (isNaN(formData.maxParticipants) || Number(formData.maxParticipants) < 1)) {
+      toast.error('Max participants must be a valid positive number')
+      return
+    }
+
     createEventMutation.mutate(formData)
   }
 
   const handleEditEvent = async () => {
-    // Validate required fields
-    const requiredFields = ['eventName', 'location', 'date', 'prize', 'entryFee', 'minimumBet', 'eventType', 'noCockRequirements']
-    const missingFields = requiredFields.filter(field => !editFormData[field])
+    // Basic required fields for all events
+    const basicRequiredFields = ['eventName', 'location', 'date', 'entryFee', 'eventType']
+    const missingBasicFields = basicRequiredFields.filter(field => !editFormData[field])
 
-    if (missingFields.length > 0) {
-      toast.error(`Please fill in all required fields: ${missingFields.join(', ')}`)
+    if (missingBasicFields.length > 0) {
+      toast.error(`Please fill in all required fields: ${missingBasicFields.join(', ')}`)
       return
+    }
+
+    // Additional required fields for non-regular events
+    if (editFormData.eventType !== 'regular') {
+      const additionalRequiredFields = ['prize', 'minimumBet', 'noCockRequirements']
+      const missingAdditionalFields = additionalRequiredFields.filter(field => !editFormData[field])
+
+      if (missingAdditionalFields.length > 0) {
+        toast.error(`For ${editFormData.eventType} events, please fill in: ${missingAdditionalFields.join(', ')}`)
+        return
+      }
     }
 
     if (!selectedEvent) return
@@ -167,6 +199,25 @@ const Events = () => {
     const eventDate = new Date(editFormData.date)
     if (eventDate <= new Date()) {
       toast.error('Event date must be in the future')
+      return
+    }
+
+    // Validate numeric fields
+    const numericFields = ['entryFee']
+    if (editFormData.eventType !== 'regular') {
+      numericFields.push('prize', 'minimumBet', 'noCockRequirements')
+    }
+    
+    for (const field of numericFields) {
+      if (isNaN(editFormData[field]) || Number(editFormData[field]) < 0) {
+        toast.error(`${field} must be a valid positive number`)
+        return
+      }
+    }
+
+    // Validate maxParticipants if provided
+    if (editFormData.maxParticipants && (isNaN(editFormData.maxParticipants) || Number(editFormData.maxParticipants) < 1)) {
+      toast.error('Max participants must be a valid positive number')
       return
     }
 

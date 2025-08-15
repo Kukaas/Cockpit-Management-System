@@ -39,12 +39,6 @@ const participantSchema = new mongoose.Schema({
     required: true,
     min: 0
   },
-  matchWinRequirements: {
-    type: Number,
-    required: true,
-    min: 1,
-    max: 10
-  },
   eventType: {
     type: String,
     required: true,

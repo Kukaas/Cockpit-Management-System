@@ -41,15 +41,10 @@ const SidebarComponent = () => {
 				return [
 					...baseItems,
 					{
-						label: 'Check-ins',
-						path: '/entrance-staff/checkins',
+						label: 'Entrance Registration',
+						path: '/entrance-staff/entrance-registration',
 						icon: <CheckSquare className="size-4" />
 					},
-					{
-						label: 'Guest List',
-						path: '/entrance-staff/guests',
-						icon: <ClipboardList className="size-4" />
-					}
 				]
 			case 'tangkal_staff':
 				return [

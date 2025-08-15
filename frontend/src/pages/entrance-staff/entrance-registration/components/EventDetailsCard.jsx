@@ -2,7 +2,7 @@ import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { Calendar, MapPin, DollarSign, Users, Clock, Swords, Award, Target, Info } from 'lucide-react'
+import { Calendar, MapPin, DollarSign, Users, Clock, Award, Target, Info } from 'lucide-react'
 
 const EventDetailsCard = ({ event, formatDate, formatCurrency }) => {
   // Helper function to get badge variant based on event type
@@ -54,11 +54,11 @@ const EventDetailsCard = ({ event, formatDate, formatCurrency }) => {
     <Card className="mb-6">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Swords className="h-5 w-5" />
+          <Calendar className="h-5 w-5" />
           Event Details
         </CardTitle>
         <CardDescription>
-          {getEventTypeDescription(event.eventType)} - Fight scheduling and management
+          {getEventTypeDescription(event.eventType)} - Entrance requirements and information
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -82,7 +82,7 @@ const EventDetailsCard = ({ event, formatDate, formatCurrency }) => {
             </p>
           </div>
           <div className="space-y-1">
-            <p className="text-sm font-medium text-muted-foreground">Entry Fee</p>
+            <p className="text-sm font-medium text-muted-foreground">Entrance Fee</p>
             <p className="flex items-center gap-1">
               <DollarSign className="h-4 w-4" />
               {formatCurrency(event.entryFee)}
@@ -105,20 +105,16 @@ const EventDetailsCard = ({ event, formatDate, formatCurrency }) => {
             </div>
           </div>
 
-          {/* Show Status */}
-          <div className="space-y-1">
-            <p className="text-sm font-medium text-muted-foreground">Status</p>
-            <Badge
-              variant={
-                event.status === 'active' ? 'default' :
-                event.status === 'completed' ? 'secondary' :
-                event.status === 'cancelled' ? 'destructive' : 'outline'
-              }
-              className="capitalize"
-            >
-              {event.status}
-            </Badge>
-          </div>
+          {/* Show Cock Requirements only for non-regular events */}
+          {event.eventType !== 'regular' && event.noCockRequirements && (
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground">Cock Requirements</p>
+              <p className="flex items-center gap-1">
+                <Users className="h-4 w-4" />
+                {event.noCockRequirements} cocks
+              </p>
+            </div>
+          )}
 
           {/* Show Prize Pool for non-regular events */}
           {event.eventType !== 'regular' && event.prize && (
@@ -127,17 +123,6 @@ const EventDetailsCard = ({ event, formatDate, formatCurrency }) => {
               <p className="flex items-center gap-1">
                 <DollarSign className="h-4 w-4 text-green-600" />
                 {formatCurrency(event.prize)}
-              </p>
-            </div>
-          )}
-
-          {/* Show Cock Requirements for non-regular events */}
-          {event.eventType !== 'regular' && event.noCockRequirements && (
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground">Cock Requirements</p>
-              <p className="flex items-center gap-1">
-                <Users className="h-4 w-4" />
-                {event.noCockRequirements} cocks
               </p>
             </div>
           )}
@@ -160,6 +145,17 @@ const EventDetailsCard = ({ event, formatDate, formatCurrency }) => {
               <p className="flex items-center gap-1">
                 <Users className="h-4 w-4" />
                 {event.maxParticipants} participants
+              </p>
+            </div>
+          )}
+
+          {/* Show Registration Deadline if available */}
+          {event.registrationDeadline && (
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground">Registration Deadline</p>
+              <p className="flex items-center gap-1">
+                <Clock className="h-4 w-4" />
+                {formatDate(event.registrationDeadline)}
               </p>
             </div>
           )}
