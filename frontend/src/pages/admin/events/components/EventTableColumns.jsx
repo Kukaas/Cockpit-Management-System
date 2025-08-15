@@ -6,7 +6,7 @@ import { Edit, Trash2, Calendar, MapPin, DollarSign, Users, Award, Target, Info 
 export const createEventColumns = (
   formatCurrency,
   formatDate,
-  handleEditClick,
+  handleEditEventClick,
   handleDeleteClick,
   handleStatusChange,
   statusChangeMutation
@@ -194,7 +194,7 @@ export const createEventColumns = (
           size="sm"
           onClick={(e) => {
             e.stopPropagation()
-            handleEditClick(row)
+            handleEditEventClick(row)
           }}
           className="h-8 w-8 p-0"
         >

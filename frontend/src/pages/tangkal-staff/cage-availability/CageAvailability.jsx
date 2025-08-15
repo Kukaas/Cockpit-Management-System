@@ -1,0 +1,296 @@
+import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Button } from '@/components/ui/button'
+import { ArrowLeft, Plus } from 'lucide-react'
+import PageLayout from '@/layouts/PageLayout'
+import { toast } from 'sonner'
+import { useGetAll } from '@/hooks/useApiQueries'
+import { useCreateMutation, usePutMutation, useCustomMutation } from '@/hooks/useApiMutations'
+import api from '@/services/api'
+import ConfirmationDialog from '@/components/custom/ConfirmationDialog'
+import DataTable from '@/components/custom/DataTable'
+
+// Import custom components
+import CageAvailabilityForm from './components/CageAvailabilityForm'
+import CageAvailabilitySummary from './components/CageAvailabilitySummary'
+import { createCageAvailabilityColumns } from './components/TableColumns'
+
+const CageAvailability = () => {
+  const navigate = useNavigate()
+
+  // Dialog states
+  const [addCageDialogOpen, setAddCageDialogOpen] = useState(false)
+  const [editCageDialogOpen, setEditCageDialogOpen] = useState(false)
+  const [deleteCageDialogOpen, setDeleteCageDialogOpen] = useState(false)
+
+  // Selected items for editing/deleting
+  const [selectedCage, setSelectedCage] = useState(null)
+
+  // Form data
+  const [cageFormData, setCageFormData] = useState({
+    cageNumber: '',
+    arena: 'Buenavista Cockpit Arena',
+    availabilityNumber: '',
+    status: 'active',
+    description: ''
+  })
+
+  // Fetch cage availability records
+  const { data: cagesData = [], refetch: refetchCages } = useGetAll('/cage-availability')
+
+  // Fetch summary data
+  const { data: summaryData } = useGetAll('/cage-availability/summary')
+
+  // Mutations
+  const createCageMutation = useCreateMutation('/cage-availability', {
+    successMessage: 'Cage availability created successfully',
+    errorMessage: (error) => {
+      // Extract the actual error message from the backend response
+      const errorMessage = error?.response?.data?.message;
+      if (errorMessage) {
+        return errorMessage;
+      }
+      return 'Failed to create cage availability. Please try again.';
+    },
+    onSuccess: () => {
+      setAddCageDialogOpen(false)
+      resetCageForm()
+      refetchCages()
+    }
+  })
+
+  const updateCageMutation = usePutMutation('/cage-availability', {
+    successMessage: 'Cage availability updated successfully',
+    errorMessage: (error) => {
+      // Extract the actual error message from the backend response
+      const errorMessage = error?.response?.data?.message;
+      if (errorMessage) {
+        return errorMessage;
+      }
+      return 'Failed to update cage availability. Please try again.';
+    },
+    onSuccess: () => {
+      setEditCageDialogOpen(false)
+      setSelectedCage(null)
+      resetCageForm()
+      refetchCages()
+    }
+  })
+
+  const deleteCageMutation = useCustomMutation(
+    async ({ id }) => {
+      const response = await api.delete(`/cage-availability/${id}`)
+      return response.data
+    },
+    {
+      successMessage: 'Cage availability deleted successfully',
+      errorMessage: (error) => {
+        // Extract the actual error message from the backend response
+        const errorMessage = error?.response?.data?.message;
+        if (errorMessage) {
+          return errorMessage;
+        }
+        return 'Failed to delete cage availability. Please try again.';
+      },
+      onSuccess: () => {
+        setDeleteCageDialogOpen(false)
+        setSelectedCage(null)
+        refetchCages()
+      }
+    }
+  )
+
+  // Use the API data directly instead of local state
+  const cages = cagesData || []
+
+  // Form handlers
+  const handleCageInputChange = (field, value) => {
+    setCageFormData(prev => ({ ...prev, [field]: value }))
+  }
+
+  const resetCageForm = () => {
+    setCageFormData({
+      cageNumber: '',
+      arena: 'Buenavista Cockpit Arena',
+      status: 'active',
+      description: ''
+    })
+  }
+
+  // Submit handlers
+  const handleAddCage = async () => {
+    const requiredFields = ['cageNumber', 'arena']
+    const missingFields = requiredFields.filter(field => !cageFormData[field])
+
+    if (missingFields.length > 0) {
+      toast.error(`Please fill in all required fields: ${missingFields.join(', ')}`)
+      return
+    }
+
+    // Check for duplicate cage number in the same arena
+    const existingCage = cages.find(cage =>
+      cage.cageNumber === cageFormData.cageNumber &&
+      cage.arena === cageFormData.arena
+    )
+
+    if (existingCage) {
+      toast.error(`Cage number "${cageFormData.cageNumber}" already exists in ${cageFormData.arena}. Please use a different cage number.`)
+      return
+    }
+
+    const cageData = {
+      cageNumber: cageFormData.cageNumber,
+      arena: cageFormData.arena,
+      status: cageFormData.status,
+      description: cageFormData.description
+    }
+
+    createCageMutation.mutate(cageData)
+  }
+
+  const handleEditCage = async () => {
+    if (!selectedCage) return
+
+    const requiredFields = ['cageNumber', 'arena']
+    const missingFields = requiredFields.filter(field => !cageFormData[field])
+
+    if (missingFields.length > 0) {
+      toast.error(`Please fill in all required fields: ${missingFields.join(', ')}`)
+      return
+    }
+
+    // Check for duplicate cage number in the same arena (excluding current cage)
+    const existingCage = cages.find(cage =>
+      cage.cageNumber === cageFormData.cageNumber &&
+      cage.arena === cageFormData.arena &&
+      cage._id !== selectedCage._id
+    )
+
+    if (existingCage) {
+      toast.error(`Cage number "${cageFormData.cageNumber}" already exists in ${cageFormData.arena}. Please use a different cage number.`)
+      return
+    }
+
+    const cageData = {
+      cageNumber: cageFormData.cageNumber,
+      arena: cageFormData.arena,
+      status: cageFormData.status,
+      description: cageFormData.description
+    }
+
+    updateCageMutation.mutate({
+      id: selectedCage._id,
+      data: cageData
+    })
+  }
+
+  const handleDeleteCage = () => {
+    if (!selectedCage) return
+    deleteCageMutation.mutate({ id: selectedCage._id })
+  }
+
+  // Action handlers
+  const handleEditCageClick = (cage) => {
+    setSelectedCage(cage)
+    setCageFormData({
+      cageNumber: cage.cageNumber,
+      arena: cage.arena,
+      status: cage.status,
+      description: cage.description || ''
+    })
+    setEditCageDialogOpen(true)
+  }
+
+  const handleDeleteCageClick = (cage) => {
+    setSelectedCage(cage)
+    setDeleteCageDialogOpen(true)
+  }
+
+  // Create table columns
+  const cageColumns = createCageAvailabilityColumns(
+    handleEditCageClick,
+    handleDeleteCageClick
+  )
+
+  return (
+    <PageLayout
+      title="Cage Availability Management"
+      description="Manage cage availability records and track cage status across different arenas"
+      headerButton={
+        <Button variant="outline" onClick={() => navigate('/tangkal-staff')}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Dashboard
+        </Button>
+      }
+    >
+      {/* Cage Availability Summary */}
+      <CageAvailabilitySummary summaryData={summaryData} />
+
+      {/* Cage Availability Section */}
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-semibold">Cage Availability ({cages.length})</h3>
+          <Button onClick={() => setAddCageDialogOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Cage
+          </Button>
+        </div>
+        <DataTable
+          data={cages}
+          columns={cageColumns}
+          pageSize={10}
+          searchable={true}
+          filterable={true}
+          title="Cage Availability"
+          loading={false}
+          emptyMessage="No cage availability records yet"
+          className="shadow-sm"
+        />
+      </div>
+
+      {/* Add Cage Dialog */}
+      <CageAvailabilityForm
+        open={addCageDialogOpen}
+        onOpenChange={setAddCageDialogOpen}
+        title="Add Cage Availability"
+        description="Create a new cage availability record"
+        formData={cageFormData}
+        onInputChange={handleCageInputChange}
+        onSubmit={handleAddCage}
+        onCancel={() => setAddCageDialogOpen(false)}
+        isPending={createCageMutation.isPending}
+        isEdit={false}
+      />
+
+      {/* Edit Cage Dialog */}
+      <CageAvailabilityForm
+        open={editCageDialogOpen}
+        onOpenChange={setEditCageDialogOpen}
+        title="Edit Cage Availability"
+        description="Update cage availability information"
+        formData={cageFormData}
+        onInputChange={handleCageInputChange}
+        onSubmit={handleEditCage}
+        onCancel={() => setEditCageDialogOpen(false)}
+        isPending={updateCageMutation.isPending}
+        isEdit={true}
+      />
+
+      {/* Delete Cage Confirmation Dialog */}
+      <ConfirmationDialog
+        open={deleteCageDialogOpen}
+        onOpenChange={setDeleteCageDialogOpen}
+        title="Delete Cage Availability"
+        description={`Are you sure you want to delete the cage availability record for "${selectedCage?.cageNumber}" in ${selectedCage?.arena}? This action cannot be undone.`}
+        confirmText="Delete Cage"
+        cancelText="Cancel"
+        onConfirm={handleDeleteCage}
+        onCancel={() => setDeleteCageDialogOpen(false)}
+        variant="destructive"
+        loading={deleteCageMutation.isPending}
+      />
+    </PageLayout>
+  )
+}
+
+export default CageAvailability

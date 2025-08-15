@@ -181,7 +181,17 @@ const Events = () => {
       return
     }
 
-    createEventMutation.mutate(formData)
+    // Prepare data for create - remove fields that shouldn't be sent for regular events
+    const createData = { ...formData }
+
+    // For regular events, remove the fields that are not required
+    if (formData.eventType === 'regular') {
+      delete createData.prize
+      delete createData.minimumBet
+      delete createData.noCockRequirements
+    }
+
+    createEventMutation.mutate(createData)
   }
 
   const handleEditEvent = async () => {
@@ -233,9 +243,19 @@ const Events = () => {
       return
     }
 
+    // Prepare data for update - remove fields that shouldn't be sent for regular events
+    const updateData = { ...editFormData }
+
+    // For regular events, remove the fields that are not required
+    if (editFormData.eventType === 'regular') {
+      delete updateData.prize
+      delete updateData.minimumBet
+      delete updateData.noCockRequirements
+    }
+
     updateEventMutation.mutate({
       id: selectedEvent._id,
-      data: editFormData
+      data: updateData
     })
   }
 
@@ -358,18 +378,18 @@ const Events = () => {
   const handleEditEventClick = (event) => {
     setSelectedEvent(event)
     setEditFormData({
-      eventName: event.eventName,
-      location: event.location,
-      date: new Date(event.date).toISOString().slice(0, 16),
-      prize: event.prize.toString(),
-      entryFee: event.entryFee.toString(),
-      minimumBet: event.minimumBet.toString(),
-      eventType: event.eventType,
-      noCockRequirements: event.noCockRequirements.toString(),
+      eventName: event.eventName || '',
+      location: event.location || '',
+      date: event.date ? new Date(event.date).toISOString().slice(0, 16) : '',
+      prize: event.prize ? event.prize.toString() : '',
+      entryFee: event.entryFee ? event.entryFee.toString() : '',
+      minimumBet: event.minimumBet ? event.minimumBet.toString() : '',
+      eventType: event.eventType || '',
+      noCockRequirements: event.noCockRequirements ? event.noCockRequirements.toString() : '',
       description: event.description || '',
-      maxParticipants: event.maxParticipants?.toString() || '',
+      maxParticipants: event.maxParticipants ? event.maxParticipants.toString() : '',
       registrationDeadline: event.registrationDeadline ? new Date(event.registrationDeadline).toISOString().slice(0, 16) : '',
-      isPublic: event.isPublic
+      isPublic: event.isPublic !== undefined ? event.isPublic : true
     })
     setEditEventDialogOpen(true)
   }

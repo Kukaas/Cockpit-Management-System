@@ -52,21 +52,27 @@ export const createEvent = async (req, res) => {
         }
 
         // Create new event
-        const newEvent = new Event({
+        const eventData = {
             eventName,
             location,
             date: eventDate,
-            prize: prize ? Number(prize) : undefined,
             entryFee: Number(entryFee),
-            minimumBet: minimumBet ? Number(minimumBet) : undefined,
             eventType,
-            noCockRequirements: noCockRequirements ? Number(noCockRequirements) : undefined,
             adminID: req.user._id,
             description,
             maxParticipants: maxParticipants ? Number(maxParticipants) : null,
             registrationDeadline: registrationDeadline ? new Date(registrationDeadline) : null,
             isPublic: isPublic !== undefined ? isPublic : true
-        });
+        };
+
+        // Only add prize, minimumBet, and noCockRequirements for non-regular events
+        if (eventType !== 'regular') {
+            eventData.prize = prize ? Number(prize) : undefined;
+            eventData.minimumBet = minimumBet ? Number(minimumBet) : undefined;
+            eventData.noCockRequirements = noCockRequirements ? Number(noCockRequirements) : undefined;
+        }
+
+        const newEvent = new Event(eventData);
 
         const savedEvent = await newEvent.save();
 
@@ -264,6 +270,13 @@ export const updateEvent = async (req, res) => {
         if (updateData.minimumBet) updateData.minimumBet = Number(updateData.minimumBet);
         if (updateData.noCockRequirements) updateData.noCockRequirements = Number(updateData.noCockRequirements);
         if (updateData.maxParticipants) updateData.maxParticipants = Number(updateData.maxParticipants);
+
+        // For regular events, remove the fields that are not required
+        if (eventType === 'regular') {
+            delete updateData.prize;
+            delete updateData.minimumBet;
+            delete updateData.noCockRequirements;
+        }
 
         // Update the event
         const updatedEvent = await Event.findByIdAndUpdate(

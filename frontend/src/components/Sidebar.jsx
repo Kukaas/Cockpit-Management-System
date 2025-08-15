@@ -4,7 +4,7 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupConte
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { LogOut, User, Settings, BarChart3, Users, Settings as SettingsIcon, TrendingUp, CheckSquare, ClipboardList, Shield, AlertTriangle, Calendar, PartyPopper, FileText, ClipboardCheck, UserPlus, Swords } from 'lucide-react'
+import { LogOut, User, Settings, BarChart3, Users, Settings as SettingsIcon, TrendingUp, CheckSquare, ClipboardList, Shield, AlertTriangle, Calendar, PartyPopper, FileText, ClipboardCheck, UserPlus, Swords, File } from 'lucide-react'
 import useAuth from '@/hooks/useAuth'
 import logo from '@/assets/logo.png'
 
@@ -50,15 +50,15 @@ const SidebarComponent = () => {
 				return [
 					...baseItems,
 					{
-						label: 'Security Logs',
-						path: '/tangkal-staff/security',
-						icon: <Shield className="size-4" />
+						label: 'Cage Availability',
+						path: '/tangkal-staff/cage-availability',
+						icon: <File className="size-4" />
 					},
 					{
-						label: 'Incident Reports',
-						path: '/tangkal-staff/incidents',
-						icon: <AlertTriangle className="size-4" />
-					}
+						label: 'Cage Rentals',
+						path: '/tangkal-staff/cage-rentals',
+						icon: <Shield className="size-4" />
+					},
 				]
 			case 'event_staff':
 				return [

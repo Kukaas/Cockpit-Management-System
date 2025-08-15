@@ -21,6 +21,9 @@ import StaffEventSelection from './pages/event-staff/fight-schedule/EventSelecti
 import FightSchedule from './pages/event-staff/fight-schedule/FightSchedule'
 import EntranceEventSelection from './pages/entrance-staff/entrance-registration/EventSelection'
 import Entrance from './pages/entrance-staff/entrance-registration/Entrance'
+import TangkalDashboard from './pages/tangkal-staff/TangkalDashboard'
+import Rentals from './pages/tangkal-staff/rentals/Rentals'
+import CageAvailability from './pages/tangkal-staff/cage-availability/CageAvailability'
 
 function PrivateRoute({ children }) {
 	const { user, loading } = useAuth()
@@ -126,6 +129,23 @@ function App() {
 					<Route path="/registration-staff/participant-registration/:eventId" element={
 						<PrivateRoute>
 							<ParticipantRegistration />
+						</PrivateRoute>
+					} />
+
+					{/* Tangkal Staff Routes */}
+					<Route path="/tangkal-staff" element={
+						<PrivateRoute>
+							<TangkalDashboard />
+						</PrivateRoute>
+					} />
+					<Route path="/tangkal-staff/cage-rentals" element={
+						<PrivateRoute>
+							<Rentals />
+						</PrivateRoute>
+					} />
+					<Route path="/tangkal-staff/cage-availability" element={
+						<PrivateRoute>
+							<CageAvailability />
 						</PrivateRoute>
 					} />
 

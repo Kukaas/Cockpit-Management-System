@@ -682,7 +682,7 @@ export const sendParticipantRegistrationEmail = async (participantData, eventDat
                 <body>
                     <div class="container">
                         <div class="header">
-                            <h1>🐓 Cockpit Management System</h1>
+                            <h1>Cockpit Management System</h1>
                         </div>
 
                         <div class="content">
@@ -804,3 +804,426 @@ export const sendParticipantRegistrationEmail = async (participantData, eventDat
 
 // Generate secure password for staff accounts
 export { generateSecurePassword };
+
+// Send cage rental payment reminder email
+export const sendCageRentalReminderEmail = async (cageRentalData) => {
+    try {
+        const transporter = createTransporter();
+
+        const mailOptions = {
+            from: ENV.SMTP_FROM,
+            to: cageRentalData.email,
+            subject: `Payment Reminder - Cage Rental ${cageRentalData.cageNo}`,
+            html: `
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Payment Reminder</title>
+                    <style>
+                        body {
+                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                            line-height: 1.6;
+                            color: #1f2937;
+                            background-color: #f8fafc;
+                            margin: 0;
+                            padding: 20px;
+                        }
+                        .container {
+                            max-width: 650px;
+                            margin: 0 auto;
+                            background-color: #ffffff;
+                            border-radius: 12px;
+                            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+                            overflow: hidden;
+                        }
+                        .header {
+                            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+                            color: white;
+                            padding: 40px 32px;
+                            text-align: center;
+                        }
+                        .header h1 {
+                            margin: 0;
+                            font-size: 28px;
+                            font-weight: 700;
+                            letter-spacing: -0.025em;
+                        }
+                        .content {
+                            padding: 40px 32px;
+                        }
+                        .reminder-banner {
+                            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+                            border: 3px solid #fecaca;
+                            border-radius: 12px;
+                            padding: 32px;
+                            margin: 32px 0;
+                            text-align: center;
+                        }
+                        .reminder-icon {
+                            font-size: 48px;
+                            margin-bottom: 20px;
+                        }
+                        .reminder-text {
+                            font-size: 24px;
+                            font-weight: 700;
+                            color: #dc2626;
+                            margin: 0;
+                        }
+                        .rental-details {
+                            background-color: #f1f5f9;
+                            border: 2px solid #e2e8f0;
+                            border-radius: 10px;
+                            padding: 28px;
+                            margin: 32px 0;
+                        }
+                        .detail-row {
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            margin-bottom: 20px;
+                            padding-bottom: 16px;
+                            border-bottom: 2px solid #e2e8f0;
+                        }
+                        .detail-row:last-child {
+                            border-bottom: none;
+                            margin-bottom: 0;
+                        }
+                        .detail-label {
+                            font-weight: 600;
+                            color: #1e293b;
+                            font-size: 16px;
+                        }
+                        .detail-value {
+                            color: #475569;
+                            font-size: 16px;
+                            font-weight: 500;
+                        }
+                        .payment-section {
+                            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+                            border: 2px solid #f59e0b;
+                            border-radius: 10px;
+                            padding: 28px;
+                            margin: 32px 0;
+                        }
+                        .payment-title {
+                            color: #92400e;
+                            font-weight: 700;
+                            font-size: 20px;
+                            margin: 0 0 16px 0;
+                        }
+                        .payment-text {
+                            color: #92400e;
+                            margin: 0;
+                            font-size: 16px;
+                            line-height: 1.6;
+                        }
+                        .footer {
+                            background-color: #f8fafc;
+                            padding: 32px;
+                            text-align: center;
+                            border-top: 2px solid #e2e8f0;
+                        }
+                        .footer-text {
+                            color: #64748b;
+                            font-size: 14px;
+                            margin: 0;
+                            line-height: 1.6;
+                        }
+                        .currency {
+                            color: #dc2626;
+                            font-weight: 700;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="header">
+                            <h1>Cockpit Management System - Cage Rental Payment Reminder</h1>
+                        </div>
+
+                        <div class="content">
+                            <p style="margin: 0 0 32px 0; color: #475569; font-size: 18px; line-height: 1.7;">
+                                Dear <strong>${cageRentalData.nameOfRenter}</strong>,
+                            </p>
+
+                            <div class="reminder-banner">
+                                <div class="reminder-icon">⚠️</div>
+                                <p class="reminder-text">
+                                    Payment Reminder
+                                </p>
+                            </div>
+
+                            <p style="margin: 32px 0; color: #475569; font-size: 18px; line-height: 1.7;">
+                                This is a friendly reminder that your cage rental payment is still pending. Please complete your payment to secure your reservation.
+                            </p>
+
+                            <div class="rental-details">
+                                <p style="font-weight: 700; color: #1e293b; font-size: 20px; margin: 0 0 16px 0;">📋 Rental Details</p>
+                                <div class="detail-row">
+                                    <span class="detail-label">Cage Number:</span>
+                                    <span class="detail-value">${cageRentalData.cageNo?.cageNumber || cageRentalData.cageNo}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Rental Date:</span>
+                                    <span class="detail-value">${new Date(cageRentalData.date).toLocaleDateString('en-US', {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric'
+                                    })}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Rental Price:</span>
+                                    <span class="detail-value currency">₱${cageRentalData.price.toLocaleString('en-PH')}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Payment Status:</span>
+                                    <span class="detail-value" style="color: #dc2626; font-weight: 600;">Unpaid</span>
+                                </div>
+                            </div>
+
+                            <div class="payment-section">
+                                <p class="payment-title">💳 Payment Information</p>
+                                <div class="payment-text">
+                                    <p style="margin: 0 0 12px 0;"><strong>Amount Due:</strong> ₱${cageRentalData.price.toLocaleString('en-PH')}</p>
+                                    <p style="margin: 0 0 12px 0;"><strong>Due Date:</strong> ${new Date(cageRentalData.date).toLocaleDateString('en-US', {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric'
+                                    })}</p>
+                                    <p style="margin: 0;"><strong>Contact:</strong> Please contact the arena management for payment instructions</p>
+                                </div>
+                            </div>
+
+                            <p style="margin: 32px 0 0 0; color: #64748b; font-size: 16px; line-height: 1.6;">
+                                Please complete your payment as soon as possible to avoid any cancellation of your reservation. If you have any questions, please contact us immediately.
+                            </p>
+                        </div>
+
+                        <div class="footer">
+                            <p class="footer-text">
+                                This is an automated reminder from the Cockpit Management System.<br>
+                                Please do not reply to this email.
+                            </p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `
+        };
+
+        const info = await transporter.sendMail(mailOptions);
+        console.log('Cage rental reminder email sent:', info.messageId);
+        return true;
+
+    } catch (error) {
+        console.error('Error sending cage rental reminder email:', error);
+        return false;
+    }
+};
+
+// Send cage rental payment confirmation email
+export const sendCageRentalPaymentConfirmationEmail = async (cageRentalData) => {
+    try {
+        const transporter = createTransporter();
+
+        const mailOptions = {
+            from: ENV.SMTP_FROM,
+            to: cageRentalData.email,
+            subject: `Payment Confirmed - Cage Rental ${cageRentalData.cageNo?.cageNumber || cageRentalData.cageNo}`,
+            html: `
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Payment Confirmed</title>
+                    <style>
+                        body {
+                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                            line-height: 1.6;
+                            color: #1f2937;
+                            background-color: #f8fafc;
+                            margin: 0;
+                            padding: 20px;
+                        }
+                        .container {
+                            max-width: 650px;
+                            margin: 0 auto;
+                            background-color: #ffffff;
+                            border-radius: 12px;
+                            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+                            overflow: hidden;
+                        }
+                        .header {
+                            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+                            color: white;
+                            padding: 40px 32px;
+                            text-align: center;
+                        }
+                        .header h1 {
+                            margin: 0;
+                            font-size: 28px;
+                            font-weight: 700;
+                            letter-spacing: -0.025em;
+                        }
+                        .content {
+                            padding: 40px 32px;
+                        }
+                        .success-banner {
+                            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+                            border: 3px solid #a7f3d0;
+                            border-radius: 12px;
+                            padding: 32px;
+                            margin: 32px 0;
+                            text-align: center;
+                        }
+                        .success-icon {
+                            font-size: 48px;
+                            margin-bottom: 20px;
+                        }
+                        .success-text {
+                            font-size: 24px;
+                            font-weight: 700;
+                            color: #059669;
+                            margin: 0;
+                        }
+                        .rental-details {
+                            background-color: #f1f5f9;
+                            border: 2px solid #e2e8f0;
+                            border-radius: 10px;
+                            padding: 28px;
+                            margin: 32px 0;
+                        }
+                        .detail-row {
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            margin-bottom: 20px;
+                            padding-bottom: 16px;
+                            border-bottom: 2px solid #e2e8f0;
+                        }
+                        .detail-row:last-child {
+                            border-bottom: none;
+                            margin-bottom: 0;
+                        }
+                        .detail-label {
+                            font-weight: 600;
+                            color: #1e293b;
+                            font-size: 16px;
+                        }
+                        .detail-value {
+                            color: #475569;
+                            font-size: 16px;
+                            font-weight: 500;
+                        }
+                        .confirmation-section {
+                            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+                            border: 2px solid #3b82f6;
+                            border-radius: 10px;
+                            padding: 28px;
+                            margin: 32px 0;
+                        }
+                        .confirmation-title {
+                            color: #1e40af;
+                            font-weight: 700;
+                            font-size: 20px;
+                            margin: 0 0 16px 0;
+                        }
+                        .confirmation-text {
+                            color: #1e40af;
+                            margin: 0;
+                            font-size: 16px;
+                            line-height: 1.6;
+                        }
+                        .footer {
+                            background-color: #f8fafc;
+                            padding: 32px;
+                            text-align: center;
+                            border-top: 2px solid #e2e8f0;
+                        }
+                        .footer-text {
+                            color: #64748b;
+                            font-size: 14px;
+                            margin: 0;
+                            line-height: 1.6;
+                        }
+                        .currency {
+                            color: #059669;
+                            font-weight: 700;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="header">
+                            <h1>Cage Rental Payment Confirmed</h1>
+                        </div>
+
+                        <div class="content">
+                            <p style="margin: 0 0 32px 0; color: #475569; font-size: 18px; line-height: 1.7;">
+                                Dear <strong>${cageRentalData.nameOfRenter}</strong>,
+                            </p>
+
+                            <div class="success-banner">
+                                <div class="success-icon">✅</div>
+                                <p class="success-text">
+                                    Payment Confirmed!
+                                </p>
+                            </div>
+
+                            <p style="margin: 32px 0; color: #475569; font-size: 18px; line-height: 1.7;">
+                                Thank you! Your cage rental payment has been successfully processed and confirmed.
+                            </p>
+
+                            <div class="rental-details">
+                                <p style="font-weight: 700; color: #1e293b; font-size: 20px; margin: 0 0 16px 0;">📋 Rental Details</p>
+                                <div class="detail-row">
+                                    <span class="detail-label">Cage Number:</span>
+                                    <span class="detail-value">${cageRentalData.cageNo?.cageNumber || cageRentalData.cageNo}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Rental Date:</span>
+                                    <span class="detail-value">${new Date(cageRentalData.date).toLocaleDateString('en-US', {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric'
+                                    })}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Amount Paid:</span>
+                                    <span class="detail-value currency">₱${cageRentalData.price.toLocaleString('en-PH')}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Payment Status:</span>
+                                    <span class="detail-value" style="color: #059669; font-weight: 600;">Paid</span>
+                                </div>
+                            </div>
+
+                            <p style="margin: 32px 0 0 0; color: #64748b; font-size: 16px; line-height: 1.6;">
+                                Thank you for choosing our arena. If you have any questions or need to make changes to your reservation, please contact us immediately.
+                            </p>
+                        </div>
+
+                        <div class="footer">
+                            <p class="footer-text">
+                                This is an automated confirmation from the Cockpit Management System.<br>
+                                Please save this email for your records.
+                            </p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `
+        };
+
+        const info = await transporter.sendMail(mailOptions);
+        console.log('Cage rental payment confirmation email sent:', info.messageId);
+        return true;
+
+    } catch (error) {
+        console.error('Error sending cage rental payment confirmation email:', error);
+        return false;
+    }
+};

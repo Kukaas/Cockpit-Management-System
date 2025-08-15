@@ -86,7 +86,7 @@ const EventForm = ({
           >
             <option value="">Select location...</option>
             <option value="Mogpog Cockpit Arena">Mogpog Cockpit Arena</option>
-            <option value="Buenavista Cocpit Arena">Buenavista Cocpit Arena</option>
+            <option value="Buenavista Cockpit Arena">Buenavista Cockpit Arena</option>
             <option value="Boac Cockpit Arena">Boac Cockpit Arena</option>
           </NativeSelect>
         </div>
