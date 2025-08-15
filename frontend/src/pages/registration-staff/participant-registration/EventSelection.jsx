@@ -144,12 +144,6 @@ const EventSelection = () => {
     <PageLayout
       title="Select Event for Registration"
       description="Choose an event to register participants and manage cock profiles"
-      headerButton={
-        <Button variant="outline" onClick={() => navigate('/event-staff/events')}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Events
-        </Button>
-      }
     >
           <DataTable
             data={events}

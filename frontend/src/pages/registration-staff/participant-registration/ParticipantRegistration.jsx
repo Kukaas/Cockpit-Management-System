@@ -405,7 +405,7 @@ const ParticipantRegistration = () => {
       title={`Participant Registration - ${selectedEvent.eventName}`}
       description="Register participants and manage cock profiles for this event"
       headerButton={
-        <Button variant="outline" onClick={() => navigate('/event-staff/events')}>
+        <Button variant="outline" onClick={() => navigate('/registration-staff/participant-registration')}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Events
         </Button>
