@@ -4,7 +4,7 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupConte
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { LogOut, User, Settings, BarChart3, Users, Settings as SettingsIcon, TrendingUp, CheckSquare, ClipboardList, Shield, AlertTriangle, Calendar, PartyPopper, FileText, ClipboardCheck, UserPlus, Swords, File } from 'lucide-react'
+import { LogOut, User, Settings, BarChart3, Users, Settings as SettingsIcon, TrendingUp, CheckSquare, ClipboardList, Shield, AlertTriangle, Calendar, PartyPopper, FileText, ClipboardCheck, UserPlus, Swords, File, Ticket } from 'lucide-react'
 import useAuth from '@/hooks/useAuth'
 import logo from '@/assets/logo.png'
 
@@ -40,6 +40,11 @@ const SidebarComponent = () => {
 						label: 'Fight Schedule',
 						path: '/admin/fight-schedule',
 						icon: <Swords className="size-4" />
+					},
+					{
+						label: 'Entrance Records',
+						path: '/admin/entrance',
+						icon: <Ticket className="size-4" />
 					},
 				]
 			case 'entrance_staff':
