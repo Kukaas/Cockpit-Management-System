@@ -7,7 +7,8 @@ const DetailsDialog = ({
   onOpenChange,
   selectedItem,
   formatDate,
-  formatCurrency
+  formatCurrency,
+  event = null
 }) => {
   if (!selectedItem) return null
 
@@ -119,15 +120,26 @@ const DetailsDialog = ({
               </div>
 
               <div className="space-y-3">
+                {/* Entry Number - shown for all events */}
                 <div>
-                  <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Leg Band</label>
-                  <p className="mt-1 text-sm text-gray-900">{cock.legband}</p>
+                  <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Entry Number</label>
+                  <p className="mt-1 text-sm text-gray-900">#{cock.entryNo}</p>
                 </div>
 
-                <div>
-                  <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Weight</label>
-                  <p className="mt-1 text-sm text-gray-900">{cock.weight}kg</p>
-                </div>
+                {/* Leg Band and Weight - only shown for derby events */}
+                {event?.eventType === 'derby' && (
+                  <>
+                    <div>
+                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Leg Band</label>
+                      <p className="mt-1 text-sm text-gray-900">{cock.legband || 'N/A'}</p>
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Weight</label>
+                      <p className="mt-1 text-sm text-gray-900">{cock.weight ? `${cock.weight}kg` : 'N/A'}</p>
+                    </div>
+                  </>
+                )}
 
                 <div>
                   <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Status</label>
@@ -295,14 +307,23 @@ const DetailsDialog = ({
               </div>
 
               <div>
-                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Cock</label>
-                <p className="mt-1 text-sm text-gray-900">{result.resultMatch?.winnerCockProfileID?.legband}</p>
+                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Entry Number</label>
+                <p className="mt-1 text-sm text-gray-900">#{result.resultMatch?.winnerCockProfileID?.entryNo}</p>
               </div>
 
-              <div>
-                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Weight</label>
-                <p className="mt-1 text-sm text-gray-900">{result.resultMatch?.winnerCockProfileID?.weight}kg</p>
-              </div>
+              {event?.eventType === 'derby' && (
+                <>
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Leg Band</label>
+                    <p className="mt-1 text-sm text-gray-900">{result.resultMatch?.winnerCockProfileID?.legband || 'N/A'}</p>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Weight</label>
+                    <p className="mt-1 text-sm text-gray-900">{result.resultMatch?.winnerCockProfileID?.weight ? `${result.resultMatch?.winnerCockProfileID?.weight}kg` : 'N/A'}</p>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
@@ -319,15 +340,23 @@ const DetailsDialog = ({
               </div>
 
               <div>
-                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Cock</label>
-                <p className="mt-1 text-sm text-gray-900">{result.resultMatch?.loserCockProfileID?.legband}</p>
+                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Entry Number</label>
+                <p className="mt-1 text-sm text-gray-900">#{result.resultMatch?.loserCockProfileID?.entryNo}</p>
               </div>
 
+              {event?.eventType === 'derby' && (
+                <>
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Leg Band</label>
+                    <p className="mt-1 text-sm text-gray-900">{result.resultMatch?.loserCockProfileID?.legband || 'N/A'}</p>
+                  </div>
 
-              <div>
-                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Weight</label>
-                <p className="mt-1 text-sm text-gray-900">{result.resultMatch?.loserCockProfileID?.weight}kg</p>
-              </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Weight</label>
+                    <p className="mt-1 text-sm text-gray-900">{result.resultMatch?.loserCockProfileID?.weight ? `${result.resultMatch?.loserCockProfileID?.weight}kg` : 'N/A'}</p>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>

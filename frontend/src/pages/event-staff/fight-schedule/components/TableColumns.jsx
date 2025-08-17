@@ -33,22 +33,6 @@ export const createFightColumns = (formatCurrency, formatDate, handleEditClick, 
     )
   },
   {
-    key: 'cockProfileID',
-    label: 'Cock Profiles',
-    sortable: false,
-    filterable: false,
-    render: (value) => (
-      <div className="space-y-1">
-        {value?.map((cock) => (
-          <div key={cock._id} className="flex items-center gap-2 text-sm">
-            <Target className="h-3 w-3" />
-            <span>{cock.legband} ({cock.weight}kg)</span>
-          </div>
-        ))}
-      </div>
-    )
-  },
-  {
     key: 'scheduledTime',
     label: 'Scheduled Time',
     sortable: true,

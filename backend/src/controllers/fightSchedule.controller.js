@@ -60,7 +60,7 @@ export const createFightSchedule = async (req, res) => {
     await fightSchedule.populate([
       { path: 'eventID', select: 'eventName date location' },
       { path: 'participantsID', select: 'participantName contactNumber' },
-      { path: 'cockProfileID', select: 'legband weight ownerName' },
+      { path: 'cockProfileID', select: 'legband weight entryNo ownerName' },
       { path: 'scheduledBy', select: 'username' }
     ]);
 
@@ -98,7 +98,7 @@ export const getAllFightSchedules = async (req, res) => {
     const fightSchedules = await FightSchedule.find(query)
       .populate('eventID', 'eventName date location')
       .populate('participantsID', 'participantName contactNumber')
-      .populate('cockProfileID', 'legband weight ownerName')
+      .populate('cockProfileID', 'legband weight entryNo ownerName')
       .populate('scheduledBy', 'username')
       .sort({ fightNumber: 1 });
 
@@ -117,7 +117,7 @@ export const getFightScheduleById = async (req, res) => {
     const fightSchedule = await FightSchedule.findById(id)
       .populate('eventID', 'eventName date location')
       .populate('participantsID', 'participantName contactNumber')
-      .populate('cockProfileID', 'legband weight ownerName')
+      .populate('cockProfileID', 'legband weight ownerName entryNo')
       .populate('scheduledBy', 'username');
 
     if (!fightSchedule) {
@@ -159,7 +159,7 @@ export const updateFightSchedule = async (req, res) => {
     await fightSchedule.populate([
       { path: 'eventID', select: 'eventName date location' },
       { path: 'participantsID', select: 'participantName contactNumber' },
-      { path: 'cockProfileID', select: 'legband weight ownerName' },
+      { path: 'cockProfileID', select: 'legband weight entryNo ownerName' },
       { path: 'scheduledBy', select: 'username' }
     ]);
 
@@ -205,7 +205,7 @@ export const getFightSchedulesByEvent = async (req, res) => {
 
     const fightSchedules = await FightSchedule.find(query)
       .populate('participantsID', 'participantName contactNumber')
-      .populate('cockProfileID', 'legband weight ownerName')
+      .populate('cockProfileID', 'legband weight entryNo ownerName')
       .populate('scheduledBy', 'username')
       .sort({ fightNumber: 1 });
 
@@ -233,7 +233,7 @@ export const updateFightStatus = async (req, res) => {
     ).populate([
       { path: 'eventID', select: 'eventName date location' },
       { path: 'participantsID', select: 'participantName contactNumber' },
-      { path: 'cockProfileID', select: 'legband weight ownerName' }
+      { path: 'cockProfileID', select: 'legband weight entryNo ownerName' }
     ]);
 
     if (!fightSchedule) {
@@ -267,7 +267,7 @@ export const getAvailableParticipants = async (req, res) => {
       eventID,
       participantID: { $in: participantIDs },
       isActive: true
-    }).select('legband weight participantID');
+    }).select('legband weight entryNo participantID');
 
     // Add participantID to each cock profile (it's already there, but let's make sure it's included)
     const cockProfilesWithParticipantID = cockProfiles.map(cock => ({

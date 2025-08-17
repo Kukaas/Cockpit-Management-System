@@ -22,7 +22,7 @@ export const createMatchResult = async (req, res) => {
     // Validate fight schedule exists
     const fightSchedule = await FightSchedule.findById(matchID)
       .populate('participantsID', 'participantName')
-      .populate('cockProfileID', 'legband weight ownerName');
+      .populate('cockProfileID', 'legband weight entryNo ownerName');
 
     if (!fightSchedule) {
       return res.status(404).json({ message: 'Fight schedule not found' });
@@ -140,8 +140,8 @@ export const createMatchResult = async (req, res) => {
       { path: 'participantBets.participantID', select: 'participantName contactNumber' },
       { path: 'resultMatch.winnerParticipantID', select: 'participantName contactNumber' },
       { path: 'resultMatch.loserParticipantID', select: 'participantName contactNumber' },
-      { path: 'resultMatch.winnerCockProfileID', select: 'legband weight ownerName' },
-      { path: 'resultMatch.loserCockProfileID', select: 'legband weight ownerName' },
+      { path: 'resultMatch.winnerCockProfileID', select: 'legband weight entryNo ownerName' },
+      { path: 'resultMatch.loserCockProfileID', select: 'legband weight entryNo ownerName' },
       { path: 'recordedBy', select: 'username' }
     ]);
 
@@ -188,8 +188,8 @@ export const getAllMatchResults = async (req, res) => {
       .populate('participantBets.participantID', 'participantName')
       .populate('resultMatch.winnerParticipantID', 'participantName')
       .populate('resultMatch.loserParticipantID', 'participantName')
-      .populate('resultMatch.winnerCockProfileID', 'legband ownerName')
-      .populate('resultMatch.loserCockProfileID', 'legband ownerName')
+      .populate('resultMatch.winnerCockProfileID', 'legband weight entryNo ownerName')
+      .populate('resultMatch.loserCockProfileID', 'legband weight entryNo ownerName')
       .populate('recordedBy', 'username')
       .populate('verifiedBy', 'username')
       .sort({ createdAt: -1 });
@@ -213,14 +213,14 @@ export const getMatchResultById = async (req, res) => {
         populate: [
           { path: 'eventID', select: 'eventName date location' },
           { path: 'participantsID', select: 'participantName contactNumber' },
-          { path: 'cockProfileID', select: 'legband weight ownerName' }
+          { path: 'cockProfileID', select: 'legband weight entryNo ownerName' }
         ]
       })
       .populate('participantBets.participantID', 'participantName contactNumber email')
       .populate('resultMatch.winnerParticipantID', 'participantName contactNumber email')
       .populate('resultMatch.loserParticipantID', 'participantName contactNumber email')
-      .populate('resultMatch.winnerCockProfileID', 'legband weight ownerName')
-      .populate('resultMatch.loserCockProfileID', 'legband weight ownerName')
+      .populate('resultMatch.winnerCockProfileID', 'legband weight entryNo ownerName')
+      .populate('resultMatch.loserCockProfileID', 'legband weight entryNo ownerName')
       .populate('recordedBy', 'username')
       .populate('verifiedBy', 'username');
 
@@ -315,8 +315,8 @@ export const updateMatchResult = async (req, res) => {
       { path: 'participantBets.participantID', select: 'participantName contactNumber' },
       { path: 'resultMatch.winnerParticipantID', select: 'participantName contactNumber' },
       { path: 'resultMatch.loserParticipantID', select: 'participantName contactNumber' },
-      { path: 'resultMatch.winnerCockProfileID', select: 'legband weight ownerName' },
-      { path: 'resultMatch.loserCockProfileID', select: 'legband weight ownerName' },
+      { path: 'resultMatch.winnerCockProfileID', select: 'legband weight entryNo ownerName' },
+      { path: 'resultMatch.loserCockProfileID', select: 'legband weight entryNo ownerName' },
       { path: 'recordedBy', select: 'username' }
     ]);
 
@@ -472,8 +472,8 @@ export const getMatchResultsByEvent = async (req, res) => {
       .populate('participantBets.participantID', 'participantName')
       .populate('resultMatch.winnerParticipantID', 'participantName')
       .populate('resultMatch.loserParticipantID', 'participantName')
-      .populate('resultMatch.winnerCockProfileID', 'legband ownerName')
-      .populate('resultMatch.loserCockProfileID', 'legband ownerName')
+      .populate('resultMatch.winnerCockProfileID', 'legband weight entryNo ownerName')
+      .populate('resultMatch.loserCockProfileID', 'legband weight entryNo ownerName')
       .sort({ createdAt: -1 });
 
     res.json({ data: matchResults });

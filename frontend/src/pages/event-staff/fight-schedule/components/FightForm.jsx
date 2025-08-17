@@ -175,7 +175,10 @@ const FightForm = ({
                 )}
                 {participant1CockProfiles.map((cock) => (
                   <option key={cock._id} value={cock._id}>
-                    {cock.legband} - {cock.weight}kg
+                    {event?.eventType === 'derby'
+                      ? `${cock.legband || 'N/A'} - ${cock.weight || 'N/A'}kg`
+                      : `${cock.entryNo || 'N/A'}`
+                    }
                   </option>
                 ))}
               </NativeSelect>
@@ -205,7 +208,10 @@ const FightForm = ({
                 )}
                 {participant2CockProfiles.map((cock) => (
                   <option key={cock._id} value={cock._id}>
-                    {cock.legband} - {cock.weight}kg
+                    {event?.eventType === 'derby'
+                      ? `${cock.legband || 'N/A'} - ${cock.weight || 'N/A'}kg`
+                      : `${cock.entryNo || 'N/A'}`
+                    }
                   </option>
                 ))}
               </NativeSelect>

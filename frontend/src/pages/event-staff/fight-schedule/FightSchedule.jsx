@@ -623,6 +623,7 @@ const FightSchedule = () => {
         selectedItem={selectedItem}
         formatDate={formatDate}
         formatCurrency={formatCurrency}
+        event={event}
       />
     </PageLayout>
   )

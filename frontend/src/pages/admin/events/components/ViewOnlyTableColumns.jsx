@@ -156,28 +156,6 @@ export const createViewOnlyFightScheduleColumns = (formatCurrency, formatDate, h
     )
   },
   {
-    key: 'cockProfileID',
-    label: 'Cock Profiles',
-    sortable: false,
-    filterable: false,
-    render: (value) => (
-      <div className="space-y-1">
-        {value?.map((cock, index) => (
-          <div key={index} className="text-sm">
-            {index + 1}. #{cock.entryNo} ({cock.participantID?.participantName || 'N/A'})
-          </div>
-        ))}
-      </div>
-    )
-  },
-  {
-    key: 'totalBet',
-    label: 'Total Bet',
-    sortable: true,
-    filterable: false,
-    render: (value) => formatCurrency(value)
-  },
-  {
     key: 'status',
     label: 'Status',
     sortable: true,
