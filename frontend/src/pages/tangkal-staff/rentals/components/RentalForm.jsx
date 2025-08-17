@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { Shield, MapPin, Search, DollarSign } from 'lucide-react'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Shield, MapPin, DollarSign, Search } from 'lucide-react'
 import CustomAlertDialog from '@/components/custom/CustomAlertDialog'
 import InputField from '@/components/custom/InputField'
 import NativeSelect from '@/components/custom/NativeSelect'
@@ -22,108 +22,67 @@ const RentalForm = ({
   isPending,
   isEdit = false
 }) => {
-  const [selectedCageId, setSelectedCageId] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedArena, setSelectedArena] = useState('')
+  const [selectedCages, setSelectedCages] = useState([])
 
-  // Fetch available cages for rental
-  const { data: availableCagesResponse, isLoading: isLoadingCages, error: cagesError } = useGetAll('/cage-availability/available-for-rental')
+  // Fetch available cages for the selected arena and date
+  const apiUrl = formData.arena && formData.date
+    ? `/cage-rentals/available?date=${formData.date}&arena=${formData.arena}`
+    : null
 
-  // Fallback: fetch all cages if available cages endpoint fails
-  const { data: allCagesResponse } = useGetAll('/cage-availability')
+  const { data: availableCagesResponse, isLoading: isLoadingCages } = useGetAll(apiUrl)
 
   // Fetch active events for selection
   const { data: eventsResponse } = useGetAll('/events?status=active')
   const events = eventsResponse || []
 
-  // Extract the cages array from the response correctly
-  // The API returns { data: { cages: [...] } } when no date is provided
-  // or { data: { availableCages: [...] } } when date is provided
-  let availableCages = availableCagesResponse?.data?.cages ||
-                      availableCagesResponse?.data?.availableCages ||
-                      []
+  // Get available cages from response
+  const availableCages = availableCagesResponse?.availableCages || []
 
-  // If no cages from available endpoint, use all cages as fallback
-  if (availableCages.length === 0) {
-    // Handle both array and object responses
-    if (Array.isArray(allCagesResponse)) {
-      availableCages = allCagesResponse.filter(cage => cage.status === 'active')
-    } else if (allCagesResponse?.data && Array.isArray(allCagesResponse.data)) {
-      availableCages = allCagesResponse.data.filter(cage => cage.status === 'active')
+  // Filter cages by search query
+  const filteredCages = availableCages.filter(cage => {
+    if (searchQuery) {
+      return cage.cageNumber.toLowerCase().includes(searchQuery.toLowerCase())
     }
-  } else {
-    // Filter the available cages to only show active ones
-    availableCages = availableCages.filter(cage => cage.status === 'active')
-  }
+    return true
+  })
 
-  // Filter cages by selected arena first, then by search query, and only show active cages
-  const filteredCages = Array.isArray(availableCages)
-    ? availableCages.filter(cage => {
-        // Only show active cages (available for rental)
-        if (cage.status !== 'active') {
-          return false
-        }
 
-        // First filter by arena if selected
-        if (selectedArena && cage.arena !== selectedArena) {
-          return false
-        }
 
-        // Then filter by search query if provided
-        if (searchQuery) {
-          const matchesCageNumber = cage.cageNumber.toLowerCase().includes(searchQuery.toLowerCase())
-          return matchesCageNumber
-        }
-
-        return true
-      })
-    : []
-
-  // Define the three available arenas
-  const allArenas = [
-    'Buenavista Cockpit Arena',
-    'Mogpog Cockpit Arena',
-    'Boac Cockpit Arena'
-  ]
-
-  // Handle cage selection
-  const handleCageSelection = (cageId) => {
-    setSelectedCageId(cageId)
-    if (cageId && Array.isArray(availableCages)) {
-      const selectedCage = availableCages.find(cage => cage._id === cageId)
-      if (selectedCage) {
-        // Auto-fill form with selected cage's data
-        onInputChange('cageNo', selectedCage._id)
-        onInputChange('arena', selectedCage.arena)
-        onInputChange('price', '100') // Default price
-      }
-    }
-  }
-
-  // Handle event selection and auto-set arena
+    // Handle event selection and auto-set arena
   const handleEventSelection = (eventId) => {
     onInputChange('eventID', eventId)
 
     if (eventId) {
       const selectedEvent = events.find(event => event._id === eventId)
       if (selectedEvent) {
-
-        // Map event location to arena
-        const locationToArena = {
-          'Buenavista Cockpit Arena': 'Buenavista Cockpit Arena',
-          'Mogpog Cockpit Arena': 'Mogpog Cockpit Arena',
-          'Boac Cockpit Arena': 'Boac Cockpit Arena'
-        }
-
-        const arena = locationToArena[selectedEvent.location]
-
-        if (arena) {
-          setSelectedArena(arena)
-        }
+        // Use event location directly as arena
+        onInputChange('arena', selectedEvent.location)
       }
     } else {
       // Reset arena if no event selected
-      setSelectedArena('')
+      onInputChange('arena', '')
+    }
+  }
+
+
+
+    // Handle cage selection
+  const handleCageSelection = (cage) => {
+    const isSelected = selectedCages.some(selected => selected._id === cage._id)
+
+    if (isSelected) {
+      // Remove cage from selection
+      const updatedCages = selectedCages.filter(selected => selected._id !== cage._id)
+      setSelectedCages(updatedCages)
+      onInputChange('quantity', updatedCages.length.toString())
+      onInputChange('selectedCageIds', updatedCages.map(c => c._id))
+    } else {
+      // Add cage to selection
+      const updatedCages = [...selectedCages, cage]
+      setSelectedCages(updatedCages)
+      onInputChange('quantity', updatedCages.length.toString())
+      onInputChange('selectedCageIds', updatedCages.map(c => c._id))
     }
   }
 
@@ -131,27 +90,23 @@ const RentalForm = ({
   useEffect(() => {
     if (open) {
       if (isEdit) {
-        // For edit mode, set the selected cage ID from the form data
-        // Handle both object (populated) and string (ID) cases
-        const cageId = typeof formData.cageNo === 'object' ? formData.cageNo._id : formData.cageNo
-        setSelectedCageId(cageId || '')
-        setSelectedArena(formData.arena || '')
+        // For edit mode, we'll need to handle selected cages differently
+        // since we don't have the cage data in the form
       } else {
         // For add mode, reset everything
-        setSelectedCageId('')
         setSearchQuery('')
-        setSelectedArena('')
+        setSelectedCages([])
         // Set default date to today
         const today = new Date().toISOString().split('T')[0]
         onInputChange('date', today)
+        onInputChange('quantity', '0')
+        onInputChange('paymentStatus', 'paid')
       }
     }
-  }, [open, isEdit, formData.cageNo, formData.arena]) // Added dependencies
+  }, [open, isEdit, formData.arena])
 
-  // Get selected cage data for preview
-  const selectedCage = Array.isArray(availableCages)
-    ? availableCages.find(cage => cage._id === selectedCageId)
-    : null
+  // Calculate total price
+  const totalPrice = selectedCages.length * 20
 
   return (
     <CustomAlertDialog
@@ -165,295 +120,219 @@ const RentalForm = ({
           <Button variant="outline" onClick={onCancel}>
             Cancel
           </Button>
-          <Button onClick={onSubmit} disabled={isPending}>
+          <Button onClick={onSubmit} disabled={isPending || selectedCages.length === 0}>
             {isPending ? (isEdit ? 'Updating...' : 'Creating...') : (isEdit ? 'Update Rental' : 'Create Rental')}
           </Button>
         </>
       }
     >
-             <div className="space-y-6 overflow-y-auto pr-2">
-         {/* Event Selection */}
-         <div className="space-y-4">
-           <div className="flex items-center gap-2">
-             <MapPin className="h-4 w-4" />
-             <Label className="text-sm font-medium">Select Associated Event</Label>
-           </div>
-                       <div className="space-y-2">
-              <Label htmlFor={isEdit ? "editEventID" : "eventID"} className="text-sm font-medium">
-                Associated Event *
-              </Label>
-              {isEdit ? (
-                // Show event info as read-only in edit mode
-                <div className="p-3 bg-gray-50 border border-gray-200 rounded-md">
-                  {(() => {
-                    const selectedEvent = events.find(event => event._id === formData.eventID)
-                    return selectedEvent ? (
-                      <div className="text-sm">
-                        <p className="font-medium">{selectedEvent.eventName}</p>
-                        <p className="text-gray-600">
-                          {new Date(selectedEvent.date).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                          })} at {new Date(selectedEvent.date).toLocaleTimeString('en-US', {
-                            hour: 'numeric',
-                            minute: '2-digit',
-                            hour12: true
-                          })}
-                        </p>
-                        <p className="text-gray-600">@ {selectedEvent.location}</p>
-                      </div>
-                    ) : (
-                      <p className="text-gray-500">Event information not available</p>
-                    )
-                  })()}
-                </div>
-              ) : (
-                // Show dropdown in add mode
-                <NativeSelect
-                  id={isEdit ? "editEventID" : "eventID"}
-                  value={formData.eventID || ''}
-                  onChange={(e) => handleEventSelection(e.target.value)}
-                  placeholder="Select an event (required)"
-                  required
-                >
-                  <option value="">Select an event...</option>
-                  {events.map((event) => (
-                    <option key={event._id} value={event._id}>
-                      {event.eventName} - {new Date(event.date).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })} at {new Date(event.date).toLocaleTimeString('en-US', {
-                        hour: 'numeric',
-                        minute: '2-digit',
-                        hour12: true
-                      })} @ {event.location}
-                    </option>
-                  ))}
-                </NativeSelect>
-              )}
-            </div>
-         </div>
-
-         <Separator />
-
-         {/* Cage Selection */}
-         <div className="space-y-4">
-           <div className="flex items-center gap-2">
-             <Shield className="h-4 w-4" />
-             <Label className="text-sm font-medium">
-               {isEdit ? 'Cage Information' : 'Select Available Cage'}
-             </Label>
-           </div>
-
-            {/* Arena Selection - Only show in add mode */}
-            {!isEdit && (
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">
-                  Select Arena
-                  {selectedArena && formData.eventID && (
-                    <span className="text-xs text-green-600 ml-2">(Auto-selected from event)</span>
-                  )}
-                </Label>
-                <NativeSelect
-                  value={selectedArena}
-                  onChange={(e) => setSelectedArena(e.target.value)}
-                  className={selectedArena && formData.eventID ? "border-green-500 bg-green-50" : ""}
-                >
-                  <option value="">All Arenas</option>
-                  {allArenas.map((arena) => (
-                    <option key={arena} value={arena}>
-                      {arena}
-                    </option>
-                  ))}
-                </NativeSelect>
-                {selectedArena && formData.eventID && (
-                  <p className="text-xs text-green-600">
-                    ✓ Arena automatically selected based on event location
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* Cage Search - Only show in add mode */}
-            {!isEdit && (
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <input
-                  type="text"
-                  placeholder={selectedCageId ? "Search to change cage selection..." : "Search by cage number..."}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-input rounded-md text-sm"
-                />
-              </div>
-            )}
-
-            {/* Cage List - Only show in add mode when no cage is selected OR when searching */}
-            {!isEdit && filteredCages.length > 0 && (!selectedCageId || searchQuery) && (
-              <div className={`border rounded-md ${filteredCages.length > 3 ? 'max-h-48 overflow-y-auto' : ''}`}>
-                {filteredCages.map((cage) => (
-                  <div
-                    key={cage._id}
-                    className={`p-3 border-b cursor-pointer hover:bg-muted/50 ${
-                      selectedCageId === cage._id ? 'bg-muted' : ''
-                    }`}
-                    onClick={() => handleCageSelection(cage._id)}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium text-sm">{cage.cageNumber}</p>
-                        <p className="text-xs text-muted-foreground">{cage.arena}</p>
-                        {cage.description && (
-                          <p className="text-xs text-muted-foreground">{cage.description}</p>
-                        )}
-                      </div>
-                      <div className="text-right">
-                        <Badge
-                          variant={
-                            cage.status === 'active' ? 'default' :
-                            cage.status === 'rented' ? 'secondary' :
-                            cage.status === 'maintenance' ? 'destructive' :
-                            'outline'
-                          }
-                          className="text-xs"
-                        >
-                          {cage.status === 'active' ? 'Available' :
-                           cage.status === 'rented' ? 'Rented' :
-                           cage.status === 'maintenance' ? 'Maintenance' :
-                           cage.status === 'inactive' ? 'Inactive' :
-                           cage.status}
-                        </Badge>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          #{cage.availabilityNumber}
-                        </p>
-                      </div>
+      <div className="space-y-6 overflow-y-auto pr-2">
+        {/* Event Selection */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <MapPin className="h-4 w-4" />
+            <Label className="text-sm font-medium">Select Associated Event</Label>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor={isEdit ? "editEventID" : "eventID"} className="text-sm font-medium">
+              Associated Event *
+            </Label>
+            {isEdit ? (
+              // Show event info as read-only in edit mode
+              <div className="p-3 bg-gray-50 border border-gray-200 rounded-md">
+                {(() => {
+                  const selectedEvent = events.find(event => event._id === formData.eventID)
+                  return selectedEvent ? (
+                    <div className="text-sm">
+                      <p className="font-medium">{selectedEvent.eventName}</p>
+                      <p className="text-gray-600">
+                        {new Date(selectedEvent.date).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })} at {new Date(selectedEvent.date).toLocaleTimeString('en-US', {
+                          hour: 'numeric',
+                          minute: '2-digit',
+                          hour12: true
+                        })}
+                      </p>
+                      <p className="text-gray-600">@ {selectedEvent.location}</p>
                     </div>
-                  </div>
+                  ) : (
+                    <p className="text-gray-500">Event information not available</p>
+                  )
+                })()}
+              </div>
+            ) : (
+              // Show dropdown in add mode
+              <NativeSelect
+                id={isEdit ? "editEventID" : "eventID"}
+                value={formData.eventID || ''}
+                onChange={(e) => handleEventSelection(e.target.value)}
+                placeholder="Select an event (required)"
+                required
+              >
+                <option value="">Select an event...</option>
+                {events.map((event) => (
+                  <option key={event._id} value={event._id}>
+                    {event.eventName} - {new Date(event.date).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })} at {new Date(event.date).toLocaleTimeString('en-US', {
+                      hour: 'numeric',
+                      minute: '2-digit',
+                      hour12: true
+                    })} @ {event.location}
+                  </option>
                 ))}
+              </NativeSelect>
+            )}
+          </div>
+        </div>
+
+        <Separator />
+
+
+
+        {/* Arena Display - Show when event is selected */}
+        {formData.eventID && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Shield className="h-4 w-4" />
+              <Label className="text-sm font-medium">Arena (Auto-selected from event)</Label>
+            </div>
+            <div className="p-3 bg-green-50 border border-green-200 rounded-md">
+              <p className="text-sm text-green-800 font-medium">{formData.arena}</p>
+              <p className="text-xs text-green-600 mt-1">✓ Arena automatically selected based on event location</p>
+            </div>
+          </div>
+        )}
+
+        {/* Cage Selection */}
+        {formData.eventID && !isEdit && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Shield className="h-4 w-4" />
+              <Label className="text-sm font-medium">Select Cages to Rent</Label>
+            </div>
+
+            {/* Available cages info */}
+            {!isLoadingCages && (
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+                <p className="text-sm text-blue-800">
+                  <span className="font-medium">Available cages in {formData.arena}:</span> {availableCages.length}
+                </p>
+                <p className="text-xs text-blue-600 mt-1">
+                  Select the specific cages you want to rent. These cage numbers will be given to the renter.
+                </p>
               </div>
             )}
 
-            {/* No cages found - Only show in add mode */}
-            {!isEdit && !isLoadingCages && !cagesError && filteredCages.length === 0 && (!selectedCageId || searchQuery) && (
+            {/* Cage Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Search by cage number..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-input rounded-md text-sm"
+              />
+            </div>
+
+                                                   {/* Cage List */}
+              {filteredCages.length > 0 && (
+                <div className="border rounded-md max-h-48 overflow-y-auto">
+                  {filteredCages.map((cage) => {
+                    const isSelected = selectedCages.some(selected => selected._id === cage._id)
+                    return (
+                      <div
+                        key={cage._id}
+                        className={`p-3 border-b hover:bg-muted/50 cursor-pointer ${
+                          isSelected ? 'bg-blue-50 border-blue-200' : ''
+                        }`}
+                        onClick={() => handleCageSelection(cage)}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <Checkbox
+                              checked={isSelected}
+                              onCheckedChange={() => handleCageSelection(cage)}
+                              className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                            <div>
+                              <p className="font-medium text-sm">Cage {cage.cageNumber}</p>
+                              <p className="text-xs text-muted-foreground">{cage.arena}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+
+            {/* No cages found */}
+            {!isLoadingCages && filteredCages.length === 0 && (
               <div className="text-center py-4 text-muted-foreground">
-                {selectedArena && searchQuery ? (
-                  <>
-                    <p className="text-sm">No available cages found in {selectedArena} matching "{searchQuery}"</p>
-                    <p className="text-xs">Only active cages are shown. Try a different search term or select a different arena</p>
-                  </>
-                ) : selectedArena ? (
-                  <>
-                    <p className="text-sm">No available cages found in {selectedArena}</p>
-                    <p className="text-xs">Only active cages are shown. All cages might be rented, inactive, or under maintenance</p>
-                  </>
-                ) : searchQuery ? (
+                {searchQuery ? (
                   <>
                     <p className="text-sm">No available cages found matching "{searchQuery}"</p>
-                    <p className="text-xs">Only active cages are shown. Try a different search term</p>
+                    <p className="text-xs">Try a different search term</p>
                   </>
-                ) : (
-                  <>
-                    <p className="text-sm">No available cages found</p>
-                    <p className="text-xs">Only active cages are shown. All cages might be rented, inactive, or under maintenance</p>
-                  </>
-                )}
+                                 ) : (
+                   <>
+                     <p className="text-sm">No available cages found in {formData.arena}</p>
+                     <p className="text-xs">All cages might be rented, inactive, or under maintenance</p>
+                   </>
+                 )}
               </div>
             )}
 
-            {/* Loading and Error States - Only show in add mode */}
-            {!isEdit && isLoadingCages && (
+            {/* Loading state */}
+            {isLoadingCages && (
               <div className="text-center py-4 text-muted-foreground">
                 <p className="text-sm">Loading available cages...</p>
               </div>
             )}
-
-            {!isEdit && cagesError && (
-              <div className="text-center py-4 text-red-600">
-                <p className="text-sm">Error loading cages: {cagesError.message}</p>
-              </div>
-            )}
-
-            {/* Selected Cage Preview - Show in both add and edit modes */}
-            {selectedCageId && selectedCage && (
-              <div className="bg-green-50 p-3 rounded-md border border-green-200">
-                <p className="text-sm text-green-800 mb-2">
-                  {isEdit ? '✓ Current cage information:' : '✓ Selected cage. Information auto-filled below.'}
-                </p>
-                <div className="bg-white p-3 rounded border">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-medium text-sm">{isEdit ? 'Current Cage:' : 'Selected Cage:'}</h4>
-                    <Badge
-                      variant={
-                        selectedCage.status === 'active' ? 'default' :
-                        selectedCage.status === 'rented' ? 'secondary' :
-                        selectedCage.status === 'maintenance' ? 'destructive' :
-                        'outline'
-                      }
-                      className="text-xs"
-                    >
-                      {selectedCage.status === 'active' ? 'Available' :
-                       selectedCage.status === 'rented' ? 'Rented' :
-                       selectedCage.status === 'maintenance' ? 'Maintenance' :
-                       selectedCage.status === 'inactive' ? 'Inactive' :
-                       selectedCage.status}
-                    </Badge>
-                  </div>
-                  <div className="space-y-1 text-sm">
-                    <p><span className="font-medium">Cage Number:</span> {selectedCage.cageNumber}</p>
-                    <p><span className="font-medium">Arena:</span> {selectedCage.arena}</p>
-                    <p><span className="font-medium">Availability No:</span> #{selectedCage.availabilityNumber}</p>
-                    {selectedCage.description && (
-                      <p><span className="font-medium">Description:</span> {selectedCage.description}</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
+        )}
 
-
+                 {/* Selected Cages Summary */}
+         {selectedCages.length > 0 && (
+           <div className="space-y-4">
+             <div className="flex items-center gap-2">
+               <Checkbox checked={true} disabled className="h-4 w-4 text-green-600" />
+               <Label className="text-sm font-medium">Selected Cages ({selectedCages.length})</Label>
+             </div>
+            <div className="p-3 bg-green-50 border border-green-200 rounded-md">
+              <div className="flex flex-wrap gap-2">
+                {selectedCages.map((cage) => (
+                  <Badge key={cage._id} variant="default" className="text-xs">
+                    Cage {cage.cageNumber}
+                  </Badge>
+                ))}
+              </div>
+              <p className="text-xs text-green-600 mt-2">
+                ✓ These cage numbers will be given to the renter
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Rental Information Form */}
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <InputField
-              id={isEdit ? "editCageNo" : "cageNo"}
-              label="Cage Number"
-              value={
-                // Handle both object (populated) and string (ID) cases
-                typeof formData.cageNo === 'object' && formData.cageNo?.cageNumber
-                  ? formData.cageNo.cageNumber
-                  : selectedCage?.cageNumber || formData.cageNo || ''
-              }
-              onChange={() => {}}
-              placeholder="Auto-filled from cage selection"
-              disabled
-              readOnly
-            />
-            <InputField
-              id={isEdit ? "editArena" : "arena"}
-              label="Arena"
-              value={formData.arena}
-              onChange={() => {}}
-              placeholder="Auto-filled from cage selection"
-              disabled
-              readOnly
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <InputField
-              id={isEdit ? "editPrice" : "price"}
-              label="Price (PHP) *"
+              id={isEdit ? "editQuantity" : "quantity"}
+              label="Quantity of Cages"
               type="number"
-              value={formData.price}
-              onChange={() => {}}
-              placeholder="Fixed price: 100 PHP"
+              value={formData.quantity}
+              onChange={() => {}} // Read-only, controlled by cage selection
+              placeholder="Auto-calculated from cage selection"
               min="0"
-              step="0.01"
-              required
               disabled
               readOnly
             />
@@ -467,6 +346,25 @@ const RentalForm = ({
             />
           </div>
 
+          {/* Total Price Display */}
+          <div className="p-3 bg-gray-50 border border-gray-200 rounded-md">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Total Price</p>
+                <p className="text-xs text-gray-600">20 PHP per cage</p>
+              </div>
+              <div className="flex items-center gap-1">
+                <DollarSign className="h-4 w-4 text-green-600" />
+                <span className="text-lg font-bold text-green-600">
+                  {totalPrice.toLocaleString('en-PH', {
+                    style: 'currency',
+                    currency: 'PHP'
+                  })}
+                </span>
+              </div>
+            </div>
+          </div>
+
           <InputField
             id={isEdit ? "editNameOfRenter" : "nameOfRenter"}
             label="Renter Name *"
@@ -476,24 +374,13 @@ const RentalForm = ({
             required
           />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <InputField
-              id={isEdit ? "editContactNumber" : "contactNumber"}
-              label="Contact Number"
-              value={formData.contactNumber}
-              onChange={(e) => onInputChange('contactNumber', e.target.value)}
-              placeholder="Enter contact number"
-            />
-            <InputField
-              id={isEdit ? "editEmail" : "email"}
-              label="Email"
-              type="email"
-              value={formData.email}
-              onChange={(e) => onInputChange('email', e.target.value)}
-              placeholder="Enter email address"
-            />
-          </div>
-
+          <InputField
+            id={isEdit ? "editContactNumber" : "contactNumber"}
+            label="Contact Number"
+            value={formData.contactNumber}
+            onChange={(e) => onInputChange('contactNumber', e.target.value)}
+            placeholder="Enter contact number"
+          />
 
           <div className="space-y-2">
             <Label htmlFor={isEdit ? "editPaymentStatus" : "paymentStatus"} className="text-sm font-medium">
@@ -505,24 +392,11 @@ const RentalForm = ({
               onChange={(e) => onInputChange('paymentStatus', e.target.value)}
               placeholder="Select payment status"
             >
-              <option value="unpaid">Unpaid</option>
               <option value="paid">Paid</option>
+              <option value="unpaid">Unpaid</option>
               <option value="pending">Pending</option>
               <option value="cancelled">Cancelled</option>
             </NativeSelect>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor={isEdit ? "editNotes" : "notes"} className="text-sm font-medium">
-              Notes
-            </Label>
-            <Textarea
-              id={isEdit ? "editNotes" : "notes"}
-              value={formData.notes}
-              onChange={(e) => onInputChange('notes', e.target.value)}
-              placeholder="Enter additional notes (optional)"
-              rows={3}
-            />
           </div>
         </div>
       </div>

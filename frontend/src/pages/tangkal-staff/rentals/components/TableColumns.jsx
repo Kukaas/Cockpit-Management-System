@@ -1,23 +1,9 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Edit, Trash2, DollarSign, RotateCcw } from 'lucide-react'
+import { Edit, Trash2, DollarSign, RotateCcw, Eye } from 'lucide-react'
 
-export const createRentalColumns = (formatCurrency, formatDate, handleEditClick, handleDeleteClick, handleStatusChange, statusChangeMutation, handleRentalStatusChange, rentalStatusMutation) => [
-  {
-    key: 'cageNo',
-    label: 'Cage Number',
-    sortable: true,
-    filterable: false,
-    render: (value) => {
-      // Handle populated cage data
-      if (value && typeof value === 'object' && value.cageNumber) {
-        return value.cageNumber
-      }
-      // Handle string value (fallback)
-      return value || '-'
-    }
-  },
+export const createRentalColumns = (formatCurrency, formatDate, handleEditClick, handleDeleteClick, handleStatusChange, statusChangeMutation, handleRentalStatusChange, rentalStatusMutation, handleViewDetails) => [
   {
     key: 'nameOfRenter',
     label: 'Renter Name',
@@ -25,8 +11,8 @@ export const createRentalColumns = (formatCurrency, formatDate, handleEditClick,
     filterable: false
   },
   {
-    key: 'price',
-    label: 'Price',
+    key: 'totalPrice',
+    label: 'Total Price',
     sortable: true,
     filterable: false,
     render: (value) => (
@@ -49,6 +35,18 @@ export const createRentalColumns = (formatCurrency, formatDate, handleEditClick,
     sortable: true,
     filterable: false,
     render: (value) => value || '-'
+  },
+  {
+    key: 'quantity',
+    label: 'Quantity',
+    sortable: true,
+    filterable: false,
+    render: (value) => (
+      <div className="text-center">
+        <span className="font-medium">{value}</span>
+        <span className="text-xs text-muted-foreground block">cage{value > 1 ? 's' : ''}</span>
+      </div>
+    )
   },
   {
     key: 'paymentStatus',
@@ -138,12 +136,11 @@ export const createRentalColumns = (formatCurrency, formatDate, handleEditClick,
           size="sm"
           onClick={(e) => {
             e.stopPropagation()
-            handleEditClick(row)
+            handleViewDetails(row)
           }}
-          disabled={row.rentalStatus === 'returned'}
           className="h-8 w-8 p-0"
         >
-          <Edit className="h-4 w-4" />
+          <Eye className="h-4 w-4" />
         </Button>
         {row.rentalStatus === 'active' && (
           <Button
@@ -153,13 +150,25 @@ export const createRentalColumns = (formatCurrency, formatDate, handleEditClick,
               e.stopPropagation()
               handleRentalStatusChange(row._id, 'returned', row.rentalStatus)
             }}
-            disabled={rentalStatusMutation.isPending || row.paymenStatus === 'unpaid'}
+            disabled={rentalStatusMutation.isPending || row.paymentStatus === 'unpaid'}
             className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700"
             title="Mark as Returned"
           >
             <RotateCcw className="h-4 w-4" />
           </Button>
         )}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={(e) => {
+            e.stopPropagation()
+            handleEditClick(row)
+          }}
+          disabled={row.rentalStatus === 'returned'}
+          className="h-8 w-8 p-0"
+        >
+          <Edit className="h-4 w-4" />
+        </Button>
         <Button
           variant="ghost"
           size="sm"

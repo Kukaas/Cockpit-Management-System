@@ -46,6 +46,16 @@ const SidebarComponent = () => {
 						path: '/admin/entrance',
 						icon: <Ticket className="size-4" />
 					},
+					{
+						label: 'Cage Rentals',
+						path: '/admin/tangkal',
+						icon: <Shield className="size-4" />
+					},
+					{
+						label: 'Cage Availability',
+						path: '/admin/cage-availability',
+						icon: <File className="size-4" />
+					},
 				]
 			case 'entrance_staff':
 				return [

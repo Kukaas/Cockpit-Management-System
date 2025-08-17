@@ -1,32 +1,50 @@
 import CageRental from '../models/cageRental.model.js';
 import CageAvailability from '../models/cageAvailability.model.js';
 import Event from '../models/event.model.js';
-import { sendCageRentalReminderEmail, sendCageRentalPaymentConfirmationEmail } from '../services/email.service.js';
 
 // Create a new cage rental
 export const createCageRental = async (req, res) => {
     try {
         const {
-            cageNo,
-            arena,
-            price,
+            quantity,
             date,
             nameOfRenter,
             contactNumber,
-            email,
             eventID,
-            notes,
-            paymentStatus = 'unpaid'
+            arena,
+            selectedCageIds
         } = req.body;
 
         // Validate required fields
-        const requiredFields = ['cageNo', 'price', 'date', 'nameOfRenter', 'eventID'];
+        const requiredFields = ['quantity', 'date', 'nameOfRenter', 'eventID', 'selectedCageIds'];
         const missingFields = requiredFields.filter(field => !req.body[field]);
 
         if (missingFields.length > 0) {
             return res.status(400).json({
                 success: false,
                 message: `Missing required fields: ${missingFields.join(', ')}`
+            });
+        }
+
+        // Validate quantity and selected cages
+        if (quantity < 1) {
+            return res.status(400).json({
+                success: false,
+                message: 'Quantity must be at least 1'
+            });
+        }
+
+        if (!Array.isArray(selectedCageIds) || selectedCageIds.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Please select at least one cage'
+            });
+        }
+
+        if (selectedCageIds.length !== quantity) {
+            return res.status(400).json({
+                success: false,
+                message: `Quantity (${quantity}) must match the number of selected cages (${selectedCageIds.length})`
             });
         }
 
@@ -57,53 +75,67 @@ export const createCageRental = async (req, res) => {
             });
         }
 
-        // Check if cage availability exists and is active
-        const cageAvailability = await CageAvailability.findById(cageNo);
-        if (!cageAvailability) {
-            return res.status(404).json({
+        // Validate that all selected cages exist and are available
+        const selectedCages = await CageAvailability.find({
+            _id: { $in: selectedCageIds },
+            arena: arena,
+            status: 'active'
+        });
+
+        if (selectedCages.length !== selectedCageIds.length) {
+            return res.status(400).json({
                 success: false,
-                message: 'Cage not found'
+                message: 'Some selected cages are not available or do not exist'
             });
         }
 
-        // Ensure the arena matches the cage's arena
-        if (cageAvailability.arena !== arena) {
-            return res.status(400).json({
-                success: false,
-                message: `Cage ${cageAvailability.cageNumber} belongs to ${cageAvailability.arena}, not ${arena}`
-            });
-        }
+        // Check if any of the selected cages are already rented for this date
+        const existingRentals = await CageRental.find({
+            date: {
+                $gte: new Date(rentalDate.getFullYear(), rentalDate.getMonth(), rentalDate.getDate()),
+                $lt: new Date(rentalDate.getFullYear(), rentalDate.getMonth(), rentalDate.getDate() + 1)
+            },
+            paymentStatus: { $ne: 'cancelled' }
+        });
 
-        if (cageAvailability.status !== 'active') {
-            return res.status(400).json({
-                success: false,
-                message: `Cage ${cageAvailability.cageNumber} is not available for rental (status: ${cageAvailability.status})`
-            });
-        }
+        // Get IDs of cages already rented for this date
+        const rentedCageIds = existingRentals.flatMap(rental =>
+            rental.cages.map(cage => cage.cageNo.toString())
+        );
+
+        // Check if any selected cages are already rented
+        const alreadyRentedCages = selectedCages.filter(cage =>
+            rentedCageIds.includes(cage._id.toString())
+        );
+
+        // Calculate total price (20 PHP per cage)
+        const totalPrice = quantity * 20;
 
         // Create new cage rental
         const newCageRental = new CageRental({
-            cageNo,
+            cages: selectedCages.map(cage => ({ cageNo: cage._id })),
             arena,
-            price: Number(price),
+            quantity,
+            totalPrice,
             date: rentalDate,
             nameOfRenter,
             contactNumber,
-            email,
             eventID,
-            notes,
-            paymentStatus,
+            paymentStatus: 'paid', // Default to paid
             recordedBy: req.user._id
         });
 
         const savedCageRental = await newCageRental.save();
 
-        // Update cage availability status to rented
-        await CageAvailability.findByIdAndUpdate(cageNo, { status: 'rented' });
+        // Update cage availability status to rented for all selected cages
+        await CageAvailability.updateMany(
+            { _id: { $in: selectedCages.map(cage => cage._id) } },
+            { status: 'rented' }
+        );
 
         // Populate references for response
         await savedCageRental.populate([
-            { path: 'cageNo', select: 'cageNumber availabilityNumber status arena' },
+            { path: 'cages.cageNo', select: 'cageNumber availabilityNumber status arena' },
             { path: 'eventID', select: 'eventName date location' },
             { path: 'recordedBy', select: 'firstName lastName username' }
         ]);
@@ -127,10 +159,7 @@ export const createCageRental = async (req, res) => {
 export const getAllCageRentals = async (req, res) => {
     try {
         const {
-            page = 1,
-            limit = 10,
             paymentStatus,
-            cageNo,
             arena,
             search,
             sortBy = 'date',
@@ -144,20 +173,15 @@ export const getAllCageRentals = async (req, res) => {
             filter.paymentStatus = paymentStatus;
         }
 
-        if (cageNo) {
-            filter.cageNo = cageNo;
-        }
-
         if (arena) {
             filter.arena = arena;
         }
 
         if (search) {
             filter.$or = [
-                { cageNo: { $regex: search, $options: 'i' } },
                 { arena: { $regex: search, $options: 'i' } },
                 { nameOfRenter: { $regex: search, $options: 'i' } },
-                { notes: { $regex: search, $options: 'i' } }
+                { contactNumber: { $regex: search, $options: 'i' } }
             ];
         }
 
@@ -165,31 +189,17 @@ export const getAllCageRentals = async (req, res) => {
         const sort = {};
         sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
 
-        // Calculate pagination
-        const skip = (Number(page) - 1) * Number(limit);
-
         // Execute query
         const cageRentals = await CageRental.find(filter)
-            .populate('cageNo', 'cageNumber availabilityNumber status arena')
+            .populate('cages.cageNo', 'cageNumber availabilityNumber status arena')
             .populate('eventID', 'eventName date location')
             .populate('recordedBy', 'firstName lastName username')
-            .sort(sort)
-            .skip(skip)
-            .limit(Number(limit));
-
-        // Get total count for pagination
-        const total = await CageRental.countDocuments(filter);
+            .sort(sort);
 
         res.status(200).json({
             success: true,
             message: 'Cage rentals retrieved successfully',
-            data: cageRentals,
-            pagination: {
-                currentPage: Number(page),
-                totalPages: Math.ceil(total / Number(limit)),
-                totalItems: total,
-                itemsPerPage: Number(limit)
-            }
+            data: cageRentals
         });
     } catch (error) {
         console.error('Error getting cage rentals:', error);
@@ -207,7 +217,7 @@ export const getCageRentalById = async (req, res) => {
         const { id } = req.params;
 
         const cageRental = await CageRental.findById(id)
-            .populate('cageNo', 'cageNumber availabilityNumber status arena')
+            .populate('cages.cageNo', 'cageNumber availabilityNumber status arena')
             .populate('eventID', 'eventName date location')
             .populate('recordedBy', 'firstName lastName username');
 
@@ -258,7 +268,7 @@ export const updateCageRental = async (req, res) => {
         }
 
         // Validate required fields
-        const requiredFields = ['cageNo', 'price', 'date', 'nameOfRenter', 'eventID'];
+        const requiredFields = ['quantity', 'date', 'nameOfRenter', 'eventID'];
         const missingFields = requiredFields.filter(field => !updateData[field] && !cageRental[field]);
 
         if (missingFields.length > 0) {
@@ -288,8 +298,6 @@ export const updateCageRental = async (req, res) => {
                     message: 'Invalid date format'
                 });
             }
-
-            // Note: Removed date conflict check - if cage status is active, it can be rented regardless of existing rentals
         }
 
         // Validate event exists
@@ -301,35 +309,60 @@ export const updateCageRental = async (req, res) => {
             });
         }
 
-        // Validate cage and arena consistency if cage is being updated
-        if (updateData.cageNo) {
-            const cageAvailability = await CageAvailability.findById(updateData.cageNo);
-            if (!cageAvailability) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'Cage not found'
-                });
-            }
-
+        // If quantity is being updated, validate availability
+        if (updateData.quantity) {
             const targetArena = updateData.arena || cageRental.arena;
-            if (cageAvailability.arena !== targetArena) {
+            const targetDate = updateData.date ? new Date(updateData.date) : cageRental.date;
+
+            // Check available cages for the new quantity
+            const availableCages = await CageAvailability.find({
+                arena: targetArena,
+                status: 'active'
+            }).sort({ cageNumber: 1 });
+
+            // Check which cages are already rented for this date (excluding current rental)
+            const existingRentals = await CageRental.find({
+                _id: { $ne: id },
+                date: {
+                    $gte: new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate()),
+                    $lt: new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate() + 1)
+                },
+                paymentStatus: { $ne: 'cancelled' }
+            });
+
+            const rentedCageIds = existingRentals.flatMap(rental =>
+                rental.cages.map(cage => cage.cageNo.toString())
+            );
+
+            const trulyAvailableCages = availableCages.filter(cage =>
+                !rentedCageIds.includes(cage._id.toString())
+            );
+
+            if (trulyAvailableCages.length < updateData.quantity) {
                 return res.status(400).json({
                     success: false,
-                    message: `Cage ${cageAvailability.cageNumber} belongs to ${cageAvailability.arena}, not ${targetArena}`
+                    message: `Only ${trulyAvailableCages.length} cages available in ${targetArena} for the selected date. Requested: ${updateData.quantity}`
                 });
             }
 
-            // Ensure the cage is active for rental
-            if (cageAvailability.status !== 'active') {
-                return res.status(400).json({
-                    success: false,
-                    message: `Cage ${cageAvailability.cageNumber} is not available for rental (status: ${cageAvailability.status})`
-                });
-            }
+            // Select new cages
+            const selectedCages = trulyAvailableCages.slice(0, updateData.quantity);
+            updateData.cages = selectedCages.map(cage => ({ cageNo: cage._id }));
+            updateData.totalPrice = updateData.quantity * 20;
+
+            // Restore old cages to active status
+            const oldCageIds = cageRental.cages.map(cage => cage.cageNo);
+            await CageAvailability.updateMany(
+                { _id: { $in: oldCageIds } },
+                { status: 'active' }
+            );
+
+            // Mark new cages as rented
+            await CageAvailability.updateMany(
+                { _id: { $in: selectedCages.map(cage => cage._id) } },
+                { status: 'rented' }
+            );
         }
-
-        // Convert numeric fields
-        if (updateData.price) updateData.price = Number(updateData.price);
 
         // Update the cage rental
         const updatedCageRental = await CageRental.findByIdAndUpdate(
@@ -337,7 +370,7 @@ export const updateCageRental = async (req, res) => {
             updateData,
             { new: true, runValidators: true }
         ).populate([
-            { path: 'cageNo', select: 'cageNumber availabilityNumber status arena' },
+            { path: 'cages.cageNo', select: 'cageNumber availabilityNumber status arena' },
             { path: 'eventID', select: 'eventName date location' },
             { path: 'recordedBy', select: 'firstName lastName username' }
         ]);
@@ -390,11 +423,12 @@ export const deleteCageRental = async (req, res) => {
 
         await CageRental.findByIdAndDelete(id);
 
-        // Restore cage availability status to active if the rental was active
-        // If the rental was already returned, the cage should already be active
-        if (cageRental.rentalStatus === 'active') {
-            await CageAvailability.findByIdAndUpdate(cageRental.cageNo, { status: 'active' });
-        }
+        // Restore cage availability status to active for all cages in this rental
+        const cageIds = cageRental.cages.map(cage => cage.cageNo);
+        await CageAvailability.updateMany(
+            { _id: { $in: cageIds } },
+            { status: 'active' }
+        );
 
         res.status(200).json({
             success: true,
@@ -450,27 +484,26 @@ export const updatePaymentStatus = async (req, res) => {
             { paymentStatus },
             { new: true, runValidators: true }
         ).populate([
-            { path: 'cageNo', select: 'cageNumber availabilityNumber status arena' },
+            { path: 'cages.cageNo', select: 'cageNumber availabilityNumber status arena' },
             { path: 'eventID', select: 'eventName date location' },
             { path: 'recordedBy', select: 'firstName lastName username' }
         ]);
 
         // Update cage availability status based on payment status
         if (paymentStatus === 'cancelled') {
-            // Restore cage to active status if rental is cancelled
-            await CageAvailability.findByIdAndUpdate(cageRental.cageNo, { status: 'active' });
+            // Restore cages to active status if rental is cancelled
+            const cageIds = cageRental.cages.map(cage => cage.cageNo);
+            await CageAvailability.updateMany(
+                { _id: { $in: cageIds } },
+                { status: 'active' }
+            );
         } else if (oldPaymentStatus === 'cancelled' && paymentStatus !== 'cancelled') {
-            // Set cage back to rented if rental is reactivated
-            await CageAvailability.findByIdAndUpdate(cageRental.cageNo, { status: 'rented' });
-        }
-
-        // Send email notifications if payment status changed
-        if (oldPaymentStatus !== paymentStatus && cageRental.email) {
-            if (paymentStatus === 'paid' && oldPaymentStatus !== 'paid') {
-                await sendCageRentalPaymentConfirmationEmail(updatedCageRental);
-            } else if (paymentStatus === 'unpaid' && oldPaymentStatus === 'paid') {
-                await sendCageRentalReminderEmail(updatedCageRental);
-            }
+            // Set cages back to rented if rental is reactivated
+            const cageIds = cageRental.cages.map(cage => cage.cageNo);
+            await CageAvailability.updateMany(
+                { _id: { $in: cageIds } },
+                { status: 'rented' }
+            );
         }
 
         res.status(200).json({
@@ -528,18 +561,26 @@ export const updateRentalStatus = async (req, res) => {
             { rentalStatus },
             { new: true, runValidators: true }
         ).populate([
-            { path: 'cageNo', select: 'cageNumber availabilityNumber status arena' },
+            { path: 'cages.cageNo', select: 'cageNumber availabilityNumber status arena' },
             { path: 'eventID', select: 'eventName date location' },
             { path: 'recordedBy', select: 'firstName lastName username' }
         ]);
 
         // Update cage availability status based on rental status
         if (rentalStatus === 'returned') {
-            // Restore cage to active status if rental is returned
-            await CageAvailability.findByIdAndUpdate(cageRental.cageNo, { status: 'active' });
+            // Restore all cages to active status if rental is returned
+            const cageIds = cageRental.cages.map(cage => cage.cageNo);
+            await CageAvailability.updateMany(
+                { _id: { $in: cageIds } },
+                { status: 'active' }
+            );
         } else if (oldRentalStatus === 'returned' && rentalStatus === 'active') {
-            // Set cage back to rented if rental is reactivated
-            await CageAvailability.findByIdAndUpdate(cageRental.cageNo, { status: 'rented' });
+            // Set all cages back to rented if rental is reactivated
+            const cageIds = cageRental.cages.map(cage => cage.cageNo);
+            await CageAvailability.updateMany(
+                { _id: { $in: cageIds } },
+                { status: 'rented' }
+            );
         }
 
         res.status(200).json({
@@ -561,7 +602,7 @@ export const updateRentalStatus = async (req, res) => {
 export const getCageRentalsByEvent = async (req, res) => {
     try {
         const { eventId } = req.params;
-        const { page = 1, limit = 10, paymentStatus } = req.query;
+        const { paymentStatus } = req.query;
 
         // Build filter
         const filter = { eventID: eventId };
@@ -570,31 +611,17 @@ export const getCageRentalsByEvent = async (req, res) => {
             filter.paymentStatus = paymentStatus;
         }
 
-        // Calculate pagination
-        const skip = (Number(page) - 1) * Number(limit);
-
         // Execute query
         const cageRentals = await CageRental.find(filter)
-            .populate('cageNo', 'cageNumber availabilityNumber status arena')
+            .populate('cages.cageNo', 'cageNumber availabilityNumber status arena')
             .populate('eventID', 'eventName date location')
             .populate('recordedBy', 'firstName lastName username')
-            .sort({ date: -1 })
-            .skip(skip)
-            .limit(Number(limit));
-
-        // Get total count
-        const total = await CageRental.countDocuments(filter);
+            .sort({ date: -1 });
 
         res.status(200).json({
             success: true,
             message: 'Cage rentals retrieved successfully',
-            data: cageRentals,
-            pagination: {
-                currentPage: Number(page),
-                totalPages: Math.ceil(total / Number(limit)),
-                totalItems: total,
-                itemsPerPage: Number(limit)
-            }
+            data: cageRentals
         });
     } catch (error) {
         console.error('Error getting cage rentals by event:', error);
@@ -609,40 +636,23 @@ export const getCageRentalsByEvent = async (req, res) => {
 // Get overdue rentals
 export const getOverdueRentals = async (req, res) => {
     try {
-        const { page = 1, limit = 10 } = req.query;
-
         // Find rentals that are unpaid and past their date
         const filter = {
             paymentStatus: 'unpaid',
-            date: { $lt: new Date() },
-            status: { $ne: 'cancelled' }
+            date: { $lt: new Date() }
         };
-
-        // Calculate pagination
-        const skip = (Number(page) - 1) * Number(limit);
 
         // Execute query
         const overdueRentals = await CageRental.find(filter)
-            .populate('cageNo', 'cageNumber availabilityNumber status arena')
+            .populate('cages.cageNo', 'cageNumber availabilityNumber status arena')
             .populate('eventID', 'eventName date location')
             .populate('recordedBy', 'firstName lastName username')
-            .sort({ date: 1 })
-            .skip(skip)
-            .limit(Number(limit));
-
-        // Get total count
-        const total = await CageRental.countDocuments(filter);
+            .sort({ date: 1 });
 
         res.status(200).json({
             success: true,
             message: 'Overdue rentals retrieved successfully',
-            data: overdueRentals,
-            pagination: {
-                currentPage: Number(page),
-                totalPages: Math.ceil(total / Number(limit)),
-                totalItems: total,
-                itemsPerPage: Number(limit)
-            }
+            data: overdueRentals
         });
     } catch (error) {
         console.error('Error getting overdue rentals:', error);
@@ -683,14 +693,15 @@ export const getAvailableCages = async (req, res) => {
         }
 
         // Get all cage numbers that are rented for this date
-        const rentedCages = await CageRental.find(rentalFilter).select('cageNo');
+        const rentedCages = await CageRental.find(rentalFilter).select('cages.cageNo');
 
-        const rentedCageIds = rentedCages.map(rental => rental.cageNo);
+        const rentedCageIds = rentedCages.flatMap(rental =>
+            rental.cages.map(cage => cage.cageNo)
+        );
 
         // Build cage filter
         const cageFilter = {
-            status: 'active',
-            _id: { $nin: rentedCageIds }
+            status: 'active'
         };
 
         // Add arena filter to cage query if specified
@@ -699,7 +710,12 @@ export const getAvailableCages = async (req, res) => {
         }
 
         // Get all active cages that are not rented for this date
-        const availableCages = await CageAvailability.find(cageFilter).sort({ cageNumber: 1 });
+        const allCages = await CageAvailability.find(cageFilter).sort({ cageNumber: 1 });
+
+        // Filter out rented cages
+        const availableCages = allCages.filter(cage =>
+            !rentedCageIds.includes(cage._id.toString())
+        );
 
         // Get rented cage details
         const rentedCageDetails = await CageAvailability.find({
@@ -738,7 +754,7 @@ export const getRentalSummary = async (req, res) => {
 
         // Calculate total revenue from paid rentals
         const paidRentalsData = await CageRental.find({ paymentStatus: 'paid' });
-        const totalRevenue = paidRentalsData.reduce((sum, rental) => sum + rental.price, 0);
+        const totalRevenue = paidRentalsData.reduce((sum, rental) => sum + rental.totalPrice, 0);
 
         // Get arena breakdown
         const arenaBreakdown = await CageRental.aggregate([
@@ -748,7 +764,7 @@ export const getRentalSummary = async (req, res) => {
                     totalRentals: { $sum: 1 },
                     paidRentals: { $sum: { $cond: [{ $eq: ['$paymentStatus', 'paid'] }, 1, 0] } },
                     unpaidRentals: { $sum: { $cond: [{ $eq: ['$paymentStatus', 'unpaid'] }, 1, 0] } },
-                    revenue: { $sum: { $cond: [{ $eq: ['$paymentStatus', 'paid'] }, '$price', 0] } }
+                    revenue: { $sum: { $cond: [{ $eq: ['$paymentStatus', 'paid'] }, '$totalPrice', 0] } }
                 }
             },
             {
@@ -765,11 +781,11 @@ export const getRentalSummary = async (req, res) => {
 
         // Get recent rentals (last 10)
         const recentRentals = await CageRental.find()
-            .populate('cageNo', 'cageNumber')
+            .populate('cages.cageNo', 'cageNumber')
             .populate('eventID', 'eventName')
             .sort({ createdAt: -1 })
             .limit(10)
-            .select('nameOfRenter date price paymentStatus cageNo eventID');
+            .select('nameOfRenter date totalPrice paymentStatus cages eventID');
 
         res.status(200).json({
             success: true,
@@ -825,7 +841,7 @@ export const getAvailabilityStatus = async (req, res) => {
         // Get rented cages for the specific date
         const dateRentedCages = await CageRental.find(rentalFilter);
 
-        const totalRentedForDate = dateRentedCages.length;
+        const totalRentedForDate = dateRentedCages.reduce((sum, rental) => sum + rental.quantity, 0);
         const totalAvailableForDate = activeCages - totalRentedForDate;
 
         // Calculate availability by payment status

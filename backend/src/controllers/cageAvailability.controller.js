@@ -446,9 +446,11 @@ export const getAvailableCagesForRental = async (req, res) => {
             }
 
             // Get rented cages for the date
-            const rentedCages = await CageRental.find(rentalFilter).select('cageNo');
+            const rentedCages = await CageRental.find(rentalFilter).select('cages.cageNo');
 
-            const rentedCageIds = rentedCages.map(rental => rental.cageNo);
+            const rentedCageIds = rentedCages.flatMap(rental =>
+                rental.cages.map(cage => cage.cageNo)
+            );
 
             // Filter out rented cages
             const availableCages = allCages.filter(cage =>

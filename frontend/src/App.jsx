@@ -28,6 +28,9 @@ import Entrance from './pages/entrance-staff/entrance-registration/Entrance'
 import TangkalDashboard from './pages/tangkal-staff/TangkalDashboard'
 import Rentals from './pages/tangkal-staff/rentals/Rentals'
 import CageAvailability from './pages/tangkal-staff/cage-availability/CageAvailability'
+import AdminTangkalEventSelection from './pages/admin/tangkal/EventSelection'
+import AdminEventRentals from './pages/admin/tangkal/EventRentals'
+import AdminCageAvailability from './pages/admin/cage-availability/AdminCageAvailability'
 
 function PrivateRoute({ children }) {
 	const { user, loading } = useAuth()
@@ -105,6 +108,25 @@ function App() {
 					<Route path="/admin/entrance/:eventId" element={
 						<PrivateRoute>
 							<AdminEntrance />
+						</PrivateRoute>
+					} />
+
+					{/* Admin Tangkal Routes */}
+					<Route path="/admin/tangkal" element={
+						<PrivateRoute>
+							<AdminTangkalEventSelection />
+						</PrivateRoute>
+					} />
+					<Route path="/admin/tangkal/rentals/:eventId" element={
+						<PrivateRoute>
+							<AdminEventRentals />
+						</PrivateRoute>
+					} />
+
+					{/* Admin Cage Availability Routes */}
+					<Route path="/admin/cage-availability" element={
+						<PrivateRoute>
+							<AdminCageAvailability />
 						</PrivateRoute>
 					} />
 

@@ -1,18 +1,28 @@
 import mongoose from "mongoose";
 
 const cageRentalSchema = new mongoose.Schema({
-    cageNo: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'CageAvailability',
-        required: true
-    },
+    // Multiple cages can be rented in one transaction
+    cages: [{
+        cageNo: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'CageAvailability',
+            required: true
+        }
+    }],
     arena: {
         type: String,
         required: true,
         enum: ['Buenavista Cockpit Arena', 'Mogpog Cockpit Arena', 'Boac Cockpit Arena'],
         default: 'Buenavista Cockpit Arena'
     },
-    price: {
+    // Quantity of cages rented
+    quantity: {
+        type: Number,
+        required: true,
+        min: 1
+    },
+    // Total price (quantity * 20 PHP per cage)
+    totalPrice: {
         type: Number,
         required: true,
         min: 0
@@ -30,7 +40,7 @@ const cageRentalSchema = new mongoose.Schema({
     paymentStatus: {
         type: String,
         enum: ['paid', 'unpaid', 'pending', 'cancelled'],
-        default: 'unpaid'
+        default: 'paid' // Changed default to paid
     },
     rentalStatus: {
         type: String,
@@ -55,30 +65,18 @@ const cageRentalSchema = new mongoose.Schema({
         lowercase: true,
         maxlength: 100
     },
-    // Additional details
-    notes: {
-        type: String,
-        trim: true,
-        maxlength: 500
-    },
     // Who recorded this rental
     recordedBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
-    },
-    // Availability number - tracks how many cages are available in the arena
-    availabilityNo: {
-        type: Number,
-        min: 0,
-        default: 0
     }
 }, {
     timestamps: true
 });
 
 // Indexes for better query performance
-cageRentalSchema.index({ cageNo: 1, date: -1 });
+cageRentalSchema.index({ 'cages.cageNo': 1, date: -1 });
 cageRentalSchema.index({ arena: 1, date: -1 });
 cageRentalSchema.index({ paymentStatus: 1, date: -1 });
 cageRentalSchema.index({ nameOfRenter: 1 });

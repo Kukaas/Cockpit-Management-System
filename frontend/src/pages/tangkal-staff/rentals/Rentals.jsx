@@ -12,6 +12,7 @@ import DataTable from '@/components/custom/DataTable'
 
 // Import custom components
 import RentalForm from './components/RentalForm'
+import DetailsDialog from './components/DetailsDialog'
 import { createRentalColumns } from './components/TableColumns'
 
 const Rentals = () => {
@@ -23,30 +24,29 @@ const Rentals = () => {
   const [deleteRentalDialogOpen, setDeleteRentalDialogOpen] = useState(false)
   const [statusChangeDialogOpen, setStatusChangeDialogOpen] = useState(false)
   const [rentalStatusDialogOpen, setRentalStatusDialogOpen] = useState(false)
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false)
 
   // Selected items for editing/deleting
   const [selectedRental, setSelectedRental] = useState(null)
+  const [selectedItem, setSelectedItem] = useState(null)
   const [pendingStatusChange, setPendingStatusChange] = useState(null) // { rentalId, newStatus, oldStatus, rental }
   const [pendingRentalStatusChange, setPendingRentalStatusChange] = useState(null) // { rentalId, newStatus, oldStatus, rental }
 
-
   // Form data
   const [rentalFormData, setRentalFormData] = useState({
-    cageNo: '',
+    quantity: '0',
     arena: '',
-    price: '100',
     date: new Date().toISOString().split('T')[0], // Default to today
     nameOfRenter: '',
     contactNumber: '',
-    email: '',
     eventID: '',
-    notes: '',
-    paymentStatus: 'unpaid'
+    paymentStatus: 'paid',
+    selectedCageIds: []
   })
 
   // Fetch rentals and summary
   const { data: rentalsData = [], refetch: refetchRentals } = useGetAll('/cage-rentals')
-  const { data: summaryData, refetch: refetchSummary } = useGetAll('/cage-rentals/summary')
+  const { refetch: refetchSummary } = useGetAll('/cage-rentals/summary')
 
   // Mutations
   const createRentalMutation = useCreateMutation('/cage-rentals', {
@@ -145,22 +145,20 @@ const Rentals = () => {
 
   const resetRentalForm = () => {
     setRentalFormData({
-      cageNo: '',
+      quantity: '0',
       arena: '',
-      price: '100',
       date: new Date().toISOString().split('T')[0], // Default to today
       nameOfRenter: '',
       contactNumber: '',
-      email: '',
       eventID: '',
-      notes: '',
-      paymentStatus: 'unpaid'
+      paymentStatus: 'paid',
+      selectedCageIds: []
     })
   }
 
   // Submit handlers
   const handleAddRental = async () => {
-    const requiredFields = ['cageNo', 'arena', 'price', 'date', 'nameOfRenter']
+    const requiredFields = ['quantity', 'arena', 'date', 'nameOfRenter', 'eventID', 'selectedCageIds']
     const missingFields = requiredFields.filter(field => !rentalFormData[field])
 
     if (missingFields.length > 0) {
@@ -168,9 +166,14 @@ const Rentals = () => {
       return
     }
 
+    if (rentalFormData.selectedCageIds.length === 0) {
+      toast.error('Please select at least one cage')
+      return
+    }
+
     const rentalData = {
       ...rentalFormData,
-      price: parseFloat(rentalFormData.price)
+      quantity: parseInt(rentalFormData.quantity)
     }
 
     createRentalMutation.mutate(rentalData)
@@ -179,7 +182,7 @@ const Rentals = () => {
   const handleEditRental = async () => {
     if (!selectedRental) return
 
-    const requiredFields = ['cageNo', 'arena', 'price', 'date', 'nameOfRenter']
+    const requiredFields = ['quantity', 'arena', 'date', 'nameOfRenter', 'eventID']
     const missingFields = requiredFields.filter(field => !rentalFormData[field])
 
     if (missingFields.length > 0) {
@@ -189,7 +192,7 @@ const Rentals = () => {
 
     const rentalData = {
       ...rentalFormData,
-      price: parseFloat(rentalFormData.price)
+      quantity: parseInt(rentalFormData.quantity)
     }
 
     updateRentalMutation.mutate({
@@ -207,15 +210,12 @@ const Rentals = () => {
   const handleEditRentalClick = (rental) => {
     setSelectedRental(rental)
     setRentalFormData({
-      cageNo: rental.cageNo,
+      quantity: rental.quantity.toString(),
       arena: rental.arena,
-      price: rental.price.toString(),
       date: rental.date.split('T')[0], // Format date for input
       nameOfRenter: rental.nameOfRenter,
       contactNumber: rental.contactNumber || '',
-      email: rental.email || '',
       eventID: rental.eventID?._id || '',
-      notes: rental.notes || '',
       paymentStatus: rental.paymentStatus
     })
     setEditRentalDialogOpen(true)
@@ -284,6 +284,12 @@ const Rentals = () => {
     setPendingRentalStatusChange(null)
   }
 
+  // Handle view details
+  const handleViewDetails = (rental) => {
+    setSelectedItem(rental)
+    setDetailDialogOpen(true)
+  }
+
   // Format functions
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -311,7 +317,8 @@ const Rentals = () => {
     handleStatusChange,
     statusChangeMutation,
     handleRentalStatusChange,
-    rentalStatusMutation
+    rentalStatusMutation,
+    handleViewDetails
   )
 
   return (
@@ -375,23 +382,23 @@ const Rentals = () => {
         isEdit={true}
       />
 
-             {/* Delete Rental Confirmation Dialog */}
-       <ConfirmationDialog
-         open={deleteRentalDialogOpen}
-         onOpenChange={setDeleteRentalDialogOpen}
-         title="Delete Cage Rental"
-         description={
-           selectedRental?.rentalStatus === 'returned'
-             ? `Cannot delete returned rental for "${selectedRental?.nameOfRenter}" (${selectedRental?.cageNo?.cageNumber || selectedRental?.cageNo}). Returned rentals cannot be deleted.`
-             : `Are you sure you want to delete the cage rental for "${selectedRental?.nameOfRenter}" (${selectedRental?.cageNo?.cageNumber || selectedRental?.cageNo})? This will make the cage available again. This action cannot be undone.`
-         }
-         confirmText={selectedRental?.rentalStatus === 'returned' ? 'OK' : 'Delete Rental'}
-         cancelText="Cancel"
-         onConfirm={selectedRental?.rentalStatus === 'returned' ? () => setDeleteRentalDialogOpen(false) : handleDeleteRental}
-         onCancel={() => setDeleteRentalDialogOpen(false)}
-         variant={selectedRental?.rentalStatus === 'returned' ? 'default' : 'destructive'}
-         loading={deleteRentalMutation.isPending}
-       />
+      {/* Delete Rental Confirmation Dialog */}
+      <ConfirmationDialog
+        open={deleteRentalDialogOpen}
+        onOpenChange={setDeleteRentalDialogOpen}
+        title="Delete Cage Rental"
+        description={
+          selectedRental?.rentalStatus === 'returned'
+            ? `Cannot delete returned rental for "${selectedRental?.nameOfRenter}" (${selectedRental?.quantity} cage${selectedRental?.quantity > 1 ? 's' : ''}). Returned rentals cannot be deleted.`
+            : `Are you sure you want to delete the cage rental for "${selectedRental?.nameOfRenter}" (${selectedRental?.quantity} cage${selectedRental?.quantity > 1 ? 's' : ''})? This will make the cages available again. This action cannot be undone.`
+        }
+        confirmText={selectedRental?.rentalStatus === 'returned' ? 'OK' : 'Delete Rental'}
+        cancelText="Cancel"
+        onConfirm={selectedRental?.rentalStatus === 'returned' ? () => setDeleteRentalDialogOpen(false) : handleDeleteRental}
+        onCancel={() => setDeleteRentalDialogOpen(false)}
+        variant={selectedRental?.rentalStatus === 'returned' ? 'default' : 'destructive'}
+        loading={deleteRentalMutation.isPending}
+      />
 
       {/* Status Change Confirmation Dialog */}
       <ConfirmationDialog
@@ -418,7 +425,7 @@ const Rentals = () => {
         title="Change Rental Status"
         description={
           pendingRentalStatusChange
-            ? `Are you sure you want to mark the cage rental for "${pendingRentalStatusChange.rental?.nameOfRenter}" as returned? This will make the cage available again.`
+            ? `Are you sure you want to mark the cage rental for "${pendingRentalStatusChange.rental?.nameOfRenter}" as returned? This will make all ${pendingRentalStatusChange.rental?.quantity} cage${pendingRentalStatusChange.rental?.quantity > 1 ? 's' : ''} available again.`
             : "Are you sure you want to change the rental status?"
         }
         confirmText="Mark as Returned"
@@ -427,6 +434,15 @@ const Rentals = () => {
         onCancel={cancelRentalStatusChange}
         variant="default"
         loading={rentalStatusMutation.isPending}
+      />
+
+      {/* Detail View Dialog */}
+      <DetailsDialog
+        open={detailDialogOpen}
+        onOpenChange={setDetailDialogOpen}
+        selectedItem={selectedItem}
+        formatDate={formatDate}
+        formatCurrency={formatCurrency}
       />
     </PageLayout>
   )
