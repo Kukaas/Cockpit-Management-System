@@ -14,13 +14,6 @@ const participantSchema = new mongoose.Schema({
     trim: true,
     maxlength: 20
   },
-  email: {
-    type: String,
-    required: true,
-    trim: true,
-    lowercase: true,
-    maxlength: 100
-  },
   address: {
     type: String,
     required: true,
@@ -33,16 +26,6 @@ const participantSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Event',
     required: true
-  },
-  entryFee: {
-    type: Number,
-    required: true,
-    min: 0
-  },
-  eventType: {
-    type: String,
-    required: true,
-    enum: ['regular', 'special', 'championship', 'exhibition']
   },
 
   // Registration Details
@@ -59,11 +42,6 @@ const participantSchema = new mongoose.Schema({
   registrationDate: {
     type: Date,
     default: Date.now
-  },
-  notes: {
-    type: String,
-    trim: true,
-    maxlength: 500
   }
 }, { timestamps: true });
 
@@ -72,6 +50,5 @@ participantSchema.index({ eventID: 1, status: 1 });
 participantSchema.index({ registeredBy: 1 });
 participantSchema.index({ registrationDate: -1 });
 participantSchema.index({ participantName: 1 });
-participantSchema.index({ email: 1 });
 
 export default mongoose.model('Participant', participantSchema);

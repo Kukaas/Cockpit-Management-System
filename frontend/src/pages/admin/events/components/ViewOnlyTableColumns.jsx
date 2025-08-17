@@ -17,8 +17,8 @@ export const createViewOnlyParticipantColumns = (formatCurrency, handleViewDetai
     filterable: false
   },
   {
-    key: 'email',
-    label: 'Email',
+    key: 'address',
+    label: 'Address',
     sortable: true,
     filterable: false
   },
@@ -62,32 +62,37 @@ export const createViewOnlyParticipantColumns = (formatCurrency, handleViewDetai
   }
 ]
 
-export const createViewOnlyCockProfileColumns = (handleViewDetails) => [
-  {
-    key: 'legband',
-    label: 'Legband',
-    sortable: true,
-    filterable: false
-  },
+export const createViewOnlyCockProfileColumns = (handleViewDetails, eventType = 'regular') => [
   {
     key: 'entryNo',
     label: 'Entry No.',
     sortable: true,
-    filterable: false
+    filterable: false,
+    render: (value) => `#${value}`
   },
   {
-    key: 'ownerName',
-    label: 'Owner Name',
-    sortable: true,
-    filterable: false
-  },
-  {
-    key: 'weight',
-    label: 'Weight (kg)',
+    key: 'participantID',
+    label: 'Participant',
     sortable: true,
     filterable: false,
-    render: (value) => `${value} kg`
+    render: (value) => value?.participantName || 'N/A'
   },
+  // Only include legband and weight columns for derby events
+  ...(eventType === 'derby' ? [
+    {
+      key: 'legband',
+      label: 'Legband',
+      sortable: true,
+      filterable: false
+    },
+    {
+      key: 'weight',
+      label: 'Weight (kg)',
+      sortable: true,
+      filterable: false,
+      render: (value) => value ? `${value} kg` : 'N/A'
+    }
+  ] : []),
   {
     key: 'isActive',
     label: 'Status',
@@ -159,7 +164,7 @@ export const createViewOnlyFightScheduleColumns = (formatCurrency, formatDate, h
       <div className="space-y-1">
         {value?.map((cock, index) => (
           <div key={index} className="text-sm">
-            {index + 1}. {cock.legband} ({cock.ownerName})
+            {index + 1}. #{cock.entryNo} ({cock.participantID?.participantName || 'N/A'})
           </div>
         ))}
       </div>

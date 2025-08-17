@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/separator'
-import { User, Search } from 'lucide-react'
 import CustomAlertDialog from '@/components/custom/CustomAlertDialog'
 import InputField from '@/components/custom/InputField'
-import { useGetAll } from '@/hooks/useApiQueries'
+import { User, Search, Phone } from 'lucide-react'
+import { useGetAll, useGetById } from '@/hooks/useApiQueries'
 
 const CockProfileForm = ({
   open,
@@ -25,26 +22,24 @@ const CockProfileForm = ({
   const [selectedParticipantId, setSelectedParticipantId] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
 
-  // Fetch participants for this specific event to find existing owners
+  // Fetch event details to check event type
+  const { data: event } = useGetById('/events', eventId)
+
+  // Fetch participants for this specific event
   const { data: participantsData = [] } = useGetAll(`/participants?eventID=${eventId}`)
   const participantRecords = participantsData || []
 
   // Filter participants based on search query
   const filteredParticipants = participantRecords.filter(participant =>
-    participant.participantName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    participant.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    participant.contactNumber.toLowerCase().includes(searchQuery.toLowerCase())
+    (participant.participantName?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+    (participant.contactNumber?.toLowerCase() || '').includes(searchQuery.toLowerCase())
   )
 
   // Handle participant selection
   const handleParticipantSelection = (participantId) => {
     setSelectedParticipantId(participantId)
     if (participantId) {
-      const selectedParticipant = participantRecords.find(p => p._id === participantId)
-      if (selectedParticipant) {
-        // Auto-fill form with selected participant's data
-        onInputChange('ownerName', selectedParticipant.participantName)
-      }
+      onInputChange('participantID', participantId)
     }
   }
 
@@ -89,7 +84,7 @@ const CockProfileForm = ({
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Search by name, email, or contact number..."
+                placeholder="Search by name or contact number..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-input rounded-md text-sm"
@@ -108,20 +103,13 @@ const CockProfileForm = ({
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-medium text-sm">{participant.participantName}</p>
-                        <p className="text-xs text-muted-foreground">{participant.email}</p>
-                        <p className="text-xs text-muted-foreground">{participant.contactNumber}</p>
-                        <p className="text-xs text-muted-foreground">{participant.address}</p>
+                        <p className="font-medium text-sm">{participant.participantName || 'N/A'}</p>
+                        <p className="text-xs text-muted-foreground">{participant.contactNumber || 'N/A'}</p>
+                        <p className="text-xs text-muted-foreground">{participant.address || 'N/A'}</p>
                       </div>
                       <div className="text-right">
-                        <Badge
-                          variant="default"
-                          className="text-xs"
-                        >
-                          Registered
-                        </Badge>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Entry Fee: ₱{participant.entryFee}
+                        <p className="text-xs text-muted-foreground">
+                          Status: {participant.status || 'registered'}
                         </p>
                       </div>
                     </div>
@@ -138,21 +126,55 @@ const CockProfileForm = ({
             )}
 
             {selectedParticipantId && selectedParticipant && (
-              <div className="bg-green-50 p-3 rounded-md border border-green-200">
-                <p className="text-sm text-green-800 mb-2">
-                  ✓ Selected registered participant. Owner information auto-filled below.
-                </p>
-                <div className="bg-white p-3 rounded border">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-medium text-sm">Selected Owner:</h4>
-                    <Badge variant="default" className="text-xs">Registered</Badge>
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200 shadow-sm">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <p className="text-sm font-medium text-green-800">
+                    ✓ Participant Selected Successfully
+                  </p>
+                </div>
+
+                <div className="bg-white p-4 rounded-lg border border-green-100 shadow-sm">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                      <User className="w-5 h-5 text-green-600" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900 text-base">
+                        {selectedParticipant.participantName || 'N/A'}
+                      </h4>
+                    </div>
                   </div>
-                  <div className="space-y-1 text-sm">
-                    <p><span className="font-medium">Name:</span> {selectedParticipant.participantName}</p>
-                    <p><span className="font-medium">Email:</span> {selectedParticipant.email}</p>
-                    <p><span className="font-medium">Contact:</span> {selectedParticipant.contactNumber}</p>
-                    <p><span className="font-medium">Address:</span> {selectedParticipant.address}</p>
-                    <p><span className="font-medium">Entry Fee:</span> ₱{selectedParticipant.entryFee}</p>
+
+                  <div className="grid grid-cols-1 gap-2 text-sm">
+                    <div className="flex items-center gap-2">
+                      <Phone className="w-4 h-4 text-gray-400" />
+                      <span className="text-gray-600">
+                        {selectedParticipant.contactNumber || 'N/A'}
+                      </span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <div className="w-4 h-4 mt-0.5 text-gray-400">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                          <circle cx="12" cy="10" r="3"/>
+                        </svg>
+                      </div>
+                      <span className="text-gray-600">
+                        {selectedParticipant.address || 'N/A'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 text-gray-400">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="12" cy="12" r="10"/>
+                          <path d="M12 6v6l4 2"/>
+                        </svg>
+                      </div>
+                      <span className="text-gray-600">
+                        Status: <span className="font-medium capitalize">{selectedParticipant.status || 'registered'}</span>
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -160,66 +182,53 @@ const CockProfileForm = ({
           </div>
         )}
 
-        <Separator />
-
         {/* Cock Profile Information Form */}
         <div className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <InputField
-              id={isEdit ? "editLegband" : "legband"}
-              label="Legband *"
-              value={formData.legband}
-              onChange={(e) => onInputChange('legband', e.target.value)}
-              placeholder="Enter legband"
-              required
-            />
-            <InputField
-              id={isEdit ? "editEntryNo" : "entryNo"}
-              label="Entry Number *"
-              value={formData.entryNo}
-              onChange={(e) => onInputChange('entryNo', e.target.value)}
-              placeholder="Enter entry number"
-              required
-            />
-          </div>
-
           <InputField
-            id={isEdit ? "editOwnerName" : "ownerName"}
-            label="Owner *"
-            value={formData.ownerName}
-            onChange={(e) => onInputChange('ownerName', e.target.value)}
-            placeholder="Select owner from search above"
-            className="hidden"
-            required
-            disabled={!isEdit && selectedParticipantId}
-            readOnly={!isEdit && selectedParticipantId}
-          />
-
-          <InputField
-            id={isEdit ? "editWeight" : "weight"}
-            label="Weight (kg) *"
-            type="number"
-            value={formData.weight}
-            onChange={(e) => onInputChange('weight', e.target.value)}
-            placeholder="Enter weight in kg (e.g., 2.24)"
-            min="0.01"
-            max="10.0"
-            step="0.01"
+            id={isEdit ? "editEntryNo" : "entryNo"}
+            label="Entry Number *"
+            value={formData.entryNo}
+            onChange={(e) => onInputChange('entryNo', e.target.value)}
+            placeholder="Enter entry number"
             required
           />
 
-          <div className="space-y-2">
-            <Label htmlFor={isEdit ? "editCockNotes" : "cockNotes"} className="text-sm font-medium">
-              Notes
-            </Label>
-            <Textarea
-              id={isEdit ? "editCockNotes" : "cockNotes"}
-              value={formData.notes}
-              onChange={(e) => onInputChange('notes', e.target.value)}
-              placeholder="Enter additional notes (optional)"
-              rows={3}
+          {/* Derby Event Fields */}
+          {event?.eventType === 'derby' && (
+            <>
+              <InputField
+                id={isEdit ? "editLegband" : "legband"}
+                label="Legband *"
+                value={formData.legband}
+                onChange={(e) => onInputChange('legband', e.target.value)}
+                placeholder="Enter legband"
+                required
+              />
+              <InputField
+                id={isEdit ? "editWeight" : "weight"}
+                label="Weight (kg) *"
+                type="number"
+                value={formData.weight}
+                onChange={(e) => onInputChange('weight', e.target.value)}
+                placeholder="Enter weight in kg (e.g., 2.24)"
+                min="0.01"
+                max="10.0"
+                step="0.01"
+                required
+              />
+            </>
+          )}
+
+          {isEdit && (
+            <InputField
+              id="editParticipantID"
+              label="Participant ID *"
+              value={formData.participantID}
+              onChange={(e) => onInputChange('participantID', e.target.value)}
+              placeholder="Enter participant ID"
+              required
             />
-          </div>
+          )}
         </div>
       </div>
     </CustomAlertDialog>

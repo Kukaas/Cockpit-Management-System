@@ -8,44 +8,51 @@ const cockProfileSchema = new mongoose.Schema({
     required: true
   },
 
-  weight: {
-    type: Number,
-    required: true,
-    min: 0.01,
-    max: 10.0
+  // Participant association
+  participantID: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Participant',
+    required: true
   },
-  legband: {
-    type: String,
-    required: true,
-    trim: true,
-    maxlength: 50
-  },
+
   entryNo: {
     type: String,
     required: true,
     trim: true,
     maxlength: 20
   },
-  ownerName: {
+
+  // Fields for derby events only
+  legband: {
     type: String,
-    required: true,
+    required: function() {
+      // This will be validated in the controller based on event type
+      return false; // We'll handle this in the controller
+    },
     trim: true,
-    maxlength: 100
+    maxlength: 50
   },
+
+  weight: {
+    type: Number,
+    required: function() {
+      // This will be validated in the controller based on event type
+      return false; // We'll handle this in the controller
+    },
+    min: 0.01,
+    max: 10.0
+  },
+
   isActive: {
     type: Boolean,
     default: true
-  },
-  notes: {
-    type: String,
-    trim: true,
-    maxlength: 500
   }
 }, { timestamps: true });
 
-cockProfileSchema.index({ eventID: 1, ownerName: 1 });
-cockProfileSchema.index({ eventID: 1, legband: 1 });
-cockProfileSchema.index({ legband: 1 }, { unique: true });
+cockProfileSchema.index({ eventID: 1, participantID: 1 });
+cockProfileSchema.index({ eventID: 1, entryNo: 1 }, { unique: true });
+// Only create legband index for documents where legband exists (derby events)
+cockProfileSchema.index({ eventID: 1, legband: 1 }, { unique: true, sparse: true, partialFilterExpression: { legband: { $exists: true, $ne: null } } });
 cockProfileSchema.index({ isActive: 1 });
 cockProfileSchema.index({ eventID: 1 });
 

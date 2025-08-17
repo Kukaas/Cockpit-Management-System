@@ -27,8 +27,8 @@ const EventDetails = () => {
   // Fetch participants for this event
   const { data: participantsData = [] } = useGetAll(`/participants?eventID=${eventId}`)
 
-  // Fetch cock profiles
-  const { data: cockProfilesData = [] } = useGetAll('/cock-profiles')
+  // Fetch cock profiles for this specific event
+  const { data: cockProfilesData = [] } = useGetAll(`/cock-profiles?eventID=${eventId}`)
 
   // Fetch fight schedules for this event
   const { data: fightSchedulesData = [] } = useGetAll(`/fight-schedules/event/${eventId}`)
@@ -81,7 +81,8 @@ const EventDetails = () => {
   )
 
   const cockProfileColumns = createViewOnlyCockProfileColumns(
-    handleViewDetails
+    handleViewDetails,
+    selectedEvent?.eventType
   )
 
   const fightScheduleColumns = createViewOnlyFightScheduleColumns(
@@ -164,14 +165,10 @@ const EventDetails = () => {
                       <p className="text-sm font-medium text-gray-600 mb-1">Name</p>
                       <p className="font-medium text-gray-900">{selectedItem.participantName}</p>
                     </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-600 mb-1">Contact Number</p>
-                      <p className="text-gray-900">{selectedItem.contactNumber}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-600 mb-1">Email</p>
-                      <p className="text-gray-900">{selectedItem.email}</p>
-                    </div>
+                                         <div>
+                       <p className="text-sm font-medium text-gray-600 mb-1">Contact Number</p>
+                       <p className="text-gray-900">{selectedItem.contactNumber}</p>
+                     </div>
                   </div>
                   <div className="mt-4">
                     <p className="text-sm font-medium text-gray-600 mb-1">Address</p>
@@ -215,21 +212,39 @@ const EventDetails = () => {
                   <h4 className="font-semibold text-lg mb-3 text-gray-900">Cock Information</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <p className="text-sm font-medium text-gray-600 mb-1">Legband</p>
-                      <p className="font-medium text-gray-900">{selectedItem.legband}</p>
-                    </div>
-                    <div>
                       <p className="text-sm font-medium text-gray-600 mb-1">Entry No.</p>
-                      <p className="text-gray-900">{selectedItem.entryNo}</p>
+                      <p className="font-medium text-gray-900">#{selectedItem.entryNo}</p>
                     </div>
+                    {selectedEvent?.eventType === 'derby' && (
+                      <>
+                        <div>
+                          <p className="text-sm font-medium text-gray-600 mb-1">Legband</p>
+                          <p className="font-medium text-gray-900">{selectedItem.legband || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-600 mb-1">Weight</p>
+                          <p className="font-medium text-gray-900">{selectedItem.weight ? `${selectedItem.weight} kg` : 'N/A'}</p>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-lg mb-3 text-gray-900">Owner Information</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <p className="text-sm font-medium text-gray-600 mb-1">Owner Name</p>
-                      <p className="text-gray-900">{selectedItem.ownerName}</p>
+                      <p className="font-medium text-gray-900">{selectedItem.participantID?.participantName || 'N/A'}</p>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-600 mb-1">Weight</p>
-                      <p className="font-medium text-gray-900">{selectedItem.weight} kg</p>
+                      <p className="text-sm font-medium text-gray-600 mb-1">Contact Number</p>
+                      <p className="font-medium text-gray-900">{selectedItem.participantID?.contactNumber || 'N/A'}</p>
                     </div>
+                  </div>
+                  <div className="mt-4">
+                    <p className="text-sm font-medium text-gray-600 mb-1">Address</p>
+                    <p className="text-gray-900">{selectedItem.participantID?.address || 'N/A'}</p>
                   </div>
                 </div>
 

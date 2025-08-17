@@ -1,26 +1,62 @@
 import CockProfile from '../models/cockProfile.model.js';
+import Event from '../models/event.model.js';
 
 // Create new cock profile
 export const createCockProfile = async (req, res) => {
   try {
-    const { eventID, weight, legband, entryNo, ownerName, notes } = req.body;
+    const { eventID, participantID, entryNo, legband, weight } = req.body;
 
-    // Check if legband already exists for this event
-    const existingCock = await CockProfile.findOne({ eventID, legband });
-    if (existingCock) {
-      return res.status(400).json({ message: 'Cock with this legband already exists for this event' });
+    // Get event details to check event type
+    const event = await Event.findById(eventID);
+    if (!event) {
+      return res.status(404).json({ message: 'Event not found' });
     }
 
-    const cockProfile = new CockProfile({
+    // Check if entry number already exists for this event
+    const existingCock = await CockProfile.findOne({ eventID, entryNo });
+    if (existingCock) {
+      return res.status(400).json({ message: 'Cock with this entry number already exists for this event' });
+    }
+
+
+    // For derby events, validate legband and weight
+    if (event.eventType === 'derby') {
+      if (!legband) {
+        return res.status(400).json({ message: 'Legband is required for derby events' });
+      }
+      if (!weight) {
+        return res.status(400).json({ message: 'Weight is required for derby events' });
+      }
+
+      // Check if legband already exists for this event (only for derby events)
+      const existingLegband = await CockProfile.findOne({ eventID, legband });
+      if (existingLegband) {
+        return res.status(400).json({ message: 'Cock with this legband already exists for this event' });
+      }
+    }
+
+    const cockProfileData = {
       eventID,
-      weight,
-      legband,
-      entryNo,
-      ownerName,
-      notes
-    });
+      participantID,
+      entryNo
+    };
+
+    // Only add legband and weight for derby events
+    if (event.eventType === 'derby') {
+      cockProfileData.legband = legband;
+      cockProfileData.weight = parseFloat(weight);
+    }
+
+    const cockProfile = new CockProfile(cockProfileData);
 
     await cockProfile.save();
+
+    // Populate references for response
+    await cockProfile.populate([
+      { path: 'eventID', select: 'eventName date location eventType' },
+      { path: 'participantID', select: 'participantName contactNumber address' }
+    ]);
+
     res.status(201).json({ message: 'Cock profile created successfully', data: cockProfile });
   } catch (error) {
     res.status(500).json({ message: 'Failed to create cock profile', error: error.message });
@@ -30,19 +66,13 @@ export const createCockProfile = async (req, res) => {
 // Get all cock profiles (with filtering)
 export const getAllCockProfiles = async (req, res) => {
   try {
-    const { page = 1, limit = 10, eventID, ownerName, isActive, search } = req.query;
-    const skip = (page - 1) * limit;
+    const { eventID, isActive, search } = req.query;
 
     let query = {};
 
     // Filter by event
     if (eventID) {
       query.eventID = eventID;
-    }
-
-    // Filter by owner name
-    if (ownerName) {
-      query.ownerName = { $regex: ownerName, $options: 'i' };
     }
 
     // Filter by active status
@@ -53,27 +83,18 @@ export const getAllCockProfiles = async (req, res) => {
     // Search functionality
     if (search) {
       query.$or = [
-        { legband: { $regex: search, $options: 'i' } },
         { entryNo: { $regex: search, $options: 'i' } },
-        { ownerName: { $regex: search, $options: 'i' } }
+        { legband: { $regex: search, $options: 'i' } }
       ];
     }
 
     const cockProfiles = await CockProfile.find(query)
-      .populate('eventID', 'eventName date location')
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(parseInt(limit));
-
-    const total = await CockProfile.countDocuments(query);
+      .populate('eventID', 'eventName date location eventType')
+      .populate('participantID', 'participantName contactNumber address')
+      .sort({ createdAt: -1 });
 
     res.json({
-      data: cockProfiles,
-      pagination: {
-        current: parseInt(page),
-        total: Math.ceil(total / limit),
-        totalRecords: total
-      }
+      data: cockProfiles
     });
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch cock profiles', error: error.message });
@@ -85,7 +106,8 @@ export const getCockProfileById = async (req, res) => {
   try {
     const { id } = req.params;
     const cockProfile = await CockProfile.findById(id)
-      .populate('eventID', 'eventName date location');
+      .populate('eventID', 'eventName date location eventType')
+      .populate('participantID', 'participantName contactNumber address');
 
     if (!cockProfile) {
       return res.status(404).json({ message: 'Cock profile not found' });
@@ -101,30 +123,85 @@ export const getCockProfileById = async (req, res) => {
 export const updateCockProfile = async (req, res) => {
   try {
     const { id } = req.params;
-    const { eventID, weight, legband, entryNo, ownerName, isActive, notes } = req.body;
+    const { eventID, participantID, entryNo, legband, weight, isActive } = req.body;
 
     const cockProfile = await CockProfile.findById(id);
     if (!cockProfile) {
       return res.status(404).json({ message: 'Cock profile not found' });
     }
 
-    // Check if legband is being changed and if it already exists for this event
-    if (legband && legband !== cockProfile.legband) {
+    // Get event details to check event type
+    const event = await Event.findById(eventID || cockProfile.eventID);
+    if (!event) {
+      return res.status(404).json({ message: 'Event not found' });
+    }
+
+    // Check if entry number is being changed and if it already exists for this event
+    if (entryNo && entryNo !== cockProfile.entryNo) {
       const existingCock = await CockProfile.findOne({
         eventID: eventID || cockProfile.eventID,
-        legband,
+        entryNo,
         _id: { $ne: id }
       });
       if (existingCock) {
-        return res.status(400).json({ message: 'Cock with this legband already exists for this event' });
+        return res.status(400).json({ message: 'Cock with this entry number already exists for this event' });
       }
+    }
+
+    // Check if participant is being changed and if they already have a cock profile for this event
+    if (participantID && participantID !== cockProfile.participantID.toString()) {
+      const existingParticipantCock = await CockProfile.findOne({
+        eventID: eventID || cockProfile.eventID,
+        participantID,
+        _id: { $ne: id }
+      });
+      if (existingParticipantCock) {
+        return res.status(400).json({ message: 'Participant already has a cock profile for this event' });
+      }
+    }
+
+    // For derby events, validate legband and weight
+    if (event.eventType === 'derby') {
+      if (!legband) {
+        return res.status(400).json({ message: 'Legband is required for derby events' });
+      }
+      if (!weight) {
+        return res.status(400).json({ message: 'Weight is required for derby events' });
+      }
+
+      // Check if legband is being changed and if it already exists for this event
+      if (legband && legband !== cockProfile.legband) {
+        const existingLegband = await CockProfile.findOne({
+          eventID: eventID || cockProfile.eventID,
+          legband,
+          _id: { $ne: id }
+        });
+        if (existingLegband) {
+          return res.status(400).json({ message: 'Cock with this legband already exists for this event' });
+        }
+      }
+    }
+
+    const updateData = { eventID, participantID, entryNo, isActive };
+
+    // Only include legband and weight for derby events
+    if (event.eventType === 'derby') {
+      updateData.legband = legband;
+      updateData.weight = parseFloat(weight);
+    } else {
+      // For regular events, remove legband and weight if they exist
+      updateData.legband = undefined;
+      updateData.weight = undefined;
     }
 
     const updatedCockProfile = await CockProfile.findByIdAndUpdate(
       id,
-      { eventID, weight, legband, entryNo, ownerName, isActive, notes },
+      updateData,
       { new: true, runValidators: true }
-    ).populate('eventID', 'eventName date location');
+    ).populate([
+      { path: 'eventID', select: 'eventName date location eventType' },
+      { path: 'participantID', select: 'participantName contactNumber address' }
+    ]);
 
     res.json({ message: 'Cock profile updated successfully', data: updatedCockProfile });
   } catch (error) {
@@ -152,47 +229,34 @@ export const deleteCockProfile = async (req, res) => {
 export const getCockProfilesByEvent = async (req, res) => {
   try {
     const { eventID } = req.params;
-    const { page = 1, limit = 10, ownerName, isActive } = req.query;
-    const skip = (page - 1) * limit;
+    const { isActive } = req.query;
 
     let query = { eventID };
-
-    if (ownerName) {
-      query.ownerName = { $regex: ownerName, $options: 'i' };
-    }
 
     if (isActive !== undefined) {
       query.isActive = isActive === 'true';
     }
 
     const cockProfiles = await CockProfile.find(query)
-      .populate('eventID', 'eventName date location')
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(parseInt(limit));
-
-    const total = await CockProfile.countDocuments(query);
+      .populate('eventID', 'eventName date location eventType')
+      .populate('participantID', 'participantName contactNumber address')
+      .sort({ createdAt: -1 });
 
     res.json({
-      data: cockProfiles,
-      pagination: {
-        current: parseInt(page),
-        total: Math.ceil(total / limit),
-        totalRecords: total
-      }
+      data: cockProfiles
     });
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch cock profiles by event', error: error.message });
   }
 };
 
-// Get cock profiles by owner name
-export const getCockProfilesByOwnerName = async (req, res) => {
+// Get cock profiles by participant
+export const getCockProfilesByParticipant = async (req, res) => {
   try {
-    const { ownerName } = req.params;
+    const { participantID } = req.params;
     const { eventID, isActive } = req.query;
 
-    let query = { ownerName: { $regex: ownerName, $options: 'i' } };
+    let query = { participantID };
 
     if (eventID) {
       query.eventID = eventID;
@@ -203,7 +267,8 @@ export const getCockProfilesByOwnerName = async (req, res) => {
     }
 
     const cockProfiles = await CockProfile.find(query)
-      .populate('eventID', 'eventName date location')
+      .populate('eventID', 'eventName date location eventType')
+      .populate('participantID', 'participantName contactNumber address')
       .sort({ createdAt: -1 });
 
     res.json({ data: cockProfiles });

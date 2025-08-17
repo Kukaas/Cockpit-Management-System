@@ -8,6 +8,7 @@ import { useGetAll, useGetById } from '@/hooks/useApiQueries'
 import { useCreateMutation, usePutMutation, useCustomMutation } from '@/hooks/useApiMutations'
 import api from '@/services/api'
 import ConfirmationDialog from '@/components/custom/ConfirmationDialog'
+import CustomAlertDialog from '@/components/custom/CustomAlertDialog'
 
 // Import custom components
 import EventDetailsCard from './components/EventDetailsCard'
@@ -35,24 +36,21 @@ const ParticipantRegistration = () => {
   // Selected items for editing/deleting
   const [selectedParticipant, setSelectedParticipant] = useState(null)
   const [selectedCockProfile, setSelectedCockProfile] = useState(null)
+  const [selectedItem, setSelectedItem] = useState(null)
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false)
 
   // Form data
   const [participantFormData, setParticipantFormData] = useState({
     participantName: '',
     contactNumber: '',
-    email: '',
-    address: '',
-    entryFee: '',
-    eventType: '',
-    notes: ''
+    address: ''
   })
 
   const [cockProfileFormData, setCockProfileFormData] = useState({
-    weight: '',
-    legband: '',
     entryNo: '',
-    ownerName: '',
-    notes: ''
+    participantID: '',
+    legband: '',
+    weight: ''
   })
 
   // Fetch event details
@@ -169,26 +167,7 @@ const ParticipantRegistration = () => {
     }
   }, [event, selectedEvent])
 
-  // Set default form values when selectedEvent changes
-  useEffect(() => {
-    if (selectedEvent && selectedEvent._id) {
-      setParticipantFormData(prev => {
-        const newEntryFee = selectedEvent.entryFee?.toString() || ''
-        const newEventType = selectedEvent.eventType || ''
 
-        // Only update if values have actually changed
-        if (prev.entryFee !== newEntryFee ||
-            prev.eventType !== newEventType) {
-          return {
-            ...prev,
-            entryFee: newEntryFee,
-            eventType: newEventType
-          }
-        }
-        return prev
-      })
-    }
-  }, [selectedEvent?._id, selectedEvent?.entryFee, selectedEvent?.eventType])
 
   // Use the API data directly instead of local state
   const participants = participantsData || []
@@ -207,28 +186,22 @@ const ParticipantRegistration = () => {
     setParticipantFormData({
       participantName: '',
       contactNumber: '',
-      email: '',
-      address: '',
-      entryFee: selectedEvent?.entryFee?.toString() || '',
-      eventType: selectedEvent?.eventType || '',
-      notes: ''
+      address: ''
     })
   }
 
   const resetCockProfileForm = () => {
     setCockProfileFormData({
-      eventID: eventId,
-      weight: '',
-      legband: '',
       entryNo: '',
-      ownerName: '',
-      notes: ''
+      participantID: '',
+      legband: '',
+      weight: ''
     })
   }
 
   // Submit handlers
   const handleAddParticipant = async () => {
-    const requiredFields = ['participantName', 'contactNumber', 'email', 'address', 'entryFee','eventType']
+    const requiredFields = ['participantName', 'contactNumber', 'address']
     const missingFields = requiredFields.filter(field => !participantFormData[field])
 
     if (missingFields.length > 0) {
@@ -238,15 +211,14 @@ const ParticipantRegistration = () => {
 
     const participantData = {
       ...participantFormData,
-      eventID: eventId,
-      entryFee: parseFloat(participantFormData.entryFee),
+      eventID: eventId
     }
 
     createParticipantMutation.mutate(participantData)
   }
 
   const handleAddCockProfile = async () => {
-    const requiredFields = ['weight', 'legband', 'entryNo', 'ownerName']
+    const requiredFields = ['entryNo', 'participantID']
     const missingFields = requiredFields.filter(field => !cockProfileFormData[field])
 
     if (missingFields.length > 0) {
@@ -254,10 +226,20 @@ const ParticipantRegistration = () => {
       return
     }
 
+    // For derby events, also require legband and weight
+    if (selectedEvent?.eventType === 'derby') {
+      const derbyRequiredFields = ['entryNo', 'participantID', 'legband', 'weight']
+      const derbyMissingFields = derbyRequiredFields.filter(field => !cockProfileFormData[field])
+
+      if (derbyMissingFields.length > 0) {
+        toast.error(`Please fill in all required fields: ${derbyMissingFields.join(', ')}`)
+        return
+      }
+    }
+
     const cockProfileData = {
       ...cockProfileFormData,
-      eventID: eventId, // Automatically set the event ID
-      weight: parseFloat(cockProfileFormData.weight)
+      eventID: eventId // Automatically set the event ID
     }
 
     createCockProfileMutation.mutate(cockProfileData)
@@ -266,7 +248,7 @@ const ParticipantRegistration = () => {
   const handleEditParticipant = async () => {
     if (!selectedParticipant) return
 
-    const requiredFields = ['participantName', 'contactNumber', 'email', 'address', 'entryFee', 'eventType']
+    const requiredFields = ['participantName', 'contactNumber', 'address']
     const missingFields = requiredFields.filter(field => !participantFormData[field])
 
     if (missingFields.length > 0) {
@@ -275,8 +257,7 @@ const ParticipantRegistration = () => {
     }
 
     const participantData = {
-      ...participantFormData,
-      entryFee: parseFloat(participantFormData.entryFee)
+      ...participantFormData
     }
 
     updateParticipantMutation.mutate({
@@ -288,7 +269,7 @@ const ParticipantRegistration = () => {
   const handleEditCockProfile = async () => {
     if (!selectedCockProfile) return
 
-    const requiredFields = ['weight', 'legband', 'entryNo', 'ownerName']
+    const requiredFields = ['entryNo', 'participantID']
     const missingFields = requiredFields.filter(field => !cockProfileFormData[field])
 
     if (missingFields.length > 0) {
@@ -296,9 +277,19 @@ const ParticipantRegistration = () => {
       return
     }
 
+    // For derby events, also require legband and weight
+    if (selectedEvent?.eventType === 'derby') {
+      const derbyRequiredFields = ['entryNo', 'participantID', 'legband', 'weight']
+      const derbyMissingFields = derbyRequiredFields.filter(field => !cockProfileFormData[field])
+
+      if (derbyMissingFields.length > 0) {
+        toast.error(`Please fill in all required fields: ${derbyMissingFields.join(', ')}`)
+        return
+      }
+    }
+
     const cockProfileData = {
-      ...cockProfileFormData,
-      weight: parseFloat(cockProfileFormData.weight)
+      ...cockProfileFormData
     }
 
     updateCockProfileMutation.mutate({
@@ -323,11 +314,7 @@ const ParticipantRegistration = () => {
     setParticipantFormData({
       participantName: participant.participantName,
       contactNumber: participant.contactNumber,
-      email: participant.email,
-      address: participant.address,
-      entryFee: participant.entryFee.toString(),
-      eventType: participant.eventType,
-      notes: participant.notes || ''
+      address: participant.address
     })
     setEditParticipantDialogOpen(true)
   }
@@ -335,12 +322,10 @@ const ParticipantRegistration = () => {
   const handleEditCockProfileClick = (cockProfile) => {
     setSelectedCockProfile(cockProfile)
     setCockProfileFormData({
-      eventID: cockProfile.eventID,
-      weight: cockProfile.weight.toString(),
-      legband: cockProfile.legband,
       entryNo: cockProfile.entryNo,
-      ownerName: cockProfile.ownerName,
-      notes: cockProfile.notes || ''
+      participantID: cockProfile.participantID?._id || cockProfile.participantID,
+      legband: cockProfile.legband || '',
+      weight: cockProfile.weight || ''
     })
     setEditCockProfileDialogOpen(true)
   }
@@ -353,6 +338,17 @@ const ParticipantRegistration = () => {
   const handleDeleteCockProfileClick = (cockProfile) => {
     setSelectedCockProfile(cockProfile)
     setDeleteCockProfileDialogOpen(true)
+  }
+
+  // Handle view details
+  const handleViewDetails = (item, type) => {
+    setSelectedItem({ ...item, type })
+    setDetailDialogOpen(true)
+  }
+
+  const handleCloseDetails = () => {
+    setDetailDialogOpen(false)
+    setSelectedItem(null)
   }
 
   // Format functions
@@ -378,16 +374,18 @@ const ParticipantRegistration = () => {
 
   // Create table columns
   const participantColumns = createParticipantColumns(
-    formatCurrency,
     handleEditParticipantClick,
     handleDeleteParticipantClick,
+    handleViewDetails,
     isEventCompleted
   )
 
   const cockProfileColumns = createCockProfileColumns(
     handleEditCockProfileClick,
     handleDeleteCockProfileClick,
-    isEventCompleted
+    handleViewDetails,
+    isEventCompleted,
+    selectedEvent?.eventType
   )
 
   if (eventLoading) {
@@ -453,7 +451,6 @@ const ParticipantRegistration = () => {
         onCancel={() => setAddParticipantDialogOpen(false)}
         isPending={createParticipantMutation.isPending}
         isEdit={false}
-        eventId={eventId}
       />
 
                            {/* Add Cock Profile Dialog */}
@@ -483,10 +480,9 @@ const ParticipantRegistration = () => {
         onCancel={() => setEditParticipantDialogOpen(false)}
         isPending={updateParticipantMutation.isPending}
         isEdit={true}
-        eventId={eventId}
       />
 
-                           {/* Edit Cock Profile Dialog */}
+                                                       {/* Edit Cock Profile Dialog */}
         <CockProfileForm
           open={editCockProfileDialogOpen}
           onOpenChange={setEditCockProfileDialogOpen}
@@ -515,21 +511,135 @@ const ParticipantRegistration = () => {
         loading={deleteParticipantMutation.isPending}
       />
 
-      {/* Delete Cock Profile Confirmation Dialog */}
-      <ConfirmationDialog
-        open={deleteCockProfileDialogOpen}
-        onOpenChange={setDeleteCockProfileDialogOpen}
-        title="Delete Cock Profile"
-        description={`Are you sure you want to delete the cock profile with legband "${selectedCockProfile?.legband}"? This action cannot be undone.`}
-        confirmText="Delete Profile"
-        cancelText="Cancel"
-        onConfirm={handleDeleteCockProfile}
-        onCancel={() => setDeleteCockProfileDialogOpen(false)}
-        variant="destructive"
-        loading={deleteCockProfileMutation.isPending}
-      />
-    </PageLayout>
-  )
-}
+             {/* Delete Cock Profile Confirmation Dialog */}
+       <ConfirmationDialog
+         open={deleteCockProfileDialogOpen}
+         onOpenChange={setDeleteCockProfileDialogOpen}
+         title="Delete Cock Profile"
+         description={`Are you sure you want to delete the cock profile with entry number "${selectedCockProfile?.entryNo}"? This action cannot be undone.`}
+         confirmText="Delete Profile"
+         cancelText="Cancel"
+         onConfirm={handleDeleteCockProfile}
+         onCancel={() => setDeleteCockProfileDialogOpen(false)}
+         variant="destructive"
+                  loading={deleteCockProfileMutation.isPending}
+       />
+
+       {/* Detail View Dialog */}
+       <CustomAlertDialog
+         open={detailDialogOpen}
+         onOpenChange={setDetailDialogOpen}
+         title={`${selectedItem?.type === 'participant' ? 'Participant' : 'Cock Profile'} Details`}
+         description={`Detailed information for ${selectedItem?.type === 'participant' ? 'this participant' : 'this cock profile'}`}
+         maxHeight="max-h-[85vh]"
+         actions={
+           <Button onClick={handleCloseDetails} className="w-full sm:w-auto">
+             Close
+           </Button>
+         }
+       >
+         {selectedItem && (
+           <div className="space-y-6 overflow-y-auto pr-2">
+             {selectedItem.type === 'participant' && (
+               <div className="space-y-4">
+                 <div className="bg-gray-50 p-4 rounded-lg">
+                   <h4 className="font-semibold text-lg mb-3 text-gray-900">Personal Information</h4>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     <div>
+                       <p className="text-sm font-medium text-gray-600 mb-1">Name</p>
+                       <p className="font-medium text-gray-900">{selectedItem.participantName}</p>
+                     </div>
+                     <div>
+                       <p className="text-sm font-medium text-gray-600 mb-1">Contact Number</p>
+                       <p className="text-gray-900">{selectedItem.contactNumber}</p>
+                     </div>
+                   </div>
+                   <div className="mt-4">
+                     <p className="text-sm font-medium text-gray-600 mb-1">Address</p>
+                     <p className="text-gray-900">{selectedItem.address}</p>
+                   </div>
+                 </div>
+
+                 <div className="bg-gray-50 p-4 rounded-lg">
+                   <h4 className="font-semibold text-lg mb-3 text-gray-900">Registration Details</h4>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     <div>
+                       <p className="text-sm font-medium text-gray-600 mb-1">Status</p>
+                       <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                         selectedItem.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                         selectedItem.status === 'withdrawn' ? 'bg-red-100 text-red-800' :
+                         selectedItem.status === 'disqualified' ? 'bg-gray-100 text-gray-800' :
+                         'bg-blue-100 text-blue-800'
+                       }`}>
+                         {selectedItem.status.charAt(0).toUpperCase() + selectedItem.status.slice(1)}
+                       </span>
+                     </div>
+                     <div>
+                       <p className="text-sm font-medium text-gray-600 mb-1">Registration Date</p>
+                       <p className="text-gray-900">{formatDate(selectedItem.registrationDate)}</p>
+                     </div>
+                   </div>
+                 </div>
+               </div>
+             )}
+
+             {selectedItem.type === 'cockProfile' && (
+               <div className="space-y-4">
+                 <div className="bg-gray-50 p-4 rounded-lg">
+                   <h4 className="font-semibold text-lg mb-3 text-gray-900">Cock Information</h4>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     <div>
+                       <p className="text-sm font-medium text-gray-600 mb-1">Entry No.</p>
+                       <p className="font-medium text-gray-900">#{selectedItem.entryNo}</p>
+                     </div>
+                     {selectedEvent?.eventType === 'derby' && (
+                       <>
+                         <div>
+                           <p className="text-sm font-medium text-gray-600 mb-1">Legband</p>
+                           <p className="font-medium text-gray-900">{selectedItem.legband || 'N/A'}</p>
+                         </div>
+                         <div>
+                           <p className="text-sm font-medium text-gray-600 mb-1">Weight</p>
+                           <p className="font-medium text-gray-900">{selectedItem.weight ? `${selectedItem.weight} kg` : 'N/A'}</p>
+                         </div>
+                       </>
+                     )}
+                   </div>
+                 </div>
+
+                 <div className="bg-gray-50 p-4 rounded-lg">
+                   <h4 className="font-semibold text-lg mb-3 text-gray-900">Owner Information</h4>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     <div>
+                       <p className="text-sm font-medium text-gray-600 mb-1">Owner Name</p>
+                       <p className="font-medium text-gray-900">{selectedItem.participantID?.participantName || 'N/A'}</p>
+                     </div>
+                     <div>
+                       <p className="text-sm font-medium text-gray-600 mb-1">Contact Number</p>
+                       <p className="font-medium text-gray-900">{selectedItem.participantID?.contactNumber || 'N/A'}</p>
+                     </div>
+                   </div>
+                   <div className="mt-4">
+                     <p className="text-sm font-medium text-gray-600 mb-1">Address</p>
+                     <p className="text-gray-900">{selectedItem.participantID?.address || 'N/A'}</p>
+                   </div>
+                 </div>
+
+                 <div className="bg-gray-50 p-4 rounded-lg">
+                   <h4 className="font-semibold text-lg mb-3 text-gray-900">Status</h4>
+                   <span className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${
+                     selectedItem.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                   }`}>
+                     {selectedItem.isActive ? 'Active' : 'Inactive'}
+                   </span>
+                 </div>
+               </div>
+             )}
+           </div>
+         )}
+       </CustomAlertDialog>
+     </PageLayout>
+   )
+ }
 
 export default ParticipantRegistration
