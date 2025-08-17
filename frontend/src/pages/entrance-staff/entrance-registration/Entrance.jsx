@@ -32,12 +32,7 @@ const Entrance = () => {
 
   // Form data
   const [entranceFormData, setEntranceFormData] = useState({
-    personName: '',
-    contactNumber: '',
-    email: '',
-    address: '',
-    entranceFee: '',
-    notes: ''
+    count: 1
   })
 
   // Fetch event details
@@ -48,10 +43,9 @@ const Entrance = () => {
 
   // Mutations
   const createEntranceMutation = useCreateMutation('/entrances', {
-    successMessage: 'Entrance fee recorded successfully',
+    successMessage: 'Entrance tally recorded successfully',
     errorMessage: (error) => {
-      // Extract the actual error message from the backend response
-      return error?.response?.data?.message || 'Failed to record entrance fee'
+      return error?.response?.data?.message || 'Failed to record entrance tally'
     },
     onSuccess: () => {
       setAddEntranceDialogOpen(false)
@@ -63,7 +57,6 @@ const Entrance = () => {
   const updateEntranceMutation = usePutMutation('/entrances', {
     successMessage: 'Entrance record updated successfully',
     errorMessage: (error) => {
-      // Extract the actual error message from the backend response
       return error?.response?.data?.message || 'Failed to update entrance record'
     },
     onSuccess: () => {
@@ -82,7 +75,6 @@ const Entrance = () => {
     {
       successMessage: 'Entrance record deleted successfully',
       errorMessage: (error) => {
-        // Extract the actual error message from the backend response
         return error?.response?.data?.message || 'Failed to delete entrance record'
       },
       onSuccess: () => {
@@ -100,24 +92,6 @@ const Entrance = () => {
     }
   }, [event, selectedEvent])
 
-  // Set default form values when selectedEvent changes
-  useEffect(() => {
-    if (selectedEvent && selectedEvent._id) {
-      setEntranceFormData(prev => {
-        const newEntranceFee = selectedEvent.entryFee?.toString() || ''
-
-        // Only update if values have actually changed
-        if (prev.entranceFee !== newEntranceFee) {
-          return {
-            ...prev,
-            entranceFee: newEntranceFee
-          }
-        }
-        return prev
-      })
-    }
-  }, [selectedEvent?._id, selectedEvent?.entryFee])
-
   // Use the API data directly instead of local state
   const entrances = entrancesData || []
 
@@ -128,29 +102,20 @@ const Entrance = () => {
 
   const resetEntranceForm = () => {
     setEntranceFormData({
-      personName: '',
-      contactNumber: '',
-      email: '',
-      address: '',
-      entranceFee: selectedEvent?.entryFee?.toString() || '',
-      notes: ''
+      count: 1
     })
   }
 
   // Submit handlers
   const handleAddEntrance = async () => {
-    const requiredFields = ['personName', 'contactNumber', 'email', 'address', 'entranceFee']
-    const missingFields = requiredFields.filter(field => !entranceFormData[field])
-
-    if (missingFields.length > 0) {
-      toast.error(`Please fill in all required fields: ${missingFields.join(', ')}`)
+    if (!entranceFormData.count || entranceFormData.count < 1) {
+      toast.error('Please enter a valid count (minimum 1)')
       return
     }
 
     const entranceData = {
-      ...entranceFormData,
       eventID: eventId,
-      entranceFee: parseFloat(entranceFormData.entranceFee)
+      count: Number(entranceFormData.count)
     }
 
     createEntranceMutation.mutate(entranceData)
@@ -159,17 +124,13 @@ const Entrance = () => {
   const handleEditEntrance = async () => {
     if (!selectedEntrance) return
 
-    const requiredFields = ['personName', 'contactNumber', 'email', 'address', 'entranceFee']
-    const missingFields = requiredFields.filter(field => !entranceFormData[field])
-
-    if (missingFields.length > 0) {
-      toast.error(`Please fill in all required fields: ${missingFields.join(', ')}`)
+    if (!entranceFormData.count || entranceFormData.count < 1) {
+      toast.error('Please enter a valid count (minimum 1)')
       return
     }
 
     const entranceData = {
-      ...entranceFormData,
-      entranceFee: parseFloat(entranceFormData.entranceFee)
+      count: Number(entranceFormData.count)
     }
 
     updateEntranceMutation.mutate({
@@ -187,12 +148,7 @@ const Entrance = () => {
   const handleEditEntranceClick = (entrance) => {
     setSelectedEntrance(entrance)
     setEntranceFormData({
-      personName: entrance.personName,
-      contactNumber: entrance.contactNumber,
-      email: entrance.email,
-      address: entrance.address,
-      entranceFee: entrance.entranceFee.toString(),
-      notes: entrance.notes || ''
+      count: entrance.count
     })
     setEditEntranceDialogOpen(true)
   }
@@ -223,9 +179,12 @@ const Entrance = () => {
   // Check if event is completed or cancelled
   const isEventCompleted = selectedEvent?.status === 'completed' || selectedEvent?.status === 'cancelled'
 
+  // Calculate total entrances and revenue
+  const totalEntrances = entrances.reduce((sum, entrance) => sum + entrance.count, 0)
+  const totalRevenue = totalEntrances * 100 // 100 pesos per entrance
+
   // Create table columns
   const entranceColumns = createEntranceColumns(
-    formatCurrency,
     formatDate,
     handleEditEntranceClick,
     handleDeleteEntranceClick,
@@ -254,8 +213,8 @@ const Entrance = () => {
 
   return (
     <PageLayout
-      title={`Entrance Registration - ${selectedEvent.eventName}`}
-      description="Record entrance fees and manage entrance records for this event"
+      title={`Entrance Tally - ${selectedEvent.eventName}`}
+      description="Record entrance tallies and manage entrance records for this event"
       headerButton={
         <Button variant="outline" onClick={() => navigate('/entrance-staff/entrance-registration')}>
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -270,13 +229,29 @@ const Entrance = () => {
         formatCurrency={formatCurrency}
       />
 
+      {/* Summary Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="bg-white p-4 rounded-lg border shadow-sm">
+          <h3 className="text-sm font-medium text-gray-600">Total Tally Records</h3>
+          <p className="text-2xl font-bold text-gray-900">{entrances.length}</p>
+        </div>
+        <div className="bg-white p-4 rounded-lg border shadow-sm">
+          <h3 className="text-sm font-medium text-gray-600">Total Entrances</h3>
+          <p className="text-2xl font-bold text-blue-600">{totalEntrances}</p>
+        </div>
+        <div className="bg-white p-4 rounded-lg border shadow-sm">
+          <h3 className="text-sm font-medium text-gray-600">Total Revenue</h3>
+          <p className="text-2xl font-bold text-green-600">{formatCurrency(totalRevenue)}</p>
+        </div>
+      </div>
+
       {/* Entrance Records Section */}
       <div className="space-y-4">
         <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold">Entrance Records ({entrances.length})</h3>
+          <h3 className="text-lg font-semibold">Entrance Tally Records ({entrances.length})</h3>
           <Button onClick={() => setAddEntranceDialogOpen(true)} disabled={isEventCompleted}>
             <Plus className="h-4 w-4 mr-2" />
-            Record Entrance
+            Add Tally
           </Button>
         </div>
         <DataTable
@@ -285,9 +260,9 @@ const Entrance = () => {
           pageSize={10}
           searchable={true}
           filterable={true}
-          title="Entrance Records"
+          title="Entrance Tally Records"
           loading={false}
-          emptyMessage="No entrance records yet"
+          emptyMessage="No entrance tally records yet"
           className="shadow-sm"
         />
       </div>
@@ -296,8 +271,8 @@ const Entrance = () => {
       <EntranceForm
         open={addEntranceDialogOpen}
         onOpenChange={setAddEntranceDialogOpen}
-        title="Record Entrance Fee"
-        description="Record a new entrance fee payment"
+        title="Add Entrance Tally"
+        description="Record a new entrance tally"
         formData={entranceFormData}
         onInputChange={handleEntranceInputChange}
         onSubmit={handleAddEntrance}
@@ -310,8 +285,8 @@ const Entrance = () => {
       <EntranceForm
         open={editEntranceDialogOpen}
         onOpenChange={setEditEntranceDialogOpen}
-        title="Edit Entrance Record"
-        description="Update entrance record information"
+        title="Edit Entrance Tally"
+        description="Update entrance tally record"
         formData={entranceFormData}
         onInputChange={handleEntranceInputChange}
         onSubmit={handleEditEntrance}
@@ -324,8 +299,8 @@ const Entrance = () => {
       <ConfirmationDialog
         open={deleteEntranceDialogOpen}
         onOpenChange={setDeleteEntranceDialogOpen}
-        title="Delete Entrance Record"
-        description={`Are you sure you want to delete the entrance record for "${selectedEntrance?.personName}"? This action cannot be undone.`}
+        title="Delete Entrance Tally"
+        description={`Are you sure you want to delete this tally record of ${selectedEntrance?.count} entrances? This action cannot be undone.`}
         confirmText="Delete Record"
         cancelText="Cancel"
         onConfirm={handleDeleteEntrance}

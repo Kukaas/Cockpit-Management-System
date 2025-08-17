@@ -8,38 +8,12 @@ const entranceSchema = new mongoose.Schema({
     required: true
   },
 
-  // Person Information (for potential participant registration later)
-  personName: {
-    type: String,
-    required: true,
-    trim: true,
-    maxlength: 100
-  },
-  contactNumber: {
-    type: String,
-    required: true,
-    trim: true,
-    maxlength: 20
-  },
-  email: {
-    type: String,
-    required: true,
-    trim: true,
-    lowercase: true,
-    maxlength: 100
-  },
-  address: {
-    type: String,
-    required: true,
-    trim: true,
-    maxlength: 200
-  },
-
-  // Entrance Details
-  entranceFee: {
+  // Tally Information
+  count: {
     type: Number,
     required: true,
-    min: 0
+    min: 1,
+    default: 1
   },
 
   // Date and Time
@@ -54,20 +28,6 @@ const entranceSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
-  },
-
-  // Optional tracking fields
-  notes: {
-    type: String,
-    trim: true,
-    maxlength: 500
-  },
-
-  // Status for tracking purposes
-  status: {
-    type: String,
-    enum: ['paid', 'unpaid'],
-    default: 'paid'
   }
 }, {
   timestamps: true
@@ -77,9 +37,6 @@ const entranceSchema = new mongoose.Schema({
 entranceSchema.index({ eventID: 1, date: -1 });
 entranceSchema.index({ recordedBy: 1 });
 entranceSchema.index({ date: -1 });
-entranceSchema.index({ status: 1 });
-entranceSchema.index({ personName: 1 });
-entranceSchema.index({ email: 1 });
 
 // Virtual for getting event details
 entranceSchema.virtual('event', {

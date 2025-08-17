@@ -6,7 +6,6 @@ import {
   updateEntrance,
   deleteEntrance,
   getEntrancesByEvent,
-  getEntrancesByName,
   getEntranceStats
 } from '../controllers/entrance.controller.js';
 import {
@@ -20,7 +19,6 @@ const router = express.Router();
 router.get('/', verifyToken, getAllEntrances);
 router.get('/:id', verifyToken, getEntranceById);
 router.get('/event/:eventID', verifyToken, getEntrancesByEvent);
-router.get('/name/:personName', verifyToken, getEntrancesByName);
 router.get('/stats/:eventID', verifyToken, getEntranceStats);
 
 // Routes requiring admin, event_staff, or entrance_staff role

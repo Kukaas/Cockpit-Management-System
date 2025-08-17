@@ -1,26 +1,20 @@
 import Entrance from '../models/entrance.model.js';
 import Event from '../models/event.model.js';
 
-// Record entrance fee
+// Record entrance tally
 export const recordEntrance = async (req, res) => {
   try {
     const {
       eventID,
-      personName,
-      contactNumber,
-      email,
-      address,
-      entranceFee,
-      date,
-      notes
+      count
     } = req.body;
     const recordedBy = req.user._id;
 
     // Validate required fields
-    if (!eventID || !personName || !contactNumber || !email || !address || entranceFee === undefined) {
+    if (!eventID || count === undefined || count < 1) {
       return res.status(400).json({
         success: false,
-        message: 'Event ID, person information, and entrance fee are required'
+        message: 'Event ID and count (minimum 1) are required'
       });
     }
 
@@ -40,45 +34,32 @@ export const recordEntrance = async (req, res) => {
       });
     }
 
-    // Validate entrance fee matches event entrance fee
-    if (entranceFee !== event.entryFee) {
-      return res.status(400).json({
-        success: false,
-        message: `Entrance fee must be ${event.entryFee} (event entrance fee)`
-      });
-    }
-
     // Create entrance record
     const entrance = new Entrance({
       eventID,
-      personName,
-      contactNumber,
-      email,
-      address,
-      entranceFee,
-      date: date ? new Date(date) : new Date(),
-      recordedBy,
-      notes
+      count: Number(count),
+      date: new Date(),
+      recordedBy
     });
 
     await entrance.save();
 
     // Populate references for response
     await entrance.populate([
-      { path: 'eventID', select: 'eventName date location entryFee' },
+      { path: 'eventID', select: 'eventName date location maxCapacity' },
       { path: 'recordedBy', select: 'username firstName lastName' }
     ]);
 
     res.status(201).json({
       success: true,
-      message: 'Entrance fee recorded successfully',
+      message: 'Entrance tally recorded successfully',
       data: entrance
     });
   } catch (error) {
     console.error('Error recording entrance:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to record entrance fee',
+      message: 'Failed to record entrance tally',
       error: error.message
     });
   }
@@ -88,27 +69,18 @@ export const recordEntrance = async (req, res) => {
 export const getAllEntrances = async (req, res) => {
   try {
     const {
-      page = 1,
-      limit = 10,
+      page,
+      limit,
       eventID,
-      status,
       dateFrom,
-      dateTo,
-      search
+      dateTo
     } = req.query;
-
-    const skip = (Number(page) - 1) * Number(limit);
 
     let query = {};
 
     // Filter by event
     if (eventID) {
       query.eventID = eventID;
-    }
-
-    // Filter by status
-    if (status) {
-      query.status = status;
     }
 
     // Filter by date range
@@ -118,36 +90,39 @@ export const getAllEntrances = async (req, res) => {
       if (dateTo) query.date.$lte = new Date(dateTo);
     }
 
-    // Search functionality
-    if (search) {
-      query.$or = [
-        { personName: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } },
-        { contactNumber: { $regex: search, $options: 'i' } },
-        { address: { $regex: search, $options: 'i' } },
-        { notes: { $regex: search, $options: 'i' } }
-      ];
+    // If pagination parameters are provided, use them; otherwise get all records
+    let entrances;
+    let pagination = null;
+
+    if (page && limit) {
+      const skip = (Number(page) - 1) * Number(limit);
+      entrances = await Entrance.find(query)
+        .populate('eventID', 'eventName date location maxCapacity')
+        .populate('recordedBy', 'username firstName lastName')
+        .sort({ date: -1 })
+        .skip(skip)
+        .limit(Number(limit));
+
+      const total = await Entrance.countDocuments(query);
+      pagination = {
+        currentPage: Number(page),
+        totalPages: Math.ceil(total / Number(limit)),
+        totalItems: total,
+        itemsPerPage: Number(limit)
+      };
+    } else {
+      // Get all records without pagination
+      entrances = await Entrance.find(query)
+        .populate('eventID', 'eventName date location maxCapacity')
+        .populate('recordedBy', 'username firstName lastName')
+        .sort({ date: -1 });
     }
-
-    const entrances = await Entrance.find(query)
-      .populate('eventID', 'eventName date location entryFee')
-      .populate('recordedBy', 'username firstName lastName')
-      .sort({ date: -1 })
-      .skip(skip)
-      .limit(Number(limit));
-
-    const total = await Entrance.countDocuments(query);
 
     res.status(200).json({
       success: true,
       message: 'Entrance records retrieved successfully',
       data: entrances,
-      pagination: {
-        currentPage: Number(page),
-        totalPages: Math.ceil(total / Number(limit)),
-        totalItems: total,
-        itemsPerPage: Number(limit)
-      }
+      ...(pagination && { pagination })
     });
   } catch (error) {
     console.error('Error getting entrances:', error);
@@ -165,7 +140,7 @@ export const getEntranceById = async (req, res) => {
     const { id } = req.params;
 
     const entrance = await Entrance.findById(id)
-      .populate('eventID', 'eventName date location entryFee')
+      .populate('eventID', 'eventName date location maxCapacity')
       .populate('recordedBy', 'username firstName lastName');
 
     if (!entrance) {
@@ -194,16 +169,7 @@ export const getEntranceById = async (req, res) => {
 export const updateEntrance = async (req, res) => {
   try {
     const { id } = req.params;
-    const {
-      personName,
-      contactNumber,
-      email,
-      address,
-      entranceFee,
-      date,
-      notes,
-      status
-    } = req.body;
+    const { count } = req.body;
 
     const entrance = await Entrance.findById(id);
     if (!entrance) {
@@ -213,32 +179,22 @@ export const updateEntrance = async (req, res) => {
       });
     }
 
-    // If entrance fee is being updated, validate it matches the event requirement
-    if (entranceFee !== undefined) {
-      const event = await Event.findById(entrance.eventID);
-      if (event && entranceFee !== event.entryFee) {
-        return res.status(400).json({
-          success: false,
-          message: `Entrance fee must be ${event.entryFee} (event entrance fee)`
-        });
-      }
+    // Validate count
+    if (count !== undefined && (count < 1 || !Number.isInteger(Number(count)))) {
+      return res.status(400).json({
+        success: false,
+        message: 'Count must be a positive integer'
+      });
     }
 
     const updatedEntrance = await Entrance.findByIdAndUpdate(
       id,
       {
-        personName,
-        contactNumber,
-        email,
-        address,
-        entranceFee,
-        date: date ? new Date(date) : undefined,
-        notes,
-        status
+        count: count !== undefined ? Number(count) : undefined
       },
       { new: true, runValidators: true }
     ).populate([
-      { path: 'eventID', select: 'eventName date location entryFee' },
+      { path: 'eventID', select: 'eventName date location maxCapacity' },
       { path: 'recordedBy', select: 'username firstName lastName' }
     ]);
 
@@ -290,24 +246,18 @@ export const deleteEntrance = async (req, res) => {
 export const getEntrancesByEvent = async (req, res) => {
   try {
     const { eventID } = req.params;
-    const { page = 1, limit = 10, status } = req.query;
+    const { page = 1, limit = 10 } = req.query;
 
     const skip = (Number(page) - 1) * Number(limit);
 
-    let query = { eventID };
-
-    if (status) {
-      query.status = status;
-    }
-
-    const entrances = await Entrance.find(query)
-      .populate('eventID', 'eventName date location entryFee')
+    const entrances = await Entrance.find({ eventID })
+      .populate('eventID', 'eventName date location maxCapacity')
       .populate('recordedBy', 'username firstName lastName')
       .sort({ date: -1 })
       .skip(skip)
       .limit(Number(limit));
 
-    const total = await Entrance.countDocuments(query);
+    const total = await Entrance.countDocuments({ eventID });
 
     res.status(200).json({
       success: true,
@@ -325,50 +275,6 @@ export const getEntrancesByEvent = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to fetch event entrance records',
-      error: error.message
-    });
-  }
-};
-
-// Get entrances by person name
-export const getEntrancesByName = async (req, res) => {
-  try {
-    const { personName } = req.params;
-    const { page = 1, limit = 10, status } = req.query;
-
-    const skip = (Number(page) - 1) * Number(limit);
-
-    let query = { personName };
-
-    if (status) {
-      query.status = status;
-    }
-
-    const entrances = await Entrance.find(query)
-      .populate('eventID', 'eventName date location entryFee')
-      .populate('recordedBy', 'username firstName lastName')
-      .sort({ date: -1 })
-      .skip(skip)
-      .limit(Number(limit));
-
-    const total = await Entrance.countDocuments(query);
-
-    res.status(200).json({
-      success: true,
-      message: 'Person entrance records retrieved successfully',
-      data: entrances,
-      pagination: {
-        currentPage: Number(page),
-        totalPages: Math.ceil(total / Number(limit)),
-        totalItems: total,
-        itemsPerPage: Number(limit)
-      }
-    });
-  } catch (error) {
-    console.error('Error getting entrances by name:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to fetch person entrance records',
       error: error.message
     });
   }
@@ -394,9 +300,9 @@ export const getEntranceStats = async (req, res) => {
       {
         $group: {
           _id: null,
-          totalEntrances: { $sum: 1 },
-          totalRevenue: { $sum: '$entranceFee' },
-          averageFee: { $avg: '$entranceFee' }
+          totalTallyRecords: { $sum: 1 },
+          totalEntrances: { $sum: '$count' },
+          totalRevenue: { $sum: { $multiply: ['$count', 100] } } // Assuming 100 pesos per entrance
         }
       }
     ]);
@@ -409,8 +315,9 @@ export const getEntranceStats = async (req, res) => {
           _id: {
             $dateToString: { format: '%Y-%m-%d', date: '$date' }
           },
-          count: { $sum: 1 },
-          revenue: { $sum: '$entranceFee' }
+          tallyRecords: { $sum: 1 },
+          entrances: { $sum: '$count' },
+          revenue: { $sum: { $multiply: ['$count', 100] } }
         }
       },
       { $sort: { _id: 1 } }
@@ -420,12 +327,12 @@ export const getEntranceStats = async (req, res) => {
       event: {
         _id: event._id,
         eventName: event.eventName,
-        entryFee: event.entryFee
+        maxCapacity: event.maxCapacity
       },
       summary: stats[0] || {
+        totalTallyRecords: 0,
         totalEntrances: 0,
-        totalRevenue: 0,
-        averageFee: 0
+        totalRevenue: 0
       },
       dailyBreakdown: dailyStats
     };

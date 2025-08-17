@@ -113,25 +113,25 @@ const EventSelection = () => {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => navigate(`/entrance-staff/entrance-registration/${row._id}`)}
+          onClick={() => navigate(`/admin/entrance/${row._id}`)}
           className="flex items-center gap-2"
           disabled={row.status === 'completed' || row.status === 'cancelled'}
         >
           <UserPlus className="h-4 w-4" />
-          Record Entrances
+          View Entrances
         </Button>
       )
     }
   ]
 
   const handleRowClick = (event) => {
-    navigate(`/entrance-staff/entrance-registration/${event._id}`)
+    navigate(`/admin/entrance/${event._id}`)
   }
 
   return (
     <PageLayout
       title="Select Event for Entrance Tally"
-      description="Choose an event to record entrance tallies and manage entrance records"
+      description="Choose an event to view and manage entrance tally records"
     >
       <DataTable
         data={events}

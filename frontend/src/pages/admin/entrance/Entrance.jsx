@@ -1,46 +1,162 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Download, Filter } from 'lucide-react'
+import { ArrowLeft, Plus } from 'lucide-react'
 import PageLayout from '@/layouts/PageLayout'
-import { useGetAll } from '@/hooks/useApiQueries'
+import { toast } from 'sonner'
+import { useGetAll, useGetById } from '@/hooks/useApiQueries'
+import { useCreateMutation, usePutMutation, useCustomMutation } from '@/hooks/useApiMutations'
+import api from '@/services/api'
+import ConfirmationDialog from '@/components/custom/ConfirmationDialog'
 import DataTable from '@/components/custom/DataTable'
-import CustomAlertDialog from '@/components/custom/CustomAlertDialog'
+
+// Import custom components
+import EventDetailsCard from './components/EventDetailsCard'
+import EntranceForm from './components/EntranceForm'
 import { createAdminEntranceColumns } from './components/TableColumns'
-import EntranceStats from './components/EntranceStats'
-import FilterDialog from './components/FilterDialog'
 
 const Entrance = () => {
-  // State for filters
-  const [filters, setFilters] = useState({
-    eventID: '',
-    status: '',
-    dateFrom: '',
-    dateTo: '',
-    search: ''
+  const { eventId } = useParams()
+  const navigate = useNavigate()
+
+  // State management
+  const [selectedEvent, setSelectedEvent] = useState(null)
+
+  // Dialog states
+  const [addEntranceDialogOpen, setAddEntranceDialogOpen] = useState(false)
+  const [editEntranceDialogOpen, setEditEntranceDialogOpen] = useState(false)
+  const [deleteEntranceDialogOpen, setDeleteEntranceDialogOpen] = useState(false)
+
+  // Selected items for editing/deleting
+  const [selectedEntrance, setSelectedEntrance] = useState(null)
+
+  // Form data
+  const [entranceFormData, setEntranceFormData] = useState({
+    count: 1
   })
 
-  // State for filter dialog
-  const [filterDialogOpen, setFilterDialogOpen] = useState(false)
+  // Fetch event details
+  const { data: event, isLoading: eventLoading } = useGetById('/events', eventId)
 
-  // State for detail dialog
-  const [selectedEntrance, setSelectedEntrance] = useState(null)
-  const [detailDialogOpen, setDetailDialogOpen] = useState(false)
+  // Fetch entrances for this event
+  const { data: entrancesData = [], refetch: refetchEntrances } = useGetAll(`/entrances?eventID=${eventId}`)
 
-  // Build query string from filters
-  const buildQueryString = () => {
-    const params = new URLSearchParams()
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value) params.append(key, value)
-    })
-    return params.toString()
+  // Mutations
+  const createEntranceMutation = useCreateMutation('/entrances', {
+    successMessage: 'Entrance tally recorded successfully',
+    errorMessage: (error) => {
+      return error?.response?.data?.message || 'Failed to record entrance tally'
+    },
+    onSuccess: () => {
+      setAddEntranceDialogOpen(false)
+      resetEntranceForm()
+      refetchEntrances()
+    }
+  })
+
+  const updateEntranceMutation = usePutMutation('/entrances', {
+    successMessage: 'Entrance record updated successfully',
+    errorMessage: (error) => {
+      return error?.response?.data?.message || 'Failed to update entrance record'
+    },
+    onSuccess: () => {
+      setEditEntranceDialogOpen(false)
+      setSelectedEntrance(null)
+      resetEntranceForm()
+      refetchEntrances()
+    }
+  })
+
+  const deleteEntranceMutation = useCustomMutation(
+    async ({ id }) => {
+      const response = await api.delete(`/entrances/${id}`)
+      return response.data
+    },
+    {
+      successMessage: 'Entrance record deleted successfully',
+      errorMessage: (error) => {
+        return error?.response?.data?.message || 'Failed to delete entrance record'
+      },
+      onSuccess: () => {
+        setDeleteEntranceDialogOpen(false)
+        setSelectedEntrance(null)
+        refetchEntrances()
+      }
+    }
+  )
+
+  // Update state when data changes
+  useEffect(() => {
+    if (event && event._id && (!selectedEvent || selectedEvent._id !== event._id)) {
+      setSelectedEvent(event)
+    }
+  }, [event, selectedEvent])
+
+  // Use the API data directly instead of local state
+  const entrances = entrancesData || []
+
+  // Form handlers
+  const handleEntranceInputChange = (field, value) => {
+    setEntranceFormData(prev => ({ ...prev, [field]: value }))
   }
 
-  // Fetch entrances with filters
-  const queryString = buildQueryString()
-  const { data: entrancesData = [], isLoading } = useGetAll(`/entrances?${queryString}`)
+  const resetEntranceForm = () => {
+    setEntranceFormData({
+      count: 1
+    })
+  }
 
-  // Fetch events for filter dropdown
-  const { data: events = [] } = useGetAll('/events')
+  // Submit handlers
+  const handleAddEntrance = async () => {
+    if (!entranceFormData.count || entranceFormData.count < 1) {
+      toast.error('Please enter a valid count (minimum 1)')
+      return
+    }
+
+    const entranceData = {
+      eventID: eventId,
+      count: Number(entranceFormData.count)
+    }
+
+    createEntranceMutation.mutate(entranceData)
+  }
+
+  const handleEditEntrance = async () => {
+    if (!selectedEntrance) return
+
+    if (!entranceFormData.count || entranceFormData.count < 1) {
+      toast.error('Please enter a valid count (minimum 1)')
+      return
+    }
+
+    const entranceData = {
+      count: Number(entranceFormData.count)
+    }
+
+    updateEntranceMutation.mutate({
+      id: selectedEntrance._id,
+      data: entranceData
+    })
+  }
+
+  const handleDeleteEntrance = () => {
+    if (!selectedEntrance) return
+    deleteEntranceMutation.mutate({ id: selectedEntrance._id })
+  }
+
+  // Action handlers
+  const handleEditEntranceClick = (entrance) => {
+    setSelectedEntrance(entrance)
+    setEntranceFormData({
+      count: entrance.count
+    })
+    setEditEntranceDialogOpen(true)
+  }
+
+  const handleDeleteEntranceClick = (entrance) => {
+    setSelectedEntrance(entrance)
+    setDeleteEntranceDialogOpen(true)
+  }
 
   // Format functions
   const formatDate = (dateString) => {
@@ -60,237 +176,138 @@ const Entrance = () => {
     }).format(amount)
   }
 
-  // Handle filter changes
-  const handleFilterChange = (field, value) => {
-    setFilters(prev => ({ ...prev, [field]: value }))
-  }
+  // Check if event is completed or cancelled
+  const isEventCompleted = selectedEvent?.status === 'completed' || selectedEvent?.status === 'cancelled'
 
-  // Clear all filters
-  const clearFilters = () => {
-    setFilters({
-      eventID: '',
-      status: '',
-      dateFrom: '',
-      dateTo: '',
-      search: ''
-    })
-  }
-
-  // Check if any filters are active
-  const hasActiveFilters = Object.values(filters).some(value => value !== '')
-
-  // Handle view details
-  const handleViewDetails = (entrance) => {
-    setSelectedEntrance(entrance)
-    setDetailDialogOpen(true)
-  }
-
-  const handleCloseDetails = () => {
-    setDetailDialogOpen(false)
-    setSelectedEntrance(null)
-  }
+  // Calculate total entrances and revenue
+  const totalEntrances = entrances.reduce((sum, entrance) => sum + entrance.count, 0)
+  const totalRevenue = totalEntrances * 100 // 100 pesos per entrance
 
   // Create table columns
-  const entranceColumns = createAdminEntranceColumns(formatCurrency, formatDate, handleViewDetails)
+  const entranceColumns = createAdminEntranceColumns(
+    formatDate,
+    handleEditEntranceClick,
+    handleDeleteEntranceClick,
+    isEventCompleted
+  )
 
-  // Calculate summary statistics
-  const totalEntrances = entrancesData.length
-  const totalRevenue = entrancesData.reduce((sum, entrance) => sum + (entrance.entranceFee || 0), 0)
-  const averageFee = totalEntrances > 0 ? totalRevenue / totalEntrances : 0
+  if (eventLoading) {
+    return (
+      <PageLayout title="Loading..." description="Loading event details...">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        </div>
+      </PageLayout>
+    )
+  }
+
+  if (!selectedEvent) {
+    return (
+      <PageLayout title="Event Not Found" description="The requested event could not be found.">
+        <div className="flex items-center justify-center h-64">
+          <p className="text-gray-500">Event not found</p>
+        </div>
+      </PageLayout>
+    )
+  }
 
   return (
     <PageLayout
-      title="Entrance Records"
-      description="Monitor and view all entrance records across events"
+      title={`Entrance Tally - ${selectedEvent.eventName}`}
+      description="Record entrance tallies and manage entrance records for this event"
       headerButton={
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setFilterDialogOpen(true)}
-            className="flex items-center gap-2"
-          >
-            <Filter className="h-4 w-4" />
-            Filters
-            {hasActiveFilters && (
-              <span className="ml-1 px-2 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full">
-                {Object.values(filters).filter(v => v !== '').length}
-              </span>
-            )}
-          </Button>
-          <Button variant="outline" className="flex items-center gap-2">
-            <Download className="h-4 w-4" />
-            Export
-          </Button>
-        </div>
+        <Button variant="outline" onClick={() => navigate('/admin/entrance')}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Events
+        </Button>
       }
     >
-      {/* Statistics Cards */}
-      <EntranceStats
-        totalEntrances={totalEntrances}
-        totalRevenue={totalRevenue}
-        averageFee={averageFee}
+      {/* Event Details Card */}
+      <EventDetailsCard
+        event={selectedEvent}
+        formatDate={formatDate}
         formatCurrency={formatCurrency}
       />
 
-      {/* Filters Summary */}
-      {hasActiveFilters && (
-        <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <span>Active filters:</span>
-              {filters.eventID && (
-                <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
-                  Event: {events.find(e => e._id === filters.eventID)?.eventName || filters.eventID}
-                </span>
-              )}
-              {filters.status && (
-                <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs capitalize">
-                  Status: {filters.status}
-                </span>
-              )}
-              {filters.dateFrom && (
-                <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs">
-                  From: {formatDate(filters.dateFrom)}
-                </span>
-              )}
-              {filters.dateTo && (
-                <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs">
-                  To: {formatDate(filters.dateTo)}
-                </span>
-              )}
-              {filters.search && (
-                <span className="px-2 py-1 bg-orange-100 text-orange-800 rounded text-xs">
-                  Search: "{filters.search}"
-                </span>
-              )}
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={clearFilters}
-              className="text-red-600 hover:text-red-700"
-            >
-              Clear All
-            </Button>
-          </div>
+      {/* Summary Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="bg-white p-4 rounded-lg border shadow-sm">
+          <h3 className="text-sm font-medium text-gray-600">Total Tally Records</h3>
+          <p className="text-2xl font-bold text-gray-900">{entrances.length}</p>
         </div>
-      )}
+        <div className="bg-white p-4 rounded-lg border shadow-sm">
+          <h3 className="text-sm font-medium text-gray-600">Total Entrances</h3>
+          <p className="text-2xl font-bold text-blue-600">{totalEntrances}</p>
+        </div>
+        <div className="bg-white p-4 rounded-lg border shadow-sm">
+          <h3 className="text-sm font-medium text-gray-600">Total Revenue</h3>
+          <p className="text-2xl font-bold text-green-600">{formatCurrency(totalRevenue)}</p>
+        </div>
+      </div>
 
-      {/* Data Table */}
-      <DataTable
-        data={entrancesData}
-        columns={entranceColumns}
-        pageSize={15}
-        searchable={true}
-        filterable={true}
-        title="Entrance Records"
-        loading={isLoading}
-        emptyMessage="No entrance records found"
-        className="shadow-sm"
-      />
-
-      {/* Filter Dialog */}
-      <FilterDialog
-        open={filterDialogOpen}
-        onOpenChange={setFilterDialogOpen}
-        filters={filters}
-        onFilterChange={handleFilterChange}
-        onClearFilters={clearFilters}
-        events={events}
-      />
-
-      {/* Detail View Dialog */}
-      <CustomAlertDialog
-        open={detailDialogOpen}
-        onOpenChange={setDetailDialogOpen}
-        title="Entrance Record Details"
-        description="Detailed information for this entrance record"
-        maxHeight="max-h-[85vh]"
-        actions={
-          <Button onClick={handleCloseDetails} className="w-full sm:w-auto">
-            Close
+      {/* Entrance Records Section */}
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-semibold">Entrance Tally Records ({entrances.length})</h3>
+          <Button onClick={() => setAddEntranceDialogOpen(true)} disabled={isEventCompleted}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Tally
           </Button>
-        }
-      >
-        {selectedEntrance && (
-          <div className="space-y-6 overflow-y-auto pr-2">
-                         <div className="bg-gray-50 p-4 rounded-lg">
-               <h4 className="font-semibold text-lg mb-3 text-gray-900">Person Information</h4>
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                 <div>
-                   <p className="text-sm font-medium text-gray-600 mb-1">Full Name</p>
-                   <p className="font-medium text-gray-900 break-words">{selectedEntrance.personName}</p>
-                 </div>
-                 <div>
-                   <p className="text-sm font-medium text-gray-600 mb-1">Contact Number</p>
-                   <p className="font-medium text-gray-900 break-words">{selectedEntrance.contactNumber}</p>
-                 </div>
-                 <div className="md:col-span-2">
-                   <p className="text-sm font-medium text-gray-600 mb-1">Email</p>
-                   <p className="font-medium text-gray-900 break-all">{selectedEntrance.email}</p>
-                 </div>
-                 <div>
-                   <p className="text-sm font-medium text-gray-600 mb-1">Status</p>
-                   <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                     selectedEntrance.status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                   }`}>
-                     {selectedEntrance.status.charAt(0).toUpperCase() + selectedEntrance.status.slice(1)}
-                   </span>
-                 </div>
-               </div>
-               <div className="mt-4">
-                 <p className="text-sm font-medium text-gray-600 mb-1">Address</p>
-                 <p className="text-gray-900 break-words">{selectedEntrance.address}</p>
-               </div>
-             </div>
+        </div>
+        <DataTable
+          data={entrances}
+          columns={entranceColumns}
+          pageSize={10}
+          searchable={true}
+          filterable={true}
+          title="Entrance Tally Records"
+          loading={false}
+          emptyMessage="No entrance tally records yet"
+          className="shadow-sm"
+        />
+      </div>
 
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h4 className="font-semibold text-lg mb-3 text-gray-900">Event Information</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Event Name</p>
-                  <p className="font-medium text-gray-900">{selectedEntrance.eventID?.eventName}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Location</p>
-                  <p className="font-medium text-gray-900">{selectedEntrance.eventID?.location}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Event Date</p>
-                  <p className="font-medium text-gray-900">{formatDate(selectedEntrance.eventID?.date)}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Entrance Fee</p>
-                  <p className="font-medium text-green-600">{formatCurrency(selectedEntrance.entranceFee)}</p>
-                </div>
-              </div>
-            </div>
+      {/* Add Entrance Dialog */}
+      <EntranceForm
+        open={addEntranceDialogOpen}
+        onOpenChange={setAddEntranceDialogOpen}
+        title="Add Entrance Tally"
+        description="Record a new entrance tally"
+        formData={entranceFormData}
+        onInputChange={handleEntranceInputChange}
+        onSubmit={handleAddEntrance}
+        onCancel={() => setAddEntranceDialogOpen(false)}
+        isPending={createEntranceMutation.isPending}
+        isEdit={false}
+      />
 
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h4 className="font-semibold text-lg mb-3 text-gray-900">Record Information</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Recorded Date</p>
-                  <p className="font-medium text-gray-900">{formatDate(selectedEntrance.date)}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Recorded By</p>
-                  <p className="font-medium text-gray-900">
-                    {selectedEntrance.recordedBy?.firstName} {selectedEntrance.recordedBy?.lastName}
-                  </p>
-                </div>
-              </div>
-            </div>
+      {/* Edit Entrance Dialog */}
+      <EntranceForm
+        open={editEntranceDialogOpen}
+        onOpenChange={setEditEntranceDialogOpen}
+        title="Edit Entrance Tally"
+        description="Update entrance tally record"
+        formData={entranceFormData}
+        onInputChange={handleEntranceInputChange}
+        onSubmit={handleEditEntrance}
+        onCancel={() => setEditEntranceDialogOpen(false)}
+        isPending={updateEntranceMutation.isPending}
+        isEdit={true}
+      />
 
-            {selectedEntrance.notes && (
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h4 className="font-semibold text-lg mb-3 text-gray-900">Notes</h4>
-                <p className="text-gray-900">{selectedEntrance.notes}</p>
-              </div>
-            )}
-          </div>
-        )}
-      </CustomAlertDialog>
+      {/* Delete Entrance Confirmation Dialog */}
+      <ConfirmationDialog
+        open={deleteEntranceDialogOpen}
+        onOpenChange={setDeleteEntranceDialogOpen}
+        title="Delete Entrance Tally"
+        description={`Are you sure you want to delete this tally record of ${selectedEntrance?.count} entrances? This action cannot be undone.`}
+        confirmText="Delete Record"
+        cancelText="Cancel"
+        onConfirm={handleDeleteEntrance}
+        onCancel={() => setDeleteEntranceDialogOpen(false)}
+        variant="destructive"
+        loading={deleteEntranceMutation.isPending}
+      />
     </PageLayout>
   )
 }
