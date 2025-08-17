@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail, SidebarSeparator } from '@/components/ui/sidebar'
+import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarInset, SidebarRail, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarSeparator } from '@/components/ui/sidebar'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
@@ -24,86 +24,175 @@ const SidebarComponent = () => {
 
 		switch (role) {
 			case 'admin':
-				return [
-					...baseItems,
-					{
-						label: 'User Management',
-						path: '/admin/users',
-						icon: <Users className="size-4" />
-					},
-					{
-						label: 'Event Management',
-						path: '/admin/events',
-						icon: <Calendar className="size-4" />
-					},
-					{
-						label: 'Fight Schedule',
-						path: '/admin/fight-schedule',
-						icon: <Swords className="size-4" />
-					},
-					{
-						label: 'Entrance Records',
-						path: '/admin/entrance',
-						icon: <Ticket className="size-4" />
-					},
-					{
-						label: 'Cage Rentals',
-						path: '/admin/tangkal',
-						icon: <Shield className="size-4" />
-					},
-					{
-						label: 'Cage Availability',
-						path: '/admin/cage-availability',
-						icon: <File className="size-4" />
-					},
-				]
+				return {
+					base: baseItems,
+					categories: [
+						{
+							label: 'Event Management',
+							items: [
+								{
+									label: 'Events',
+									path: '/admin/events',
+									icon: <Calendar className="size-4" />
+								},
+								{
+									label: 'Fight Schedule',
+									path: '/admin/fight-schedule',
+									icon: <Swords className="size-4" />
+								}
+							]
+						},
+						{
+							label: 'Operations',
+							items: [
+								{
+									label: 'Entrance Records',
+									path: '/admin/entrance',
+									icon: <Ticket className="size-4" />
+								},
+								{
+									label: 'Cage Rentals',
+									path: '/admin/tangkal',
+									icon: <Shield className="size-4" />
+								},
+								{
+									label: 'Cage Availability',
+									path: '/admin/cage-availability',
+									icon: <File className="size-4" />
+								}
+							]
+						},
+						{
+							label: 'System',
+							items: [
+								{
+									label: 'User Management',
+									path: '/admin/users',
+									icon: <Users className="size-4" />
+								}
+							]
+						}
+					]
+				}
 			case 'entrance_staff':
-				return [
-					...baseItems,
-					{
-						label: 'Entrance Registration',
-						path: '/entrance-staff/entrance-registration',
-						icon: <CheckSquare className="size-4" />
-					},
-				]
+				return {
+					base: [
+						...baseItems,
+						{
+							label: 'Entrance Registration',
+							path: '/entrance-staff/entrance-registration',
+							icon: <CheckSquare className="size-4" />
+						}
+					],
+					categories: []
+				}
 			case 'tangkal_staff':
-				return [
-					...baseItems,
-					{
-						label: 'Cage Availability',
-						path: '/tangkal-staff/cage-availability',
-						icon: <File className="size-4" />
-					},
-					{
-						label: 'Cage Rentals',
-						path: '/tangkal-staff/cage-rentals',
-						icon: <Shield className="size-4" />
-					},
-				]
+				return {
+					base: [
+						...baseItems,
+						{
+							label: 'Cage Availability',
+							path: '/tangkal-staff/cage-availability',
+							icon: <File className="size-4" />
+						},
+						{
+							label: 'Cage Rentals',
+							path: '/tangkal-staff/cage-rentals',
+							icon: <Shield className="size-4" />
+						}
+					],
+					categories: []
+				}
 			case 'event_staff':
-				return [
-					...baseItems,
-					{
-						label: 'Fight Schedule',
-						path: '/event-staff/fight-schedule',
-						icon: <Swords className="size-4" />
-					}
-				]
+				return {
+					base: [
+						...baseItems,
+						{
+							label: 'Fight Schedule',
+							path: '/event-staff/fight-schedule',
+							icon: <Swords className="size-4" />
+						}
+					],
+					categories: []
+				}
 			case 'registration_staff':
-				return [
-					...baseItems,
-					{
-						label: 'Registrations',
-						path: '/registration-staff/participant-registration',
-						icon: <FileText className="size-4" />
-					},
-				]
+				return {
+					base: [
+						...baseItems,
+						{
+							label: 'Registrations',
+							path: '/registration-staff/participant-registration',
+							icon: <FileText className="size-4" />
+						}
+					],
+					categories: []
+				}
 			default:
-				return baseItems
+				return {
+					base: baseItems,
+					categories: []
+				}
 		}
 	}
 
-	const navigationItems = getNavigationItems(user?.role || 'registration_staff')
+	const navigationData = getNavigationItems(user?.role || 'registration_staff')
+
+	// Render navigation items for non-admin roles (flat structure)
+	const renderFlatNavigation = (items) => {
+		return items.map((item) => (
+			<SidebarMenuItem key={item.path}>
+				<SidebarMenuButton
+					asChild
+					className={`transition-colors duration-200 ${location.pathname === item.path ? 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+				>
+					<Link to={item.path}>
+						<span className={`mr-2 ${location.pathname === item.path ? 'text-gray-700 dark:text-gray-300' : 'text-muted-foreground'}`}>{item.icon}</span>
+						<span className={location.pathname === item.path ? 'font-medium' : ''}>{item.label}</span>
+					</Link>
+				</SidebarMenuButton>
+			</SidebarMenuItem>
+		))
+	}
+
+	// Render categorized navigation for admin
+	const renderCategorizedNavigation = (navigationData) => {
+		return (
+			<>
+				{/* Base items (Dashboard) */}
+				<SidebarGroup>
+					<SidebarGroupContent>
+						<SidebarMenu>
+							{renderFlatNavigation(navigationData.base)}
+						</SidebarMenu>
+					</SidebarGroupContent>
+				</SidebarGroup>
+
+				{/* Categorized items */}
+				{navigationData.categories.map((category, index) => (
+					<SidebarGroup key={index}>
+						<SidebarGroupLabel>{category.label}</SidebarGroupLabel>
+						<SidebarGroupContent>
+							<SidebarMenu>
+								{category.items.map((item) => (
+									<SidebarMenuItem key={item.path}>
+										<SidebarMenuButton
+											asChild
+											className={`transition-colors duration-200 ${location.pathname === item.path ? 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+										>
+											<Link to={item.path}>
+												<span className={`mr-2 ${location.pathname === item.path ? 'text-gray-700 dark:text-gray-300' : 'text-muted-foreground'}`}>{item.icon}</span>
+												<span className={location.pathname === item.path ? 'font-medium' : ''}>{item.label}</span>
+											</Link>
+										</SidebarMenuButton>
+									</SidebarMenuItem>
+								))}
+							</SidebarMenu>
+						</SidebarGroupContent>
+					</SidebarGroup>
+				))}
+			</>
+		)
+	}
 
 	return (
 		<Sidebar>
@@ -117,26 +206,18 @@ const SidebarComponent = () => {
 			</SidebarHeader>
 
 			<SidebarContent>
-				<SidebarGroup>
-					<SidebarGroupLabel>Navigation</SidebarGroupLabel>
-					<SidebarGroupContent>
-						<SidebarMenu>
-							{navigationItems.map((item) => (
-								<SidebarMenuItem key={item.path}>
-									<SidebarMenuButton
-										asChild
-										className={`transition-colors duration-200 ${location.pathname === item.path ? 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}`}
-									>
-									<Link to={item.path}>
-										<span className={`mr-2 ${location.pathname === item.path ? 'text-gray-700 dark:text-gray-300' : 'text-muted-foreground'}`}>{item.icon}</span>
-										<span className={location.pathname === item.path ? 'font-medium' : ''}>{item.label}</span>
-									</Link>
-									</SidebarMenuButton>
-								</SidebarMenuItem>
-							))}
-						</SidebarMenu>
-					</SidebarGroupContent>
-				</SidebarGroup>
+				{user?.role === 'admin' ? (
+					renderCategorizedNavigation(navigationData)
+				) : (
+					<SidebarGroup>
+						<SidebarGroupLabel>Navigation</SidebarGroupLabel>
+						<SidebarGroupContent>
+							<SidebarMenu>
+								{renderFlatNavigation(navigationData.base)}
+							</SidebarMenu>
+						</SidebarGroupContent>
+					</SidebarGroup>
+				)}
 			</SidebarContent>
 
 			<SidebarSeparator />
