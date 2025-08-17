@@ -6,9 +6,7 @@ export const createCageAvailability = async (req, res) => {
         const {
             cageNumber,
             arena = 'Buenavista Cockpit Arena',
-            availabilityNumber,
-            status = 'active',
-            description
+            status = 'active'
         } = req.body;
 
         // Validate required fields
@@ -45,7 +43,6 @@ export const createCageAvailability = async (req, res) => {
             cageNumber,
             arena,
             status,
-            description,
             recordedBy: req.user._id
         });
 
@@ -81,12 +78,119 @@ export const createCageAvailability = async (req, res) => {
     }
 };
 
+// Bulk create cage availability records with auto-generated cage numbers
+export const bulkCreateCageAvailability = async (req, res) => {
+    try {
+        const {
+            arena = 'Buenavista Cockpit Arena',
+            status = 'active',
+            count = 1
+        } = req.body;
+
+        // Validate required fields
+        if (!count || count < 1 || count > 100) {
+            return res.status(400).json({
+                success: false,
+                message: 'Count must be between 1 and 100'
+            });
+        }
+
+        // Validate arena
+        const validArenas = ['Buenavista Cockpit Arena', 'Mogpog Cockpit Arena', 'Boac Cockpit Arena'];
+        if (!validArenas.includes(arena)) {
+            return res.status(400).json({
+                success: false,
+                message: `Invalid arena. Must be one of: ${validArenas.join(', ')}`
+            });
+        }
+
+        // Get existing cages in the arena to check for duplicates
+        const existingCages = await CageAvailability.find({ arena })
+            .select('cageNumber');
+
+        const existingCageNumbers = new Set(existingCages.map(cage => cage.cageNumber));
+
+        // Create cage records with unique numbers
+        const cagesToCreate = [];
+        const createdCages = [];
+
+        for (let i = 0; i < count; i++) {
+            let cageNumber;
+            let attempts = 0;
+            const maxAttempts = 100;
+
+            // Generate unique cage number with 5 digits
+            do {
+                // Generate a random 5-digit number
+                const randomNumber = Math.floor(Math.random() * 90000) + 10000; // 10000 to 99999
+                cageNumber = `C${randomNumber}`;
+                attempts++;
+
+                if (attempts > maxAttempts) {
+                    return res.status(500).json({
+                        success: false,
+                        message: 'Unable to generate unique cage numbers. Please try again.'
+                    });
+                }
+            } while (existingCageNumbers.has(cageNumber));
+
+            // Add to existing numbers set to avoid duplicates within this batch
+            existingCageNumbers.add(cageNumber);
+
+            cagesToCreate.push({
+                cageNumber,
+                arena,
+                status,
+                recordedBy: req.user._id
+            });
+        }
+
+        // Insert all cages
+        if (cagesToCreate.length > 0) {
+            const savedCages = await CageAvailability.insertMany(cagesToCreate);
+
+            // Populate references for response
+            await CageAvailability.populate(savedCages, {
+                path: 'recordedBy',
+                select: 'firstName lastName username'
+            });
+
+            createdCages.push(...savedCages);
+        }
+
+        res.status(201).json({
+            success: true,
+            message: `${createdCages.length} cages created successfully`,
+            data: {
+                createdCages,
+                totalCreated: createdCages.length,
+                arena,
+                status
+            }
+        });
+    } catch (error) {
+        console.error('Error bulk creating cage availability:', error);
+
+        // Handle duplicate key error
+        if (error.code === 11000) {
+            return res.status(400).json({
+                success: false,
+                message: 'Some cage numbers already exist in the selected arena. Please try again.'
+            });
+        }
+
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+            error: error.message
+        });
+    }
+};
+
 // Get all cage availability records with filtering and pagination
 export const getAllCageAvailability = async (req, res) => {
     try {
         const {
-            page = 1,
-            limit = 10,
             status,
             arena,
             search,
@@ -108,8 +212,7 @@ export const getAllCageAvailability = async (req, res) => {
         if (search) {
             filter.$or = [
                 { cageNumber: { $regex: search, $options: 'i' } },
-                { arena: { $regex: search, $options: 'i' } },
-                { description: { $regex: search, $options: 'i' } }
+                { arena: { $regex: search, $options: 'i' } }
             ];
         }
 
@@ -117,29 +220,19 @@ export const getAllCageAvailability = async (req, res) => {
         const sort = {};
         sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
 
-        // Calculate pagination
-        const skip = (Number(page) - 1) * Number(limit);
-
-        // Execute query
+        // Execute query without pagination
         const cageAvailability = await CageAvailability.find(filter)
             .populate('recordedBy', 'firstName lastName username')
-            .sort(sort)
-            .skip(skip)
-            .limit(Number(limit));
+            .sort(sort);
 
-        // Get total count for pagination
+        // Get total count
         const total = await CageAvailability.countDocuments(filter);
 
         res.status(200).json({
             success: true,
             message: 'Cage availability retrieved successfully',
             data: cageAvailability,
-            pagination: {
-                currentPage: Number(page),
-                totalPages: Math.ceil(total / Number(limit)),
-                totalItems: total,
-                itemsPerPage: Number(limit)
-            }
+            total: total
         });
     } catch (error) {
         console.error('Error getting cage availability:', error);

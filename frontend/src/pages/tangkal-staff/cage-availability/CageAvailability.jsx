@@ -30,9 +30,8 @@ const CageAvailability = () => {
   const [cageFormData, setCageFormData] = useState({
     cageNumber: '',
     arena: 'Buenavista Cockpit Arena',
-    availabilityNumber: '',
     status: 'active',
-    description: ''
+    bulkCount: '1'
   })
 
   // Fetch cage availability records
@@ -42,15 +41,15 @@ const CageAvailability = () => {
   const { data: summaryData } = useGetAll('/cage-availability/summary')
 
   // Mutations
-  const createCageMutation = useCreateMutation('/cage-availability', {
-    successMessage: 'Cage availability created successfully',
+  const createCageMutation = useCreateMutation('/cage-availability/bulk', {
+    successMessage: 'Cages created successfully',
     errorMessage: (error) => {
       // Extract the actual error message from the backend response
       const errorMessage = error?.response?.data?.message;
       if (errorMessage) {
         return errorMessage;
       }
-      return 'Failed to create cage availability. Please try again.';
+      return 'Failed to create cages. Please try again.';
     },
     onSuccess: () => {
       setAddCageDialogOpen(false)
@@ -113,13 +112,13 @@ const CageAvailability = () => {
       cageNumber: '',
       arena: 'Buenavista Cockpit Arena',
       status: 'active',
-      description: ''
+      bulkCount: '1'
     })
   }
 
   // Submit handlers
   const handleAddCage = async () => {
-    const requiredFields = ['cageNumber', 'arena']
+    const requiredFields = ['bulkCount', 'arena']
     const missingFields = requiredFields.filter(field => !cageFormData[field])
 
     if (missingFields.length > 0) {
@@ -127,22 +126,16 @@ const CageAvailability = () => {
       return
     }
 
-    // Check for duplicate cage number in the same arena
-    const existingCage = cages.find(cage =>
-      cage.cageNumber === cageFormData.cageNumber &&
-      cage.arena === cageFormData.arena
-    )
-
-    if (existingCage) {
-      toast.error(`Cage number "${cageFormData.cageNumber}" already exists in ${cageFormData.arena}. Please use a different cage number.`)
+    const bulkCount = parseInt(cageFormData.bulkCount)
+    if (bulkCount < 1 || bulkCount > 100) {
+      toast.error('Please enter a valid number of cages (1-100)')
       return
     }
 
     const cageData = {
-      cageNumber: cageFormData.cageNumber,
       arena: cageFormData.arena,
       status: cageFormData.status,
-      description: cageFormData.description
+      count: bulkCount
     }
 
     createCageMutation.mutate(cageData)
@@ -174,8 +167,7 @@ const CageAvailability = () => {
     const cageData = {
       cageNumber: cageFormData.cageNumber,
       arena: cageFormData.arena,
-      status: cageFormData.status,
-      description: cageFormData.description
+      status: cageFormData.status
     }
 
     updateCageMutation.mutate({
@@ -196,7 +188,7 @@ const CageAvailability = () => {
       cageNumber: cage.cageNumber,
       arena: cage.arena,
       status: cage.status,
-      description: cage.description || ''
+      bulkCount: '1'
     })
     setEditCageDialogOpen(true)
   }
@@ -232,7 +224,7 @@ const CageAvailability = () => {
           <h3 className="text-lg font-semibold">Cage Availability ({cages.length})</h3>
           <Button onClick={() => setAddCageDialogOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
-            Add Cage
+            Add Cages
           </Button>
         </div>
         <DataTable
@@ -253,7 +245,7 @@ const CageAvailability = () => {
         open={addCageDialogOpen}
         onOpenChange={setAddCageDialogOpen}
         title="Add Cage Availability"
-        description="Create a new cage availability record"
+        description="Create new cage availability records in bulk"
         formData={cageFormData}
         onInputChange={handleCageInputChange}
         onSubmit={handleAddCage}

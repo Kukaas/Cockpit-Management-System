@@ -1,10 +1,9 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { Shield, MapPin, Hash, Settings, FileText } from 'lucide-react'
+import { Shield, MapPin, Hash, Settings, FileText, Plus, Minus } from 'lucide-react'
 import CustomAlertDialog from '@/components/custom/CustomAlertDialog'
 import InputField from '@/components/custom/InputField'
 import NativeSelect from '@/components/custom/NativeSelect'
@@ -47,7 +46,7 @@ const CageAvailabilityForm = ({
             Cancel
           </Button>
           <Button onClick={onSubmit} disabled={isPending}>
-            {isPending ? (isEdit ? 'Updating...' : 'Creating...') : (isEdit ? 'Update Cage' : 'Create Cage')}
+            {isPending ? (isEdit ? 'Updating...' : 'Creating...') : (isEdit ? 'Update Cage' : 'Create Cages')}
           </Button>
         </>
       }
@@ -55,33 +54,72 @@ const CageAvailabilityForm = ({
       <div className="space-y-6 overflow-y-auto pr-2">
         {/* Cage Information Form */}
         <div className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <InputField
-              id={isEdit ? "editCageNumber" : "cageNumber"}
-              label="Cage Number *"
-              value={formData.cageNumber}
-              onChange={(e) => onInputChange('cageNumber', e.target.value)}
-              placeholder="Enter cage number (e.g., C001)"
-              required
-            />
-            <InputField
-              id={isEdit ? "editAvailabilityNumber" : "availabilityNumber"}
-              label="Availability Number"
-              type="number"
-              value={formData.availabilityNumber}
-              onChange={() => {}}
-              placeholder="Auto-generated"
-              min="1"
-              disabled
-              readOnly
-            />
-          </div>
+          {!isEdit && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="bulkCount" className="text-sm font-medium">
+                  Number of Cages to Create *
+                </Label>
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const currentCount = parseInt(formData.bulkCount) || 1
+                      if (currentCount > 1) {
+                        onInputChange('bulkCount', (currentCount - 1).toString())
+                      }
+                    }}
+                    disabled={parseInt(formData.bulkCount) <= 1}
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <InputField
+                    id="bulkCount"
+                    type="number"
+                    value={formData.bulkCount}
+                    onChange={(e) => onInputChange('bulkCount', e.target.value)}
+                    placeholder="Enter number of cages"
+                    min="1"
+                    max="100"
+                    required
+                    className="w-full"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const currentCount = parseInt(formData.bulkCount) || 1
+                      if (currentCount < 100) {
+                        onInputChange('bulkCount', (currentCount + 1).toString())
+                      }
+                    }}
+                    disabled={parseInt(formData.bulkCount) >= 100}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  You can create up to 100 cages at once. Cage numbers will be auto-generated.
+                </p>
+              </div>
+            </>
+          )}
 
-          <div className="bg-blue-50 p-3 rounded-md border border-blue-200">
-            <p className="text-sm text-blue-800">
-              <strong>Note:</strong> Cage numbers must be unique within each arena. The same cage number can be used in different arenas.
-            </p>
-          </div>
+          {isEdit && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <InputField
+                id="editCageNumber"
+                label="Cage Number *"
+                value={formData.cageNumber}
+                onChange={(e) => onInputChange('cageNumber', e.target.value)}
+                placeholder="Enter cage number (e.g., C001)"
+                required
+              />
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor={isEdit ? "editArena" : "arena"} className="text-sm font-medium">
@@ -117,43 +155,6 @@ const CageAvailabilityForm = ({
                 </option>
               ))}
             </NativeSelect>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor={isEdit ? "editDescription" : "description"} className="text-sm font-medium">
-              Description
-            </Label>
-            <Textarea
-              id={isEdit ? "editDescription" : "description"}
-              value={formData.description}
-              onChange={(e) => onInputChange('description', e.target.value)}
-              placeholder="Enter cage description (optional)"
-              rows={3}
-            />
-          </div>
-        </div>
-
-        {/* Status Information */}
-        <Separator />
-        <div className="space-y-3">
-          <h4 className="text-sm font-medium text-muted-foreground">Status Information</h4>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex items-center gap-2 p-2 bg-green-50 rounded-md">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span className="text-xs text-green-700">Active - Available for rental</span>
-            </div>
-            <div className="flex items-center gap-2 p-2 bg-red-50 rounded-md">
-              <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-              <span className="text-xs text-red-700">Inactive - Not available</span>
-            </div>
-            <div className="flex items-center gap-2 p-2 bg-yellow-50 rounded-md">
-              <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-              <span className="text-xs text-yellow-700">Maintenance - Under repair</span>
-            </div>
-            <div className="flex items-center gap-2 p-2 bg-blue-50 rounded-md">
-              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-              <span className="text-xs text-blue-700">Rented - Currently occupied</span>
-            </div>
           </div>
         </div>
       </div>

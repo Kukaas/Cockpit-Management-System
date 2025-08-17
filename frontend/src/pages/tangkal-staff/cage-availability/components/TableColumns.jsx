@@ -30,18 +30,6 @@ export const createCageAvailabilityColumns = (handleEditClick, handleDeleteClick
     )
   },
   {
-    key: 'availabilityNumber',
-    label: 'Availability No.',
-    sortable: true,
-    filterable: false,
-    render: (value) => (
-      <div className="flex items-center gap-2">
-        <Hash className="h-4 w-4 text-muted-foreground" />
-        <span className="font-mono text-sm">{value}</span>
-      </div>
-    )
-  },
-  {
     key: 'status',
     label: 'Status',
     sortable: true,

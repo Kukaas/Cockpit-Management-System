@@ -1,6 +1,7 @@
 import express from 'express';
 import {
     createCageAvailability,
+    bulkCreateCageAvailability,
     getAllCageAvailability,
     getCageAvailabilityById,
     updateCageAvailability,
@@ -25,6 +26,7 @@ router.get('/:id', verifyToken, getCageAvailabilityById);
 
 // Admin and staff routes
 router.post('/', verifyToken, requireRole(['admin', 'tangkal_staff']), createCageAvailability);
+router.post('/bulk', verifyToken, requireRole(['admin', 'tangkal_staff']), bulkCreateCageAvailability);
 router.put('/:id', verifyToken, requireRole(['admin', 'tangkal_staff']), updateCageAvailability);
 router.delete('/:id', verifyToken, requireRole(['admin', 'tangkal_staff']), deleteCageAvailability);
 
