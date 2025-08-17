@@ -104,6 +104,7 @@ export const sendStaffAccountEmail = async (userData, verificationToken) => {
                             font-weight: 600;
                             color: #1e293b;
                             font-size: 16px;
+                            margin-right: 4px;
                         }
                         .detail-value {
                             color: #475569;
@@ -619,6 +620,7 @@ export const sendParticipantRegistrationEmail = async (participantData, eventDat
                             font-weight: 600;
                             color: #1e293b;
                             font-size: 16px;
+                            margin-right: 4px;
                         }
                         .detail-value {
                             color: #475569;
@@ -756,17 +758,6 @@ export const sendParticipantRegistrationEmail = async (participantData, eventDat
                                 </div>
                             </div>
 
-                            <div class="important-section">
-                                <p class="important-title">📋 Important Information</p>
-                                <div class="important-text">
-                                    <p style="margin: 0 0 12px 0;"><strong>• Registration ID:</strong> ${participantData._id || 'Will be provided separately'}</p>
-                                    <p style="margin: 0 0 12px 0;"><strong>• Entry Fee:</strong> Please ensure your entry fee payment is completed before the event</p>
-                                    <p style="margin: 0 0 12px 0;"><strong>• Arrival Time:</strong> Please arrive at least 1 hour before the event starts</p>
-                                    <p style="margin: 0 0 12px 0;"><strong>• Requirements:</strong> Bring valid ID and proof of payment</p>
-                                    <p style="margin: 0;"><strong>• Contact:</strong> For any questions, contact the event organizers</p>
-                                </div>
-                            </div>
-
                             ${participantData.notes ? `
                                 <div style="background-color: #f1f5f9; border: 2px solid #e2e8f0; border-radius: 10px; padding: 20px; margin: 24px 0;">
                                     <p style="font-weight: 600; color: #1e293b; margin: 0 0 12px 0;">📝 Additional Notes:</p>
@@ -894,6 +885,7 @@ export const sendCageRentalReminderEmail = async (cageRentalData) => {
                             font-weight: 600;
                             color: #1e293b;
                             font-size: 16px;
+                            margin-right: 4px;
                         }
                         .detail-value {
                             color: #475569;
@@ -1112,6 +1104,7 @@ export const sendCageRentalPaymentConfirmationEmail = async (cageRentalData) => 
                             font-weight: 600;
                             color: #1e293b;
                             font-size: 16px;
+                            margin-right: 4px;
                         }
                         .detail-value {
                             color: #475569;
