@@ -8,22 +8,21 @@ export const createMatchResult = async (req, res) => {
   try {
     const {
       matchID,
+      participantBets, // Array of {participantID, betAmount}
       winnerParticipantID,
       loserParticipantID,
       winnerCockProfileID,
       loserCockProfileID,
       matchStartTime,
       matchEndTime,
-      matchType,
-      description,
-      notes
+      matchType
     } = req.body;
     const recordedBy = req.user.id;
 
     // Validate fight schedule exists
     const fightSchedule = await FightSchedule.findById(matchID)
       .populate('participantsID', 'participantName')
-      .populate('position');
+      .populate('cockProfileID', 'legband weight ownerName');
 
     if (!fightSchedule) {
       return res.status(404).json({ message: 'Fight schedule not found' });
@@ -47,34 +46,59 @@ export const createMatchResult = async (req, res) => {
     }
 
     // Validate cock profiles
-    const cockProfileIDs = fightSchedule.cockProfileID.map(c => c.toString());
+    const cockProfileIDs = fightSchedule.cockProfileID.map(c => c._id.toString());
     if (!cockProfileIDs.includes(winnerCockProfileID) || !cockProfileIDs.includes(loserCockProfileID)) {
       return res.status(400).json({ message: 'Cock profiles must be part of this fight' });
     }
 
+    // Validate participant bets
+    if (!participantBets || participantBets.length !== 2) {
+      return res.status(400).json({ message: 'Exactly 2 participant bets are required' });
+    }
+
+    // Validate that all participants in the fight have bets
+    const betParticipantIDs = participantBets.map(bet => bet.participantID);
+    const missingParticipants = participantIDs.filter(id => !betParticipantIDs.includes(id));
+    if (missingParticipants.length > 0) {
+      return res.status(400).json({ message: 'All participants must have bets' });
+    }
+
+    // Calculate betting totals
+    const [bet1, bet2] = participantBets
+    const meronBet = bet1.betAmount > bet2.betAmount ? bet1 : bet2
+    const walaBet = bet1.betAmount > bet2.betAmount ? bet2 : bet1
+
+    const gap = meronBet.betAmount - walaBet.betAmount // Gap filled by outside bets
+    const totalBetPool = meronBet.betAmount + walaBet.betAmount + gap // Include outside bets
+
+    // Calculate plazada (10% of each bet)
+    const meronPlazada = meronBet.betAmount * 0.10
+    const walaPlazada = walaBet.betAmount * 0.10
+    const totalPlazada = meronPlazada + walaPlazada
+
     // Create match result
     const matchResult = new MatchResult({
       matchID,
-      totalBet: fightSchedule.totalBet,
-      prize: {
-        plazadaFee: fightSchedule.plazadaFee // Use actual plazada fee from fight schedule
-      },
+      participantBets,
+      totalBetPool,
+      totalPlazada,
       resultMatch: {
         winnerParticipantID,
         loserParticipantID,
         winnerCockProfileID,
         loserCockProfileID,
-        matchType,
-        description
+        matchType
       },
       matchStartTime,
       matchEndTime,
-      recordedBy,
-      notes
+      recordedBy
     });
 
-    // Determine bet winner based on participant position
-    matchResult.determineBetWinner(fightSchedule);
+    // Assign Meron/Wala positions based on bet amounts
+    matchResult.assignPositions();
+
+    // Determine bet winner based on participant
+    matchResult.determineBetWinner();
 
     // Validate the result
     const validationErrors = matchResult.validateResult();
@@ -113,6 +137,7 @@ export const createMatchResult = async (req, res) => {
     // Populate references for response
     await matchResult.populate([
       { path: 'matchID', select: 'fightNumber eventID' },
+      { path: 'participantBets.participantID', select: 'participantName contactNumber' },
       { path: 'resultMatch.winnerParticipantID', select: 'participantName contactNumber' },
       { path: 'resultMatch.loserParticipantID', select: 'participantName contactNumber' },
       { path: 'resultMatch.winnerCockProfileID', select: 'legband weight ownerName' },
@@ -132,8 +157,7 @@ export const createMatchResult = async (req, res) => {
 // Get all match results (with filtering)
 export const getAllMatchResults = async (req, res) => {
   try {
-    const { page = 1, limit = 10, betWinner, matchType, verified } = req.query;
-    const skip = (page - 1) * limit;
+    const { betWinner, matchType, verified } = req.query;
 
     let query = {};
 
@@ -161,25 +185,17 @@ export const getAllMatchResults = async (req, res) => {
           select: 'eventName date location'
         }
       })
+      .populate('participantBets.participantID', 'participantName')
       .populate('resultMatch.winnerParticipantID', 'participantName')
       .populate('resultMatch.loserParticipantID', 'participantName')
       .populate('resultMatch.winnerCockProfileID', 'legband ownerName')
       .populate('resultMatch.loserCockProfileID', 'legband ownerName')
       .populate('recordedBy', 'username')
       .populate('verifiedBy', 'username')
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(parseInt(limit));
-
-    const total = await MatchResult.countDocuments(query);
+      .sort({ createdAt: -1 });
 
     res.json({
-      data: matchResults,
-      pagination: {
-        current: parseInt(page),
-        total: Math.ceil(total / limit),
-        totalRecords: total
-      }
+      data: matchResults
     });
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch match results', error: error.message });
@@ -193,17 +209,18 @@ export const getMatchResultById = async (req, res) => {
     const matchResult = await MatchResult.findById(id)
       .populate({
         path: 'matchID',
-        select: 'fightNumber eventID participantsID cockProfileID position',
+        select: 'fightNumber eventID participantsID cockProfileID',
         populate: [
           { path: 'eventID', select: 'eventName date location' },
           { path: 'participantsID', select: 'participantName contactNumber' },
           { path: 'cockProfileID', select: 'legband weight ownerName' }
         ]
       })
+      .populate('participantBets.participantID', 'participantName contactNumber email')
       .populate('resultMatch.winnerParticipantID', 'participantName contactNumber email')
       .populate('resultMatch.loserParticipantID', 'participantName contactNumber email')
-      .populate('resultMatch.winnerCockProfileID', 'legband weight ownerName entryNo')
-      .populate('resultMatch.loserCockProfileID', 'legband weight ownerName entryNo')
+      .populate('resultMatch.winnerCockProfileID', 'legband weight ownerName')
+      .populate('resultMatch.loserCockProfileID', 'legband weight ownerName')
       .populate('recordedBy', 'username')
       .populate('verifiedBy', 'username');
 
@@ -222,6 +239,7 @@ export const updateMatchResult = async (req, res) => {
   try {
     const { id } = req.params;
     const {
+      participantBets,
       winnerParticipantID,
       loserParticipantID,
       winnerCockProfileID,
@@ -229,8 +247,6 @@ export const updateMatchResult = async (req, res) => {
       matchStartTime,
       matchEndTime,
       matchType,
-      description,
-      notes,
       status
     } = req.body;
 
@@ -244,28 +260,45 @@ export const updateMatchResult = async (req, res) => {
       return res.status(400).json({ message: 'Cannot update verified and final match result' });
     }
 
+    // Update participant bets if provided
+    if (participantBets && participantBets.length === 2) {
+      matchResult.participantBets = participantBets;
+      matchResult.assignPositions();
+
+      // Recalculate betting totals
+      const [bet1, bet2] = participantBets;
+      const meronBet = bet1.betAmount > bet2.betAmount ? bet1 : bet2;
+      const walaBet = bet1.betAmount > bet2.betAmount ? bet2 : bet1;
+
+      const gap = meronBet.betAmount - walaBet.betAmount; // Gap filled by outside bets
+      const totalBetPool = meronBet.betAmount + walaBet.betAmount + gap; // Include outside bets
+
+      // Calculate plazada (10% of each bet)
+      const meronPlazada = meronBet.betAmount * 0.10;
+      const walaPlazada = walaBet.betAmount * 0.10;
+      const totalPlazada = meronPlazada + walaPlazada;
+
+      matchResult.totalBetPool = totalBetPool;
+      matchResult.totalPlazada = totalPlazada;
+    }
+
     // Update result match fields
     if (winnerParticipantID) matchResult.resultMatch.winnerParticipantID = winnerParticipantID;
     if (loserParticipantID) matchResult.resultMatch.loserParticipantID = loserParticipantID;
     if (winnerCockProfileID) matchResult.resultMatch.winnerCockProfileID = winnerCockProfileID;
     if (loserCockProfileID) matchResult.resultMatch.loserCockProfileID = loserCockProfileID;
     if (matchType) matchResult.resultMatch.matchType = matchType;
-    if (description !== undefined) matchResult.resultMatch.description = description;
 
     // Update timing
     if (matchStartTime) matchResult.matchStartTime = matchStartTime;
     if (matchEndTime) matchResult.matchEndTime = matchEndTime;
 
     // Update other fields
-    if (notes !== undefined) matchResult.notes = notes;
     if (status) matchResult.status = status;
 
     // Recalculate bet winner if participants changed
     if (winnerParticipantID) {
-      const fightSchedule = await FightSchedule.findById(matchResult.matchID);
-      if (fightSchedule) {
-        matchResult.determineBetWinner(fightSchedule);
-      }
+      matchResult.determineBetWinner();
     }
 
     // Validate the updated result
@@ -279,6 +312,7 @@ export const updateMatchResult = async (req, res) => {
     // Populate references for response
     await matchResult.populate([
       { path: 'matchID', select: 'fightNumber eventID' },
+      { path: 'participantBets.participantID', select: 'participantName contactNumber' },
       { path: 'resultMatch.winnerParticipantID', select: 'participantName contactNumber' },
       { path: 'resultMatch.loserParticipantID', select: 'participantName contactNumber' },
       { path: 'resultMatch.winnerCockProfileID', select: 'legband weight ownerName' },
@@ -343,7 +377,7 @@ export const updateMatchResultStatus = async (req, res) => {
     const { status } = req.body;
 
     // Validate status value
-    const validStatuses = ['pending', 'confirmed', 'disputed', 'final'];
+    const validStatuses = ['pending', 'final'];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ message: 'Invalid status value' });
     }
@@ -375,7 +409,7 @@ export const updateMatchResultStatus = async (req, res) => {
 export const verifyMatchResult = async (req, res) => {
   try {
     const { id } = req.params;
-    const { verified, notes } = req.body;
+    const { verified } = req.body;
     const verifiedBy = req.user.id;
 
     const matchResult = await MatchResult.findById(id);
@@ -387,10 +421,6 @@ export const verifyMatchResult = async (req, res) => {
     matchResult.verifiedBy = verified ? verifiedBy : null;
     matchResult.verifiedAt = verified ? new Date() : null;
     matchResult.status = verified ? 'final' : 'pending';
-
-    if (notes !== undefined) {
-      matchResult.notes = notes;
-    }
 
     await matchResult.save();
 
@@ -439,6 +469,7 @@ export const getMatchResultsByEvent = async (req, res) => {
           select: 'eventName'
         }
       })
+      .populate('participantBets.participantID', 'participantName')
       .populate('resultMatch.winnerParticipantID', 'participantName')
       .populate('resultMatch.loserParticipantID', 'participantName')
       .populate('resultMatch.winnerCockProfileID', 'legband ownerName')
@@ -469,13 +500,16 @@ export const getMatchStatistics = async (req, res) => {
         $group: {
           _id: null,
           totalMatches: { $sum: 1 },
-          totalBets: { $sum: '$totalBet' },
-          totalPrizes: { $sum: '$prize.totalPrizePool' },
+          totalBetPool: { $sum: '$totalBetPool' },
+          totalPlazada: { $sum: '$totalPlazada' },
           meronWins: {
             $sum: { $cond: [{ $eq: ['$betWinner', 'Meron'] }, 1, 0] }
           },
           walaWins: {
             $sum: { $cond: [{ $eq: ['$betWinner', 'Wala'] }, 1, 0] }
+          },
+          draws: {
+            $sum: { $cond: [{ $eq: ['$betWinner', 'Draw'] }, 1, 0] }
           },
           verifiedMatches: {
             $sum: { $cond: ['$verified', 1, 0] }
@@ -487,10 +521,11 @@ export const getMatchStatistics = async (req, res) => {
 
     const statistics = stats.length > 0 ? stats[0] : {
       totalMatches: 0,
-      totalBets: 0,
-      totalPrizes: 0,
+      totalBetPool: 0,
+      totalPlazada: 0,
       meronWins: 0,
       walaWins: 0,
+      draws: 0,
       verifiedMatches: 0,
       avgMatchDuration: 0
     };

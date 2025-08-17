@@ -1,6 +1,6 @@
 import React from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { UserPlus, Feather, Swords } from 'lucide-react'
+import { UserPlus, Feather, Swords, Trophy } from 'lucide-react'
 import DataTable from '@/components/custom/DataTable'
 
 const AdminEventTabs = ({
@@ -11,13 +11,13 @@ const AdminEventTabs = ({
   participantColumns,
   cockProfileColumns,
   fightSchedules = [],
-  fightScheduleColumns
+  fightScheduleColumns,
+  matchResults = [],
+  matchResultColumns
 }) => {
-  const tabCount = fightSchedules && fightSchedules.length > 0 ? 3 : 2
-
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-      <TabsList className={`grid w-full ${tabCount === 3 ? 'grid-cols-3' : 'grid-cols-2'}`}>
+      <TabsList className="grid w-full grid-cols-4">
         <TabsTrigger value="participants" className="flex items-center gap-2">
           <UserPlus className="h-4 w-4" />
           Participants ({participants.length})
@@ -26,12 +26,14 @@ const AdminEventTabs = ({
           <Feather className="h-4 w-4" />
           Cock Profiles ({cockProfiles.length})
         </TabsTrigger>
-        {fightSchedules && fightSchedules.length > 0 && (
-          <TabsTrigger value="fight-schedules" className="flex items-center gap-2">
-            <Swords className="h-4 w-4" />
-            Fight Schedules ({fightSchedules.length})
-          </TabsTrigger>
-        )}
+        <TabsTrigger value="fight-schedules" className="flex items-center gap-2">
+          <Swords className="h-4 w-4" />
+          Fight Schedules ({fightSchedules.length})
+        </TabsTrigger>
+        <TabsTrigger value="match-results" className="flex items-center gap-2">
+          <Trophy className="h-4 w-4" />
+          Match Results ({matchResults.length})
+        </TabsTrigger>
       </TabsList>
 
       <TabsContent value="participants" className="space-y-4">
@@ -68,24 +70,39 @@ const AdminEventTabs = ({
         />
       </TabsContent>
 
-      {fightSchedules && fightSchedules.length > 0 && (
-        <TabsContent value="fight-schedules" className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">Fight Schedules</h3>
-          </div>
-          <DataTable
-            data={fightSchedules}
-            columns={fightScheduleColumns}
-            pageSize={10}
-            searchable={true}
-            filterable={true}
-            title="Fight Schedules"
-            loading={false}
-            emptyMessage="No fight schedules created yet"
-            className="shadow-sm"
-          />
-        </TabsContent>
-      )}
+      <TabsContent value="fight-schedules" className="space-y-4">
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-semibold">Fight Schedules</h3>
+        </div>
+        <DataTable
+          data={fightSchedules}
+          columns={fightScheduleColumns}
+          pageSize={10}
+          searchable={true}
+          filterable={true}
+          title="Fight Schedules"
+          loading={false}
+          emptyMessage="No fight schedules created yet"
+          className="shadow-sm"
+        />
+      </TabsContent>
+
+      <TabsContent value="match-results" className="space-y-4">
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-semibold">Match Results</h3>
+        </div>
+        <DataTable
+          data={matchResults}
+          columns={matchResultColumns}
+          pageSize={10}
+          searchable={true}
+          filterable={true}
+          title="Match Results"
+          loading={false}
+          emptyMessage="No match results recorded yet"
+          className="shadow-sm"
+        />
+      </TabsContent>
     </Tabs>
   )
 }

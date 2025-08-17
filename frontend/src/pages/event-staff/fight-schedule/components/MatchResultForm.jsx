@@ -1,7 +1,6 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import CustomAlertDialog from '@/components/custom/CustomAlertDialog'
 import InputField from '@/components/custom/InputField'
 import NativeSelect from '@/components/custom/NativeSelect'
@@ -17,7 +16,8 @@ const MatchResultForm = ({
   onCancel,
   isPending,
   selectedFight,
-  isEdit = false
+  isEdit = false,
+  event = null
 }) => {
   const matchTypes = [
     { value: 'knockout', label: 'Knockout' },
@@ -43,7 +43,72 @@ const MatchResultForm = ({
     return `${year}-${month}-${day}T${hours}:${minutes}`
   }
 
+  // Helper function to get default match end time (event date + current time)
+  const getDefaultMatchEndTime = () => {
+    if (!event?.date) return ''
 
+    const eventDate = new Date(event.date)
+    const now = new Date()
+
+    // Set the time to current time but keep the event date
+    eventDate.setHours(now.getHours())
+    eventDate.setMinutes(now.getMinutes())
+
+    // Format to YYYY-MM-DDTHH:mm
+    const year = eventDate.getFullYear()
+    const month = String(eventDate.getMonth() + 1).padStart(2, '0')
+    const day = String(eventDate.getDate()).padStart(2, '0')
+    const hours = String(eventDate.getHours()).padStart(2, '0')
+    const minutes = String(eventDate.getMinutes()).padStart(2, '0')
+
+    return `${year}-${month}-${day}T${hours}:${minutes}`
+  }
+
+  // Set default match end time when form opens and no time is set
+  React.useEffect(() => {
+    if (open && !formData.matchEndTime && event) {
+      const defaultTime = getDefaultMatchEndTime()
+      if (defaultTime) {
+        onInputChange('matchEndTime', defaultTime)
+      }
+    }
+  }, [open, formData.matchEndTime, event, onInputChange])
+
+  // Calculate betting information
+  const calculateBettingInfo = () => {
+    if (!formData.participantBets || formData.participantBets.length !== 2) return null
+
+    const [bet1, bet2] = formData.participantBets
+    const meronBet = bet1.betAmount > bet2.betAmount ? bet1 : bet2
+    const walaBet = bet1.betAmount > bet2.betAmount ? bet2 : bet1
+
+    const gap = meronBet.betAmount - walaBet.betAmount // Gap filled by outside bets
+    const totalBetPool = meronBet.betAmount + walaBet.betAmount + gap // Include outside bets
+
+    // Calculate plazada (10% of each bet) for display purposes
+    const meronPlazada = meronBet.betAmount * 0.10
+    const walaPlazada = walaBet.betAmount * 0.10
+    const totalPlazada = meronPlazada + walaPlazada
+
+    // Calculate payouts based on the betting system
+    // Winner gets double their bet amount (2x their bet)
+    const meronPayout = meronBet.betAmount * 2
+    const walaPayout = walaBet.betAmount * 2
+
+    return {
+      meronBet,
+      walaBet,
+      totalBetPool,
+      meronPayout,
+      walaPayout,
+      outsideBets: gap, // Gap filled by others
+      meronPlazada,
+      walaPlazada,
+      totalPlazada
+    }
+  }
+
+  const bettingInfo = calculateBettingInfo()
 
   return (
     <CustomAlertDialog
@@ -66,142 +131,143 @@ const MatchResultForm = ({
       <div className="space-y-6 overflow-y-auto pr-2">
         {/* Fight Information */}
         {selectedFight && (
-          <div className="p-4 bg-muted rounded-lg">
-            <h4 className="font-medium mb-2">Fight Information</h4>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="font-medium">Fight #:</span>
-                <span className="ml-2">{selectedFight.fightNumber}</span>
+          <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl shadow-sm">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                <span className="text-blue-600 font-semibold text-sm">#</span>
               </div>
-              <div>
-                <span className="font-medium">Total Bet:</span>
-                <span className="ml-2">₱{selectedFight.totalBet?.toLocaleString()}</span>
-              </div>
+              <h4 className="font-semibold text-lg text-gray-900">Fight Information</h4>
             </div>
-            <div className="mt-2 space-y-1">
-              <div className="text-sm">
-                <span className="font-medium">Participants:</span>
-              </div>
-              {participants.map((participant, index) => (
-                <div key={participant._id} className="text-sm text-muted-foreground ml-4">
-                  {index + 1}. {participant.participantName}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-white p-4 rounded-lg border border-blue-100">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <span className="font-medium text-gray-700">Fight Details</span>
                 </div>
-              ))}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Fight Number:</span>
+                    <span className="font-semibold text-blue-600">#{selectedFight.fightNumber}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Status:</span>
+                    <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                      {selectedFight.status?.replace('_', ' ').charAt(0).toUpperCase() + selectedFight.status?.replace('_', ' ').slice(1) || 'Scheduled'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white p-4 rounded-lg border border-blue-100">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span className="font-medium text-gray-700">Participants</span>
+                </div>
+                <div className="space-y-2">
+                  {participants.map((participant, index) => (
+                    <div key={participant._id} className="flex items-center gap-3 p-2 bg-gray-50 rounded-md">
+                      <div className="w-6 h-6 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-xs font-semibold">
+                        {index + 1}
+                      </div>
+                      <span className="text-sm font-medium text-gray-900">{participant.participantName}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         )}
 
+        {/* Participant Bets */}
+        <div className="space-y-4">
+          <h4 className="font-medium">Participant Bets</h4>
+          {participants.map((participant, index) => (
+            <div key={participant._id} className="space-y-2">
+              <Label className="text-sm font-medium">
+                {participant.participantName} Bet Amount *
+              </Label>
+              <InputField
+                type="number"
+                min="0"
+                step="0.01"
+                value={formData.participantBets?.[index]?.betAmount || ''}
+                onChange={(e) => {
+                  const newBets = [...(formData.participantBets || [])]
+                  newBets[index] = {
+                    ...newBets[index],
+                    participantID: participant._id,
+                    betAmount: parseFloat(e.target.value) || 0
+                  }
+                  onInputChange('participantBets', newBets)
+                }}
+                placeholder="Enter bet amount"
+                required
+              />
+            </div>
+          ))}
+        </div>
+
         {/* Match Result */}
         <div className="space-y-4">
           <h4 className="font-medium">Match Result</h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor={isEdit ? "editWinnerParticipant" : "winnerParticipant"} className="text-sm font-medium">
-                Winner Participant *
-              </Label>
-              <NativeSelect
-                id={isEdit ? "editWinnerParticipant" : "winnerParticipant"}
-                value={formData.winnerParticipantID}
-                onChange={(e) => {
-                  onInputChange('winnerParticipantID', e.target.value)
+          <div className="space-y-2">
+            <Label htmlFor={isEdit ? "editWinnerParticipant" : "winnerParticipant"} className="text-sm font-medium">
+              Winner Participant *
+            </Label>
+            <NativeSelect
+              id={isEdit ? "editWinnerParticipant" : "winnerParticipant"}
+              value={formData.winnerParticipantID}
+              onChange={(e) => {
+                onInputChange('winnerParticipantID', e.target.value)
 
-                  // Auto-set loser participant
-                  const otherParticipant = participants.find(p => p._id !== e.target.value)
-                  if (otherParticipant) {
-                    onInputChange('loserParticipantID', otherParticipant._id)
+                // Auto-set loser participant
+                const otherParticipant = participants.find(p => p._id !== e.target.value)
+                if (otherParticipant) {
+                  onInputChange('loserParticipantID', otherParticipant._id)
+                }
+
+                // Auto-set winner and loser cock profiles based on participant selection
+                if (e.target.value && selectedFight) {
+                  const winnerIndex = participants.findIndex(p => p._id === e.target.value)
+                  const loserIndex = participants.findIndex(p => p._id !== e.target.value && p._id)
+
+                  if (winnerIndex !== -1 && cockProfiles[winnerIndex]) {
+                    onInputChange('winnerCockProfileID', cockProfiles[winnerIndex]._id)
                   }
 
-                  // Auto-set winner and loser cock profiles based on participant selection
-                  if (e.target.value && selectedFight) {
-                    const winnerIndex = participants.findIndex(p => p._id === e.target.value)
-                    const loserIndex = participants.findIndex(p => p._id !== e.target.value && p._id)
-
-                    if (winnerIndex !== -1 && cockProfiles[winnerIndex]) {
-                      onInputChange('winnerCockProfileID', cockProfiles[winnerIndex]._id)
-                    }
-
-                    if (loserIndex !== -1 && cockProfiles[loserIndex]) {
-                      onInputChange('loserCockProfileID', cockProfiles[loserIndex]._id)
-                    }
+                  if (loserIndex !== -1 && cockProfiles[loserIndex]) {
+                    onInputChange('loserCockProfileID', cockProfiles[loserIndex]._id)
                   }
-                }}
-                required
-              >
-                <option value="">Select Winner</option>
-                {participants.map((participant) => (
-                  <option key={participant._id} value={participant._id}>
-                    {participant.participantName}
-                  </option>
-                ))}
-              </NativeSelect>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor={isEdit ? "editLoserParticipant" : "loserParticipant"} className="text-sm font-medium">
-                Loser Participant *
-              </Label>
-              <NativeSelect
-                id={isEdit ? "editLoserParticipant" : "loserParticipant"}
-                value={formData.loserParticipantID}
-                onChange={(e) => onInputChange('loserParticipantID', e.target.value)}
-                required
-                disabled
-              >
-                <option value="">Auto-selected</option>
-                {participants.map((participant) => (
-                  <option key={participant._id} value={participant._id}>
-                    {participant.participantName}
-                  </option>
-                ))}
-              </NativeSelect>
-            </div>
+                }
+              }}
+              required
+            >
+              <option value="">Select Winner</option>
+              {participants.map((participant) => (
+                <option key={participant._id} value={participant._id}>
+                  {participant.participantName}
+                </option>
+              ))}
+            </NativeSelect>
           </div>
-        </div>
 
-        {/* Cock Profiles */}
-        <div className="space-y-4">
-          <h4 className="font-medium">Cock Profiles</h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor={isEdit ? "editWinnerCock" : "winnerCock"} className="text-sm font-medium">
-                Winner Cock Profile *
-              </Label>
-              <NativeSelect
-                id={isEdit ? "editWinnerCock" : "winnerCock"}
-                value={formData.winnerCockProfileID}
-                onChange={(e) => onInputChange('winnerCockProfileID', e.target.value)}
-                required
-                disabled
-              >
-                <option value="">Auto-selected based on participant</option>
-                {cockProfiles.map((cock) => (
-                  <option key={cock._id} value={cock._id}>
-                    {cock.legband} - {cock.weight}kg ({cock.ownerName})
-                  </option>
-                ))}
-              </NativeSelect>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor={isEdit ? "editLoserCock" : "loserCock"} className="text-sm font-medium">
-                Loser Cock Profile *
-              </Label>
-              <NativeSelect
-                id={isEdit ? "editLoserCock" : "loserCock"}
-                value={formData.loserCockProfileID}
-                onChange={(e) => onInputChange('loserCockProfileID', e.target.value)}
-                required
-                disabled
-              >
-                <option value="">Auto-selected based on participant</option>
-                {cockProfiles.map((cock) => (
-                  <option key={cock._id} value={cock._id}>
-                    {cock.legband} - {cock.weight}kg ({cock.ownerName})
-                  </option>
-                ))}
-              </NativeSelect>
-            </div>
-          </div>
+          {/* Hidden fields for auto-selected values - still saved to database */}
+          <input
+            type="hidden"
+            value={formData.loserParticipantID || ''}
+            onChange={(e) => onInputChange('loserParticipantID', e.target.value)}
+          />
+          <input
+            type="hidden"
+            value={formData.winnerCockProfileID || ''}
+            onChange={(e) => onInputChange('winnerCockProfileID', e.target.value)}
+          />
+          <input
+            type="hidden"
+            value={formData.loserCockProfileID || ''}
+            onChange={(e) => onInputChange('loserCockProfileID', e.target.value)}
+          />
         </div>
 
         {/* Match Timing */}
@@ -246,71 +312,105 @@ const MatchResultForm = ({
           </NativeSelect>
         </div>
 
-        {/* Description */}
-        <div className="space-y-2">
-          <Label htmlFor={isEdit ? "editMatchDescription" : "matchDescription"} className="text-sm font-medium">
-            Match Description
-          </Label>
-          <Textarea
-            id={isEdit ? "editMatchDescription" : "matchDescription"}
-            value={formData.description}
-            onChange={(e) => onInputChange('description', e.target.value)}
-            placeholder="Describe what happened in the match (optional)"
-            rows={3}
-          />
-        </div>
-
-        {/* Notes */}
-        <div className="space-y-2">
-          <Label htmlFor={isEdit ? "editResultNotes" : "resultNotes"} className="text-sm font-medium">
-            Additional Notes
-          </Label>
-          <Textarea
-            id={isEdit ? "editResultNotes" : "resultNotes"}
-            value={formData.notes}
-            onChange={(e) => onInputChange('notes', e.target.value)}
-            placeholder="Enter additional notes (optional)"
-            rows={2}
-          />
-        </div>
-
         {/* Betting Result Preview */}
-        {selectedFight && formData.winnerParticipantID && (
-          <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-            <h5 className="font-medium text-sm text-green-800 mb-2">Betting Result</h5>
-            <div className="text-sm text-green-700">
-              {(() => {
-                const winnerPosition = selectedFight.position?.find(
-                  p => p.participantID === formData.winnerParticipantID
-                )
-                const loserPosition = selectedFight.position?.find(
-                  p => p.participantID !== formData.winnerParticipantID
-                )
+        {bettingInfo && formData.winnerParticipantID && (
+          <div className="p-6 bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200 rounded-xl shadow-sm">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
+                <span className="text-emerald-600 font-semibold text-sm">₱</span>
+              </div>
+              <h5 className="font-semibold text-lg text-gray-900">Betting Result Preview</h5>
+            </div>
 
-                                                if (winnerPosition && loserPosition) {
-                  const totalBet = selectedFight.totalBet || 0
-                  const plazadaFee = selectedFight.plazadaFee || 0
-                  const houseCut = plazadaFee // House cut equals plazada fee
-                  const winnerPayout = totalBet - houseCut // Winner gets total minus house cut only
-
-                  return (
-                    <div className="space-y-1">
-                      <div>
-                        <strong>{winnerPosition.side}</strong> wins!
-                      </div>
-                      <div className="text-xs space-y-1">
-                        <div>Total bet pool: ₱{totalBet.toLocaleString()}</div>
-                        <div>House cut: -₱{houseCut.toLocaleString()}</div>
-                        <div className="text-muted-foreground">Plazada fee: ₱{plazadaFee.toLocaleString()} (collected separately)</div>
-                        <div className="font-semibold border-t pt-1 text-green-700">
-                          Winner payout: ₱{winnerPayout.toLocaleString()}
-                        </div>
-                      </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              {/* Meron Bet */}
+              <div className="bg-white p-4 rounded-lg border border-emerald-100">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                  <span className="font-semibold text-blue-700">Meron</span>
+                </div>
+                <div className="space-y-3">
+                  <div className="text-sm text-gray-600">
+                    {participants.find(p => p._id === bettingInfo.meronBet.participantID)?.participantName}
+                  </div>
+                  <div className="bg-gray-50 p-3 rounded-md">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-xs text-gray-500">Bet Amount:</span>
+                      <span className="font-semibold text-gray-900">₱{bettingInfo.meronBet.betAmount?.toLocaleString()}</span>
                     </div>
-                  )
-                }
-                return null
-              })()}
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-gray-500">Plazada (10%):</span>
+                      <span className="font-semibold text-emerald-600">₱{bettingInfo.meronPlazada?.toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Wala Bet */}
+              <div className="bg-white p-4 rounded-lg border border-emerald-100">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
+                  <span className="font-semibold text-gray-700">Wala</span>
+                </div>
+                <div className="space-y-3">
+                  <div className="text-sm text-gray-600">
+                    {participants.find(p => p._id === bettingInfo.walaBet.participantID)?.participantName}
+                  </div>
+                  <div className="bg-gray-50 p-3 rounded-md">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-xs text-gray-500">Bet Amount:</span>
+                      <span className="font-semibold text-gray-900">₱{bettingInfo.walaBet.betAmount?.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-gray-500">Plazada (10%):</span>
+                      <span className="font-semibold text-emerald-600">₱{bettingInfo.walaPlazada?.toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Summary */}
+            <div className="bg-white p-4 rounded-lg border border-emerald-100">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                <span className="font-medium text-gray-700">Summary</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="text-center p-3 bg-blue-50 rounded-lg">
+                  <div className="text-xs text-gray-500 mb-1">Total Bet Pool</div>
+                  <div className="font-semibold text-blue-700">₱{bettingInfo.totalBetPool?.toLocaleString()}</div>
+                </div>
+                <div className="text-center p-3 bg-emerald-50 rounded-lg">
+                  <div className="text-xs text-gray-500 mb-1">Plazada Collected</div>
+                  <div className="font-semibold text-emerald-700">₱{bettingInfo.totalPlazada?.toLocaleString()}</div>
+                </div>
+                <div className="text-center p-3 bg-gray-50 rounded-lg">
+                  <div className="text-xs text-gray-500 mb-1">Outside Bets</div>
+                  <div className="font-semibold text-gray-700">₱{bettingInfo.outsideBets?.toLocaleString()}</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Winner Payout */}
+            <div className="mt-4 bg-gradient-to-r from-emerald-100 to-green-100 p-4 rounded-lg border border-emerald-200">
+              <div className="text-center">
+                <div className="text-sm text-gray-600 mb-1">Winner Payout</div>
+                <div className="font-bold text-lg text-emerald-800">
+                  {(() => {
+                    const winnerBet = formData.participantBets?.find(bet => bet.participantID === formData.winnerParticipantID)
+                    if (winnerBet) {
+                      const isMeron = bettingInfo.meronBet.participantID === formData.winnerParticipantID
+                      if (isMeron) {
+                        return `Meron wins! ₱${bettingInfo.meronPayout?.toLocaleString()}`
+                      } else {
+                        return `Wala wins! ₱${bettingInfo.walaPayout?.toLocaleString()}`
+                      }
+                    }
+                    return 'Select winner to see payout'
+                  })()}
+                </div>
+              </div>
             </div>
           </div>
         )}

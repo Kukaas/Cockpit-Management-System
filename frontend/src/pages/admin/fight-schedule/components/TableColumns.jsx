@@ -33,46 +33,18 @@ export const createFightColumns = (formatCurrency, formatDate, handleViewDetails
     )
   },
   {
-    key: 'position',
-    label: 'Betting Info',
+    key: 'cockProfileID',
+    label: 'Cock Profiles',
     sortable: false,
     filterable: false,
     render: (value) => (
       <div className="space-y-1">
-        {value?.map((pos, index) => {
-          return (
-            <div key={index} className="flex items-center gap-2 text-sm">
-              <Badge variant={pos.side === 'Meron' ? 'default' : 'secondary'} className="text-xs">
-                {pos.side}
-              </Badge>
-              <span>{formatCurrency(pos.betAmount)}</span>
-            </div>
-          )
-        })}
-      </div>
-    )
-  },
-  {
-    key: 'totalBet',
-    label: 'Total Bet',
-    sortable: true,
-    filterable: false,
-    render: (value) => (
-      <div className="flex items-center gap-1">
-        <Target className="h-4 w-4 text-green-600" />
-        <span className="font-medium">{formatCurrency(value)}</span>
-      </div>
-    )
-  },
-  {
-    key: 'plazadaFee',
-    label: 'Plazada Fee',
-    sortable: true,
-    filterable: false,
-    render: (value) => (
-      <div className="flex items-center gap-1">
-        <Trophy className="h-4 w-4 text-blue-600" />
-        <span>{formatCurrency(value)}</span>
+        {value?.map((cock) => (
+          <div key={cock._id} className="flex items-center gap-2 text-sm">
+            <Trophy className="h-3 w-3 text-purple-600" />
+            <span>{cock.legband} ({cock.weight}kg)</span>
+          </div>
+        ))}
       </div>
     )
   },
@@ -203,8 +175,8 @@ export const createMatchResultColumns = (formatCurrency, formatDate, handleViewD
     )
   },
   {
-    key: 'totalBet',
-    label: 'Total Bet',
+    key: 'totalBetPool',
+    label: 'Total Bet Pool',
     sortable: true,
     filterable: false,
     render: (value) => (
@@ -215,19 +187,14 @@ export const createMatchResultColumns = (formatCurrency, formatDate, handleViewD
     )
   },
   {
-    key: 'prize',
-    label: 'Prize Info',
-    sortable: false,
+    key: 'totalPlazada',
+    label: 'Total Plazada',
+    sortable: true,
     filterable: false,
     render: (value) => (
-      <div className="space-y-1 text-sm">
-        <div className="flex items-center gap-1">
-          <Trophy className="h-3 w-3 text-yellow-600" />
-          <span className="text-green-600 font-medium">{formatCurrency(value.winnerPrize)}</span>
-        </div>
-        <div className="text-muted-foreground">
-          House: {formatCurrency(value.houseCut)}
-        </div>
+      <div className="flex items-center gap-1">
+        <Trophy className="h-4 w-4 text-emerald-600" />
+        <span className="font-medium">{formatCurrency(value)}</span>
       </div>
     )
   },

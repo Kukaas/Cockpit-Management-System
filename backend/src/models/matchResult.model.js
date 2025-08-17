@@ -8,14 +8,40 @@ const matchResultSchema = new mongoose.Schema({
     required: true
   },
 
-  // Total bet amount from the fight
-  totalBet: {
+  // Betting information for each participant
+  participantBets: [{
+    participantID: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Participant',
+      required: true
+    },
+    betAmount: {
+      type: Number,
+      required: true,
+      min: 0
+    },
+    position: {
+      type: String,
+      enum: ['Meron', 'Wala'],
+      required: true
+    }
+  }],
+
+  // Total bet pool (excluding plazada)
+  totalBetPool: {
     type: Number,
     required: true,
     min: 0
   },
 
-  // Winner of the bet (Meron or Wala)
+  // Total plazada collected
+  totalPlazada: {
+    type: Number,
+    required: true,
+    min: 0
+  },
+
+  // Winner of the bet (Meron, Wala, or Draw)
   betWinner: {
     type: String,
     enum: ['Meron', 'Wala', 'Draw'],
@@ -52,37 +78,32 @@ const matchResultSchema = new mongoose.Schema({
       type: String,
       enum: ['knockout', 'decision', 'disqualification', 'forfeit'],
       required: true
-    },
-    description: {
-      type: String,
-      trim: true,
-      maxlength: 1000
     }
   },
 
-  // Prize distribution
-  prize: {
-    totalPrizePool: {
+  // Payout information
+  payouts: {
+    meronPayout: {
       type: Number,
       min: 0,
       default: 0
     },
-    winnerPrize: {
+    walaPayout: {
       type: Number,
       min: 0,
       default: 0
     },
-    houseCut: {
-      type: Number,
-      min: 0,
-      default: 0
-    },
-    plazadaFee: {
-      type: Number,
-      min: 0,
-      default: 0
-    },
-    netPayout: {
+    drawPayouts: [{
+      participantID: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Participant'
+      },
+      payout: {
+        type: Number,
+        min: 0
+      }
+    }],
+    outsideBets: {
       type: Number,
       min: 0,
       default: 0
@@ -122,17 +143,10 @@ const matchResultSchema = new mongoose.Schema({
     type: Date
   },
 
-  // Additional notes about the match
-  notes: {
-    type: String,
-    trim: true,
-    maxlength: 1000
-  },
-
   // Status of result processing
   status: {
     type: String,
-    enum: ['pending', 'confirmed', 'disputed', 'final'],
+    enum: ['pending', 'final'],
     default: 'pending'
   }
 }, { timestamps: true });
@@ -145,37 +159,55 @@ matchResultSchema.index({ matchStartTime: 1 });
 matchResultSchema.index({ status: 1 });
 matchResultSchema.index({ verified: 1 });
 
-// Pre-save middleware to calculate prize distribution
+// Pre-save middleware to calculate payouts
 matchResultSchema.pre('save', function(next) {
-  if (this.totalBet > 0) {
-    // Plazada fee should already be provided from fight schedule
-    // If not provided, calculate it as 10% of base bet (fallback)
-    if (!this.prize.plazadaFee) {
-      this.prize.plazadaFee = this.totalBet * 0.10;
+  if (this.participantBets && this.participantBets.length === 2) {
+    // Find Meron and Wala bets
+    const meronBet = this.participantBets.find(bet => bet.position === 'Meron')
+    const walaBet = this.participantBets.find(bet => bet.position === 'Wala')
+
+    if (meronBet && walaBet) {
+      const gap = meronBet.betAmount - walaBet.betAmount // Gap filled by outside bets
+
+      // Calculate total bet pool including outside bets
+      this.totalBetPool = meronBet.betAmount + walaBet.betAmount + gap
+
+      // Calculate plazada (10% of each bet) for display purposes
+      const meronPlazada = meronBet.betAmount * 0.10
+      const walaPlazada = walaBet.betAmount * 0.10
+      this.totalPlazada = meronPlazada + walaPlazada
+
+      // Calculate payouts based on bet winner
+      // Winner gets double their bet amount (2x their bet)
+      if (this.betWinner === 'Meron') {
+        this.payouts.meronPayout = meronBet.betAmount * 2
+        this.payouts.walaPayout = 0
+      } else if (this.betWinner === 'Wala') {
+        this.payouts.walaPayout = walaBet.betAmount * 2
+        this.payouts.meronPayout = 0
+      } else if (this.betWinner === 'Draw') {
+        // Draw: each participant gets their bet amount back
+        this.payouts.drawPayouts = this.participantBets.map(bet => ({
+          participantID: bet.participantID,
+          payout: bet.betAmount
+        }))
+        this.payouts.meronPayout = 0
+        this.payouts.walaPayout = 0
+      }
+
+      // Set outside bets amount
+      this.payouts.outsideBets = gap
     }
-
-    // House cut is calculated to make winner prize = total bet - 500
-    // So if total bet is 10,500, winner gets 10,000, house cut is 500
-    this.prize.houseCut = this.prize.plazadaFee; // House cut equals plazada fee
-
-    // Winner gets total bet minus house cut only (plazada is collected separately)
-    this.prize.winnerPrize = this.totalBet - this.prize.houseCut;
-
-    // Total prize pool is same as winner prize
-    this.prize.totalPrizePool = this.prize.winnerPrize;
-
-    // Net payout (what winner actually receives)
-    this.prize.netPayout = this.prize.winnerPrize;
   }
 
   // Calculate match duration if both times are set
   if (this.matchStartTime && this.matchEndTime) {
-    const durationMs = this.matchEndTime.getTime() - this.matchStartTime.getTime();
-    this.resultMatch.matchDuration = Math.round(durationMs / (1000 * 60)); // Convert to minutes
+    const durationMs = this.matchEndTime.getTime() - this.matchStartTime.getTime()
+    this.resultMatch.matchDuration = Math.round(durationMs / (1000 * 60)) // Convert to minutes
   }
 
-  next();
-});
+  next()
+})
 
 // Post-save middleware to deactivate cocks after fight completion
 matchResultSchema.post('save', async function(doc) {
@@ -200,14 +232,40 @@ matchResultSchema.post('save', async function(doc) {
 });
 
 // Method to determine the winning side based on participant
-matchResultSchema.methods.determineBetWinner = function(fightSchedule) {
-  const winnerPosition = fightSchedule.position.find(
-    p => p.participantID.toString() === this.resultMatch.winnerParticipantID.toString()
+matchResultSchema.methods.determineBetWinner = function() {
+  const winnerBet = this.participantBets.find(
+    bet => bet.participantID.toString() === this.resultMatch.winnerParticipantID.toString()
   );
 
-  if (winnerPosition) {
-    this.betWinner = winnerPosition.side;
+  if (winnerBet) {
+    this.betWinner = winnerBet.position;
   }
+};
+
+// Method to assign Meron/Wala positions based on bet amounts
+matchResultSchema.methods.assignPositions = function() {
+  if (this.participantBets.length === 2) {
+    const [bet1, bet2] = this.participantBets;
+
+    if (bet1.betAmount > bet2.betAmount) {
+      bet1.position = 'Meron';
+      bet2.position = 'Wala';
+    } else if (bet2.betAmount > bet1.betAmount) {
+      bet2.position = 'Meron';
+      bet1.position = 'Wala';
+    } else {
+      // Equal bets - assign randomly
+      bet1.position = 'Meron';
+      bet2.position = 'Wala';
+    }
+  }
+};
+
+// Method to calculate plazada fees
+matchResultSchema.methods.calculatePlazada = function() {
+  this.participantBets.forEach(bet => {
+    bet.plazadaFee = bet.betAmount * 0.10; // 10% plazada
+  });
 };
 
 // Method to validate match result
@@ -228,6 +286,10 @@ matchResultSchema.methods.validateResult = function() {
 
   if (this.resultMatch.winnerParticipantID.toString() === this.resultMatch.loserParticipantID.toString()) {
     errors.push('Winner and loser cannot be the same participant');
+  }
+
+  if (!this.participantBets || this.participantBets.length !== 2) {
+    errors.push('Exactly 2 participant bets are required');
   }
 
   return errors;

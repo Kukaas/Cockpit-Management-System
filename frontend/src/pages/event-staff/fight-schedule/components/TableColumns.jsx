@@ -180,6 +180,30 @@ export const createMatchResultColumns = (formatCurrency, formatDate, handleDelet
     )
   },
   {
+    key: 'participantBets',
+    label: 'Participant Bets',
+    sortable: false,
+    filterable: false,
+    render: (value) => (
+      <div className="space-y-1 text-sm">
+        {value?.map((bet) => {
+          const plazada = bet.betAmount * 0.10
+          return (
+            <div key={bet.participantID._id} className="flex items-center gap-2">
+              <Badge variant={bet.position === 'Meron' ? 'default' : 'secondary'} className="text-xs">
+                {bet.position}
+              </Badge>
+              <div>
+                <div>{bet.participantID.participantName}: ₱{bet.betAmount?.toLocaleString()}</div>
+                <div className="text-xs text-muted-foreground">Plazada: ₱{plazada?.toLocaleString()}</div>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    )
+  },
+  {
     key: 'betWinner',
     label: 'Bet Winner',
     sortable: true,
@@ -198,8 +222,8 @@ export const createMatchResultColumns = (formatCurrency, formatDate, handleDelet
     )
   },
   {
-    key: 'totalBet',
-    label: 'Total Bet',
+    key: 'totalBetPool',
+    label: 'Total Bet Pool',
     sortable: true,
     filterable: false,
     render: (value) => (
@@ -210,21 +234,38 @@ export const createMatchResultColumns = (formatCurrency, formatDate, handleDelet
     )
   },
   {
-    key: 'prize',
-    label: 'Prize Info',
+    key: 'payouts',
+    label: 'Payout Info',
     sortable: false,
     filterable: false,
-    render: (value) => (
-      <div className="space-y-1 text-sm">
-        <div className="flex items-center gap-1">
-          <Trophy className="h-3 w-3 text-yellow-600" />
-          <span className="text-green-600 font-medium">{formatCurrency(value.winnerPrize)}</span>
-        </div>
-        <div className="text-muted-foreground">
-          House: {formatCurrency(value.houseCut)}
-        </div>
-      </div>
-    )
+    render: (value, row) => {
+      if (row.betWinner === 'Meron') {
+        return (
+          <div className="space-y-1 text-sm">
+            <div className="flex items-center gap-1">
+              <Trophy className="h-3 w-3 text-yellow-600" />
+              <span className="text-green-600 font-medium">Meron: {formatCurrency(value.meronPayout)}</span>
+            </div>
+          </div>
+        )
+      } else if (row.betWinner === 'Wala') {
+        return (
+          <div className="space-y-1 text-sm">
+            <div className="flex items-center gap-1">
+              <Trophy className="h-3 w-3 text-yellow-600" />
+              <span className="text-green-600 font-medium">Wala: {formatCurrency(value.walaPayout)}</span>
+            </div>
+          </div>
+        )
+      } else if (row.betWinner === 'Draw') {
+        return (
+          <div className="space-y-1 text-sm">
+            <div className="text-muted-foreground">Draw - Bets returned</div>
+          </div>
+        )
+      }
+      return null
+    }
   },
   {
     key: 'matchStartTime',
@@ -250,62 +291,53 @@ export const createMatchResultColumns = (formatCurrency, formatDate, handleDelet
     label: 'Status',
     sortable: true,
     filterable: true,
-    filterOptions: ['Pending', 'Confirmed', 'Disputed', 'Final'],
+    filterOptions: ['Pending', 'Final'],
     filterValueMap: {
       'Pending': 'pending',
-      'Confirmed': 'confirmed',
-      'Disputed': 'disputed',
       'Final': 'final'
     },
-  render: (value, row) => {
-    // If status is final, show only a status badge
-    if (value === 'final') {
-      return (
-        <Badge variant="default" className="text-xs">
-          Final
-        </Badge>
-      )
-    }
-
-    // Otherwise show the full status with verification
-    return (
-      <div className="space-y-1">
-        {row.verified && (
-          <div className="text-xs text-green-600">
-            ✓ Verified
-          </div>
-        )}
-        {/* Status Change Dropdown - Only show when status is pending */}
-        {(row.status === 'pending' || row.status === 'confirmed') && (
-          <select
-            value={row.status}
-            onChange={(e) => {
-              e.stopPropagation()
-              handleStatusChange(row._id, e.target.value, row.status)
-            }}
-            className="text-xs px-2 py-1 border rounded bg-white"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <option value="pending">Pending</option>
-            <option value="confirmed">Confirmed</option>
-            <option value="final">Final</option>
-          </select>
-        )}
-        {row.status === 'disputed' && (
-          <Badge variant="destructive" className="text-xs">
-            Disputed
-          </Badge>
-        )}
-        {row.status === 'final' && (
+    render: (value, row) => {
+      // If status is final, show only a status badge
+      if (value === 'final') {
+        return (
           <Badge variant="default" className="text-xs">
             Final
           </Badge>
-        )}
-      </div>
+        )
+      }
 
-    )
-  }
-},
+      // Otherwise show the full status with verification
+      return (
+        <div className="space-y-1">
+          {row.verified && (
+            <div className="text-xs text-green-600">
+              ✓ Verified
+            </div>
+          )}
+          {/* Status Change Dropdown - Only show when status is pending */}
+          {row.status === 'pending' && (
+            <select
+              value={row.status}
+              onChange={(e) => {
+                e.stopPropagation()
+                handleStatusChange(row._id, e.target.value, row.status)
+              }}
+              className="text-xs px-2 py-1 border rounded bg-white"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <option value="pending">Pending</option>
+              <option value="final">Final</option>
+            </select>
+          )}
+          {row.status === 'final' && (
+            <Badge variant="default" className="text-xs">
+              Final
+            </Badge>
+          )}
+        </div>
+      )
+    }
+  },
   {
     key: 'actions',
     label: 'Actions',
