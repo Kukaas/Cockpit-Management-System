@@ -112,18 +112,6 @@ const AdminEventSelection = () => {
       )
     },
     {
-      key: 'entryFee',
-      label: 'Entry Fee',
-      sortable: true,
-      filterable: false,
-      render: (value) => (
-        <div className="flex items-center gap-1">
-          <DollarSign className="h-4 w-4 text-blue-600" />
-          <span>{formatCurrency(value)}</span>
-        </div>
-      )
-    },
-    {
       key: 'eventSpecificInfo',
       label: 'Event Details',
       sortable: false,
