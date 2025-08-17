@@ -28,13 +28,11 @@ const Events = () => {
     location: '',
     date: '',
     prize: '',
-    entryFee: '',
-    minimumBet: '',
     eventType: '',
     noCockRequirements: '',
-    description: '',
     maxParticipants: '',
     registrationDeadline: '',
+    maxCapacity: '',
     isPublic: true
   })
   const [editFormData, setEditFormData] = useState({
@@ -42,13 +40,11 @@ const Events = () => {
     location: '',
     date: '',
     prize: '',
-    entryFee: '',
-    minimumBet: '',
     eventType: '',
     noCockRequirements: '',
-    description: '',
     maxParticipants: '',
     registrationDeadline: '',
+    maxCapacity: '',
     isPublic: true
   })
 
@@ -136,7 +132,7 @@ const Events = () => {
 
   const handleAddEvent = async () => {
     // Basic required fields for all events
-    const basicRequiredFields = ['eventName', 'location', 'date', 'entryFee', 'eventType']
+    const basicRequiredFields = ['eventName', 'location', 'date', 'eventType', 'maxCapacity']
     const missingBasicFields = basicRequiredFields.filter(field => !formData[field])
 
     if (missingBasicFields.length > 0) {
@@ -144,13 +140,13 @@ const Events = () => {
       return
     }
 
-    // Additional required fields for non-regular events
-    if (formData.eventType !== 'regular') {
-      const additionalRequiredFields = ['prize', 'minimumBet', 'noCockRequirements']
+    // Additional required fields for derby events
+    if (formData.eventType === 'derby') {
+      const additionalRequiredFields = ['prize', 'noCockRequirements', 'maxParticipants', 'registrationDeadline']
       const missingAdditionalFields = additionalRequiredFields.filter(field => !formData[field])
 
       if (missingAdditionalFields.length > 0) {
-        toast.error(`For ${formData.eventType} events, please fill in: ${missingAdditionalFields.join(', ')}`)
+        toast.error(`For derby events, please fill in: ${missingAdditionalFields.join(', ')}`)
         return
       }
     }
@@ -163,9 +159,9 @@ const Events = () => {
     }
 
     // Validate numeric fields
-    const numericFields = ['entryFee']
-    if (formData.eventType !== 'regular') {
-      numericFields.push('prize', 'minimumBet', 'noCockRequirements')
+    const numericFields = ['maxCapacity']
+    if (formData.eventType === 'derby') {
+      numericFields.push('prize', 'noCockRequirements', 'maxParticipants')
     }
 
     for (const field of numericFields) {
@@ -175,20 +171,15 @@ const Events = () => {
       }
     }
 
-    // Validate maxParticipants if provided
-    if (formData.maxParticipants && (isNaN(formData.maxParticipants) || Number(formData.maxParticipants) < 1)) {
-      toast.error('Max participants must be a valid positive number')
-      return
-    }
-
     // Prepare data for create - remove fields that shouldn't be sent for regular events
     const createData = { ...formData }
 
     // For regular events, remove the fields that are not required
     if (formData.eventType === 'regular') {
       delete createData.prize
-      delete createData.minimumBet
       delete createData.noCockRequirements
+      delete createData.maxParticipants
+      delete createData.registrationDeadline
     }
 
     createEventMutation.mutate(createData)
@@ -196,7 +187,7 @@ const Events = () => {
 
   const handleEditEvent = async () => {
     // Basic required fields for all events
-    const basicRequiredFields = ['eventName', 'location', 'date', 'entryFee', 'eventType']
+    const basicRequiredFields = ['eventName', 'location', 'date', 'eventType', 'maxCapacity']
     const missingBasicFields = basicRequiredFields.filter(field => !editFormData[field])
 
     if (missingBasicFields.length > 0) {
@@ -204,13 +195,13 @@ const Events = () => {
       return
     }
 
-    // Additional required fields for non-regular events
-    if (editFormData.eventType !== 'regular') {
-      const additionalRequiredFields = ['prize', 'minimumBet', 'noCockRequirements']
+    // Additional required fields for derby events
+    if (editFormData.eventType === 'derby') {
+      const additionalRequiredFields = ['prize', 'noCockRequirements', 'maxParticipants', 'registrationDeadline']
       const missingAdditionalFields = additionalRequiredFields.filter(field => !editFormData[field])
 
       if (missingAdditionalFields.length > 0) {
-        toast.error(`For ${editFormData.eventType} events, please fill in: ${missingAdditionalFields.join(', ')}`)
+        toast.error(`For derby events, please fill in: ${missingAdditionalFields.join(', ')}`)
         return
       }
     }
@@ -225,9 +216,9 @@ const Events = () => {
     }
 
     // Validate numeric fields
-    const numericFields = ['entryFee']
-    if (editFormData.eventType !== 'regular') {
-      numericFields.push('prize', 'minimumBet', 'noCockRequirements')
+    const numericFields = ['maxCapacity']
+    if (editFormData.eventType === 'derby') {
+      numericFields.push('prize', 'noCockRequirements', 'maxParticipants')
     }
 
     for (const field of numericFields) {
@@ -237,20 +228,15 @@ const Events = () => {
       }
     }
 
-    // Validate maxParticipants if provided
-    if (editFormData.maxParticipants && (isNaN(editFormData.maxParticipants) || Number(editFormData.maxParticipants) < 1)) {
-      toast.error('Max participants must be a valid positive number')
-      return
-    }
-
     // Prepare data for update - remove fields that shouldn't be sent for regular events
     const updateData = { ...editFormData }
 
     // For regular events, remove the fields that are not required
     if (editFormData.eventType === 'regular') {
       delete updateData.prize
-      delete updateData.minimumBet
       delete updateData.noCockRequirements
+      delete updateData.maxParticipants
+      delete updateData.registrationDeadline
     }
 
     updateEventMutation.mutate({
@@ -273,13 +259,11 @@ const Events = () => {
       location: '',
       date: '',
       prize: '',
-      entryFee: '',
-      minimumBet: '',
       eventType: '',
       noCockRequirements: '',
-      description: '',
       maxParticipants: '',
       registrationDeadline: '',
+      maxCapacity: '',
       isPublic: true
     })
   }
@@ -290,13 +274,11 @@ const Events = () => {
       location: '',
       date: '',
       prize: '',
-      entryFee: '',
-      minimumBet: '',
       eventType: '',
       noCockRequirements: '',
-      description: '',
       maxParticipants: '',
       registrationDeadline: '',
+      maxCapacity: '',
       isPublic: true
     })
   }
@@ -382,13 +364,11 @@ const Events = () => {
       location: event.location || '',
       date: event.date ? new Date(event.date).toISOString().slice(0, 16) : '',
       prize: event.prize ? event.prize.toString() : '',
-      entryFee: event.entryFee ? event.entryFee.toString() : '',
-      minimumBet: event.minimumBet ? event.minimumBet.toString() : '',
       eventType: event.eventType || '',
       noCockRequirements: event.noCockRequirements ? event.noCockRequirements.toString() : '',
-      description: event.description || '',
       maxParticipants: event.maxParticipants ? event.maxParticipants.toString() : '',
       registrationDeadline: event.registrationDeadline ? new Date(event.registrationDeadline).toISOString().slice(0, 16) : '',
+      maxCapacity: event.maxCapacity ? event.maxCapacity.toString() : '',
       isPublic: event.isPublic !== undefined ? event.isPublic : true
     })
     setEditEventDialogOpen(true)

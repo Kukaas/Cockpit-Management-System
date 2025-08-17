@@ -20,32 +20,20 @@ const eventSchema = new mongoose.Schema({
     prize: {
         type: Number,
         required: function() {
-            return this.eventType !== 'regular';
-        },
-        min: 0
-    },
-    entryFee: {
-        type: Number,
-        required: true,
-        min: 0
-    },
-    minimumBet: {
-        type: Number,
-        required: function() {
-            return this.eventType !== 'regular';
+            return this.eventType === 'derby';
         },
         min: 0
     },
     eventType: {
         type: String,
         required: true,
-        enum: ['regular', 'special', 'championship', 'exhibition'],
+        enum: ['regular', 'derby'],
         default: 'regular'
     },
     noCockRequirements: {
         type: Number,
         required: function() {
-            return this.eventType !== 'regular';
+            return this.eventType === 'derby';
         },
         min: 0,
         max: 1000
@@ -60,11 +48,6 @@ const eventSchema = new mongoose.Schema({
         enum: ['active', 'completed', 'cancelled'],
         default: 'active'
     },
-    description: {
-        type: String,
-        trim: true,
-        maxlength: 1000
-    },
     maxParticipants: {
         type: Number,
         min: 1,
@@ -73,6 +56,11 @@ const eventSchema = new mongoose.Schema({
     registrationDeadline: {
         type: Date,
         default: null
+    },
+    maxCapacity: {
+        type: Number,
+        required: true,
+        min: 1
     },
     isPublic: {
         type: Boolean,

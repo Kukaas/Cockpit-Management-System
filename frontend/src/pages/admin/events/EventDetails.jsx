@@ -172,10 +172,6 @@ const EventDetails = () => {
                       <p className="text-sm font-medium text-gray-600 mb-1">Email</p>
                       <p className="text-gray-900">{selectedItem.email}</p>
                     </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-600 mb-1">Entry Fee</p>
-                      <p className="font-medium text-green-600">{formatCurrency(selectedItem.entryFee)}</p>
-                    </div>
                   </div>
                   <div className="mt-4">
                     <p className="text-sm font-medium text-gray-600 mb-1">Address</p>

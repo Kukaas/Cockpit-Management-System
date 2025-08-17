@@ -22,13 +22,7 @@ export const createEntranceColumns = (formatCurrency, formatDate, handleEditClic
     sortable: true,
     filterable: false
   },
-  {
-    key: 'entranceFee',
-    label: 'Entrance Fee',
-    sortable: true,
-    filterable: false,
-    render: (value) => formatCurrency(value)
-  },
+
   {
     key: 'date',
     label: 'Date',

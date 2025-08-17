@@ -1,7 +1,7 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Edit, Trash2, Calendar, MapPin, DollarSign, Users, Award, Target, Info } from 'lucide-react'
+import { Edit, Trash2, Calendar, MapPin, DollarSign, Users, Award, Target, Info, Building } from 'lucide-react'
 
 export const createEventColumns = (
   formatCurrency,
@@ -43,23 +43,17 @@ export const createEventColumns = (
     label: 'Type',
     sortable: true,
     filterable: true,
-    filterOptions: ['Regular', 'Special', 'Championship', 'Exhibition'],
+    filterOptions: ['Regular', 'Derby'],
     filterValueMap: {
       'Regular': 'regular',
-      'Special': 'special',
-      'Championship': 'championship',
-      'Exhibition': 'exhibition'
+      'Derby': 'derby'
     },
     render: (value) => {
       // Helper function to get event type icon
       const getEventTypeIcon = (eventType) => {
         switch (eventType) {
-          case 'championship':
+          case 'derby':
             return <Award className="h-3 w-3" />
-          case 'special':
-            return <Target className="h-3 w-3" />
-          case 'exhibition':
-            return <Info className="h-3 w-3" />
           case 'regular':
           default:
             return <Calendar className="h-3 w-3" />
@@ -71,9 +65,7 @@ export const createEventColumns = (
           {getEventTypeIcon(value)}
           <Badge
             variant={
-              value === 'championship' ? 'destructive' :
-              value === 'special' ? 'default' :
-              value === 'exhibition' ? 'secondary' : 'outline'
+              value === 'derby' ? 'default' : 'outline'
             }
             className="text-xs capitalize"
           >
@@ -129,14 +121,14 @@ export const createEventColumns = (
     }
   },
   {
-    key: 'entryFee',
-    label: 'Entry Fee',
+    key: 'maxCapacity',
+    label: 'Max Capacity',
     sortable: true,
     filterable: false,
     render: (value) => (
       <div className="flex items-center gap-1">
-        <DollarSign className="h-4 w-4 text-blue-600" />
-        <span>{formatCurrency(value)}</span>
+        <Building className="h-4 w-4 text-blue-600" />
+        <span>{value}</span>
       </div>
     )
   },
@@ -156,7 +148,7 @@ export const createEventColumns = (
           </div>
         )
       } else {
-        // For non-regular events, show prize and cock requirements
+        // For derby events, show prize and cock requirements
         return (
           <div className="space-y-1">
             {row.prize && (
@@ -171,10 +163,10 @@ export const createEventColumns = (
                 <span className="text-xs">{row.noCockRequirements} cocks</span>
               </div>
             )}
-            {row.minimumBet && (
+            {row.maxParticipants && (
               <div className="flex items-center gap-1">
-                <DollarSign className="h-3 w-3 text-orange-600" />
-                <span className="text-xs">Min: {formatCurrency(row.minimumBet)}</span>
+                <Users className="h-3 w-3 text-blue-600" />
+                <span className="text-xs">Max: {row.maxParticipants} participants</span>
               </div>
             )}
           </div>

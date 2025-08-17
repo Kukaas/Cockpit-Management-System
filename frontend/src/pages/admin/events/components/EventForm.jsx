@@ -1,11 +1,10 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import CustomAlertDialog from '@/components/custom/CustomAlertDialog'
 import InputField from '@/components/custom/InputField'
 import NativeSelect from '@/components/custom/NativeSelect'
-import { Calendar, MapPin, DollarSign, Hash, Clock, Users, FileText } from 'lucide-react'
+import { Calendar, MapPin, DollarSign, Hash, Clock, Users, FileText, Building } from 'lucide-react'
 
 const EventForm = ({
   open,
@@ -55,11 +54,10 @@ const EventForm = ({
           >
             <option value="">Select event type...</option>
             <option value="regular">Regular</option>
-            <option value="special">Special</option>
-            <option value="championship">Championship</option>
-            <option value="exhibition">Exhibition</option>
+            <option value="derby">Derby</option>
           </NativeSelect>
         </div>
+
         {/* Event Name */}
         <InputField
           id={isEdit ? "editEventName" : "eventName"}
@@ -70,7 +68,6 @@ const EventForm = ({
           placeholder="Enter event name"
           required
         />
-
 
         {/* Location */}
         <div className="space-y-2">
@@ -91,17 +88,16 @@ const EventForm = ({
           </NativeSelect>
         </div>
 
-        {/* Entry Fee - Always required */}
+        {/* Max Capacity - Always required */}
         <InputField
-          id={isEdit ? "editEntryFee" : "entryFee"}
-          label="Entry Fee (PHP) *"
-          icon={DollarSign}
+          id={isEdit ? "editMaxCapacity" : "maxCapacity"}
+          label="Max Arena Capacity *"
+          icon={Building}
           type="number"
-          value={formData.entryFee}
-          onChange={(e) => onInputChange('entryFee', e.target.value)}
-          placeholder="Enter entry fee"
-          min="0"
-          step="0.01"
+          value={formData.maxCapacity}
+          onChange={(e) => onInputChange('maxCapacity', e.target.value)}
+          placeholder="Enter max arena capacity"
+          min="1"
           required
         />
 
@@ -116,18 +112,18 @@ const EventForm = ({
           required
         />
 
-
-        {/* Conditional fields - Only show for non-regular events */}
+        {/* Conditional fields - Only show for derby events */}
         {!isRegularEvent && (
           <>
             {/* Registration Deadline */}
             <InputField
               id={isEdit ? "editRegistrationDeadline" : "registrationDeadline"}
-              label="Registration Deadline"
+              label="Registration Deadline *"
               icon={Clock}
               type="datetime-local"
               value={formData.registrationDeadline}
               onChange={(e) => onInputChange('registrationDeadline', e.target.value)}
+              required
             />
 
             <div className='grid grid-cols-2 gap-4'>
@@ -145,22 +141,6 @@ const EventForm = ({
                 required
               />
 
-              {/* Minimum Bet */}
-              <InputField
-                id={isEdit ? "editMinimumBet" : "minimumBet"}
-                label="Minimum Bet (PHP) *"
-                icon={Hash}
-                type="number"
-                value={formData.minimumBet}
-                onChange={(e) => onInputChange('minimumBet', e.target.value)}
-                placeholder="Enter minimum bet"
-                min="0"
-                step="0.01"
-                required
-              />
-            </div>
-
-            <div className='grid grid-cols-2 gap-4'>
               {/* Cock Requirements */}
               <InputField
                 id={isEdit ? "editNoCockRequirements" : "noCockRequirements"}
@@ -174,19 +154,20 @@ const EventForm = ({
                 max="1000"
                 required
               />
-
-              {/* Max Participants */}
-              <InputField
-                id={isEdit ? "editMaxParticipants" : "maxParticipants"}
-                label="Max Participants"
-                icon={Users}
-                type="number"
-                value={formData.maxParticipants}
-                onChange={(e) => onInputChange('maxParticipants', e.target.value)}
-                placeholder="Enter max participants (optional)"
-                min="1"
-              />
             </div>
+
+            {/* Max Participants */}
+            <InputField
+              id={isEdit ? "editMaxParticipants" : "maxParticipants"}
+              label="Max Participants *"
+              icon={Users}
+              type="number"
+              value={formData.maxParticipants}
+              onChange={(e) => onInputChange('maxParticipants', e.target.value)}
+              placeholder="Enter max participants"
+              min="1"
+              required
+            />
           </>
         )}
 
@@ -203,20 +184,6 @@ const EventForm = ({
             <option value="true">Yes</option>
             <option value="false">No</option>
           </NativeSelect>
-        </div>
-
-        {/* Description */}
-        <div className="space-y-2">
-          <Label htmlFor={isEdit ? "editDescription" : "description"} className="text-sm font-medium">
-            Description
-          </Label>
-          <Textarea
-            id={isEdit ? "editDescription" : "description"}
-            value={formData.description}
-            onChange={(e) => onInputChange('description', e.target.value)}
-            placeholder="Enter event description (optional)"
-            rows={3}
-          />
         </div>
       </div>
     </CustomAlertDialog>

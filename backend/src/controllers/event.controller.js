@@ -8,18 +8,16 @@ export const createEvent = async (req, res) => {
             location,
             date,
             prize,
-            entryFee,
-            minimumBet,
             eventType,
             noCockRequirements,
-            description,
             maxParticipants,
             registrationDeadline,
+            maxCapacity,
             isPublic
         } = req.body;
 
         // Validate required fields based on event type
-        const basicRequiredFields = ['eventName', 'location', 'date', 'entryFee', 'eventType'];
+        const basicRequiredFields = ['eventName', 'location', 'date', 'eventType', 'maxCapacity'];
         const missingBasicFields = basicRequiredFields.filter(field => !req.body[field]);
 
         if (missingBasicFields.length > 0) {
@@ -29,15 +27,15 @@ export const createEvent = async (req, res) => {
             });
         }
 
-        // Additional required fields for non-regular events
-        if (eventType !== 'regular') {
-            const additionalRequiredFields = ['prize', 'minimumBet', 'noCockRequirements'];
+        // Additional required fields for derby events
+        if (eventType === 'derby') {
+            const additionalRequiredFields = ['prize', 'noCockRequirements', 'maxParticipants', 'registrationDeadline'];
             const missingAdditionalFields = additionalRequiredFields.filter(field => !req.body[field]);
 
             if (missingAdditionalFields.length > 0) {
                 return res.status(400).json({
                     success: false,
-                    message: `For ${eventType} events, missing required fields: ${missingAdditionalFields.join(', ')}`
+                    message: `For derby events, missing required fields: ${missingAdditionalFields.join(', ')}`
                 });
             }
         }
@@ -56,20 +54,18 @@ export const createEvent = async (req, res) => {
             eventName,
             location,
             date: eventDate,
-            entryFee: Number(entryFee),
             eventType,
             adminID: req.user._id,
-            description,
+            maxCapacity: Number(maxCapacity),
             maxParticipants: maxParticipants ? Number(maxParticipants) : null,
             registrationDeadline: registrationDeadline ? new Date(registrationDeadline) : null,
             isPublic: isPublic !== undefined ? isPublic : true
         };
 
-        // Only add prize, minimumBet, and noCockRequirements for non-regular events
-        if (eventType !== 'regular') {
-            eventData.prize = prize ? Number(prize) : undefined;
-            eventData.minimumBet = minimumBet ? Number(minimumBet) : undefined;
-            eventData.noCockRequirements = noCockRequirements ? Number(noCockRequirements) : undefined;
+        // Only add prize and noCockRequirements for derby events
+        if (eventType === 'derby') {
+            eventData.prize = Number(prize);
+            eventData.noCockRequirements = Number(noCockRequirements);
         }
 
         const newEvent = new Event(eventData);
@@ -123,8 +119,7 @@ export const getAllEvents = async (req, res) => {
         if (search) {
             filter.$or = [
                 { eventName: { $regex: search, $options: 'i' } },
-                { location: { $regex: search, $options: 'i' } },
-                { description: { $regex: search, $options: 'i' } }
+                { location: { $regex: search, $options: 'i' } }
             ];
         }
 
@@ -230,7 +225,7 @@ export const updateEvent = async (req, res) => {
 
         // Validate required fields based on event type
         const eventType = updateData.eventType || event.eventType;
-        const basicRequiredFields = ['eventName', 'location', 'date', 'entryFee', 'eventType'];
+        const basicRequiredFields = ['eventName', 'location', 'date', 'eventType', 'maxCapacity'];
         const missingBasicFields = basicRequiredFields.filter(field => !updateData[field] && !event[field]);
 
         if (missingBasicFields.length > 0) {
@@ -240,15 +235,15 @@ export const updateEvent = async (req, res) => {
             });
         }
 
-        // Additional required fields for non-regular events
-        if (eventType !== 'regular') {
-            const additionalRequiredFields = ['prize', 'minimumBet', 'noCockRequirements'];
+        // Additional required fields for derby events
+        if (eventType === 'derby') {
+            const additionalRequiredFields = ['prize', 'noCockRequirements', 'maxParticipants', 'registrationDeadline'];
             const missingAdditionalFields = additionalRequiredFields.filter(field => !updateData[field] && !event[field]);
 
             if (missingAdditionalFields.length > 0) {
                 return res.status(400).json({
                     success: false,
-                    message: `For ${eventType} events, missing required fields: ${missingAdditionalFields.join(', ')}`
+                    message: `For derby events, missing required fields: ${missingAdditionalFields.join(', ')}`
                 });
             }
         }
@@ -265,17 +260,17 @@ export const updateEvent = async (req, res) => {
         }
 
         // Convert numeric fields conditionally
-        if (updateData.entryFee) updateData.entryFee = Number(updateData.entryFee);
         if (updateData.prize) updateData.prize = Number(updateData.prize);
-        if (updateData.minimumBet) updateData.minimumBet = Number(updateData.minimumBet);
         if (updateData.noCockRequirements) updateData.noCockRequirements = Number(updateData.noCockRequirements);
         if (updateData.maxParticipants) updateData.maxParticipants = Number(updateData.maxParticipants);
+        if (updateData.maxCapacity) updateData.maxCapacity = Number(updateData.maxCapacity);
 
         // For regular events, remove the fields that are not required
         if (eventType === 'regular') {
             delete updateData.prize;
-            delete updateData.minimumBet;
             delete updateData.noCockRequirements;
+            delete updateData.maxParticipants;
+            delete updateData.registrationDeadline;
         }
 
         // Update the event

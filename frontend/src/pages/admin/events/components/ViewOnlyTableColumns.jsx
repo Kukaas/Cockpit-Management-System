@@ -23,13 +23,6 @@ export const createViewOnlyParticipantColumns = (formatCurrency, handleViewDetai
     filterable: false
   },
   {
-    key: 'entryFee',
-    label: 'Entry Fee',
-    sortable: true,
-    filterable: false,
-    render: (value) => formatCurrency(value)
-  },
-  {
     key: 'status',
     label: 'Status',
     sortable: true,
