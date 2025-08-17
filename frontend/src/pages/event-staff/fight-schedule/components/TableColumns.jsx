@@ -33,46 +33,18 @@ export const createFightColumns = (formatCurrency, formatDate, handleEditClick, 
     )
   },
   {
-    key: 'position',
-    label: 'Betting Info',
+    key: 'cockProfileID',
+    label: 'Cock Profiles',
     sortable: false,
     filterable: false,
     render: (value) => (
       <div className="space-y-1">
-        {value?.map((pos, index) => {
-          return (
-            <div key={index} className="flex items-center gap-2 text-sm">
-              <Badge variant={pos.side === 'Meron' ? 'default' : 'secondary'} className="text-xs">
-                {pos.side}
-              </Badge>
-              <span>{formatCurrency(pos.betAmount)}</span>
-            </div>
-          )
-        })}
-      </div>
-    )
-  },
-  {
-    key: 'totalBet',
-    label: 'Total Bet',
-    sortable: true,
-    filterable: false,
-    render: (value) => (
-      <div className="flex items-center gap-1">
-        <Target className="h-4 w-4 text-green-600" />
-        <span className="font-medium">{formatCurrency(value)}</span>
-      </div>
-    )
-  },
-  {
-    key: 'plazadaFee',
-    label: 'Plazada Fee',
-    sortable: true,
-    filterable: false,
-    render: (value) => (
-      <div className="flex items-center gap-1">
-        <Trophy className="h-4 w-4 text-blue-600" />
-        <span>{formatCurrency(value)}</span>
+        {value?.map((cock) => (
+          <div key={cock._id} className="flex items-center gap-2 text-sm">
+            <Target className="h-3 w-3" />
+            <span>{cock.legband} ({cock.weight}kg)</span>
+          </div>
+        ))}
       </div>
     )
   },

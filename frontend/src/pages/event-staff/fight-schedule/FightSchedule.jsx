@@ -40,16 +40,13 @@ const FightSchedule = () => {
   const [selectedResult, setSelectedResult] = useState(null)
   const [pendingStatusChange, setPendingStatusChange] = useState(null) // { resultId, newStatus, oldStatus, resultData }
 
-    // Form data
+  // Form data
   const [fightFormData, setFightFormData] = useState({
     participant1: '',
     participant2: '',
     cockProfile1: '',
     cockProfile2: '',
-    betAmount1: '',
-    betAmount2: '',
-    scheduledTime: '',
-    notes: ''
+    scheduledTime: ''
   })
 
   const [resultFormData, setResultFormData] = useState({
@@ -197,8 +194,6 @@ const FightSchedule = () => {
     }
   )
 
-  // No need for selectedEvent state - using event data directly
-
   // Form handlers
   const handleFightInputChange = (field, value) => {
     setFightFormData(prev => ({ ...prev, [field]: value }))
@@ -214,10 +209,7 @@ const FightSchedule = () => {
       participant2: '',
       cockProfile1: '',
       cockProfile2: '',
-      betAmount1: '',
-      betAmount2: '',
-      scheduledTime: '',
-      notes: ''
+      scheduledTime: ''
     })
   }
 
@@ -237,7 +229,7 @@ const FightSchedule = () => {
 
   // Submit handlers
   const handleAddFight = async () => {
-    const requiredFields = ['participant1', 'participant2', 'cockProfile1', 'cockProfile2', 'betAmount1', 'betAmount2']
+    const requiredFields = ['participant1', 'participant2', 'cockProfile1', 'cockProfile2']
     const missingFields = requiredFields.filter(field => !fightFormData[field])
 
     if (missingFields.length > 0) {
@@ -255,27 +247,11 @@ const FightSchedule = () => {
       return
     }
 
-    // Extract entry numbers from selected cock profiles
-    const cockProfile1 = availableCockProfiles.find(c => c._id === fightFormData.cockProfile1)
-    const cockProfile2 = availableCockProfiles.find(c => c._id === fightFormData.cockProfile2)
-
-    if (!cockProfile1 || !cockProfile2) {
-      toast.error('Selected cock profiles not found')
-      return
-    }
-
     const fightData = {
       eventID: eventId,
       participantsID: [fightFormData.participant1, fightFormData.participant2],
       cockProfileID: [fightFormData.cockProfile1, fightFormData.cockProfile2],
-      entryNo: [cockProfile1.entryNo, cockProfile2.entryNo], // Auto-extract from cock profiles
-      positions: [
-        { participantID: fightFormData.participant1, betAmount: parseFloat(fightFormData.betAmount1) },
-        { participantID: fightFormData.participant2, betAmount: parseFloat(fightFormData.betAmount2) }
-      ],
-      scheduledTime: fightFormData.scheduledTime || new Date().toISOString(),
-      notes: fightFormData.notes
-      // totalBet and plazadaFee will be calculated automatically by the backend
+      scheduledTime: fightFormData.scheduledTime || new Date().toISOString()
     }
 
     createFightMutation.mutate(fightData)
@@ -299,19 +275,16 @@ const FightSchedule = () => {
   }
 
   // Action handlers
-    const handleEditFightClick = (fight) => {
+  const handleEditFightClick = (fight) => {
     setSelectedFight(fight)
 
-    // Populate form with fight data (entry numbers are auto-extracted from cock profiles)
+    // Populate form with fight data
     setFightFormData({
       participant1: fight.participantsID[0]?._id || '',
       participant2: fight.participantsID[1]?._id || '',
       cockProfile1: fight.cockProfileID[0]?._id || '',
       cockProfile2: fight.cockProfileID[1]?._id || '',
-      betAmount1: fight.position[0]?.betAmount?.toString() || '',
-      betAmount2: fight.position[1]?.betAmount?.toString() || '',
-      scheduledTime: formatDateTimeLocal(fight.scheduledTime),
-      notes: fight.notes || ''
+      scheduledTime: formatDateTimeLocal(fight.scheduledTime)
     })
     setEditFightDialogOpen(true)
   }
@@ -331,9 +304,6 @@ const FightSchedule = () => {
     }))
     setAddResultDialogOpen(true)
   }
-
-  // Note: handleEditResultClick is not used in the current implementation
-  // as match results are typically not edited after creation
 
   const handleDeleteResultClick = (result) => {
     setSelectedResult(result)
@@ -492,6 +462,7 @@ const FightSchedule = () => {
         availableParticipants={availableParticipants}
         availableCockProfiles={availableCockProfiles}
         isEdit={false}
+        event={event}
       />
 
       {/* Edit Fight Dialog */}
@@ -505,22 +476,8 @@ const FightSchedule = () => {
         onSubmit={() => {
           if (!selectedFight) return
 
-          // Extract entry numbers from current cock profiles if they changed
-          const cockProfile1 = availableCockProfiles.find(c => c._id === fightFormData.cockProfile1)
-          const cockProfile2 = availableCockProfiles.find(c => c._id === fightFormData.cockProfile2)
-
           const fightData = {
-            positions: [
-              { participantID: fightFormData.participant1, betAmount: parseFloat(fightFormData.betAmount1) },
-              { participantID: fightFormData.participant2, betAmount: parseFloat(fightFormData.betAmount2) }
-            ],
-            scheduledTime: fightFormData.scheduledTime,
-            notes: fightFormData.notes
-          }
-
-          // Only include entry numbers if cock profiles are available (for reference)
-          if (cockProfile1 && cockProfile2) {
-            fightData.entryNo = [cockProfile1.entryNo, cockProfile2.entryNo]
+            scheduledTime: fightFormData.scheduledTime
           }
 
           updateFightMutation.mutate({ id: selectedFight._id, data: fightData })
@@ -530,6 +487,7 @@ const FightSchedule = () => {
         availableParticipants={availableParticipants}
         availableCockProfiles={availableCockProfiles}
         isEdit={true}
+        event={event}
       />
 
       {/* Add Match Result Dialog */}
@@ -646,14 +604,6 @@ const FightSchedule = () => {
                         {selectedItem.status.replace('_', ' ').charAt(0).toUpperCase() + selectedItem.status.replace('_', ' ').slice(1)}
                       </span>
                     </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-600 mb-1">Total Bet</p>
-                      <p className="font-medium text-green-600">{formatCurrency(selectedItem.totalBet)}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-600 mb-1">Plazada Fee</p>
-                      <p className="font-medium text-blue-600">{formatCurrency(selectedItem.plazadaFee)}</p>
-                    </div>
                   </div>
                   <div className="mt-4">
                     <p className="text-sm font-medium text-gray-600 mb-1">Scheduled Time</p>
@@ -694,13 +644,6 @@ const FightSchedule = () => {
                     ))}
                   </div>
                 </div>
-
-                {selectedItem.notes && (
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h4 className="font-semibold text-lg mb-3 text-gray-900">Notes</h4>
-                    <p className="text-gray-900">{selectedItem.notes}</p>
-                  </div>
-                )}
               </div>
             )}
 

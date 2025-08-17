@@ -10,10 +10,7 @@ export const createFightSchedule = async (req, res) => {
       eventID,
       participantsID,
       cockProfileID,
-      entryNo,
-      positions, // Array of {participantID, betAmount}
-      scheduledTime,
-      notes
+      scheduledTime
     } = req.body;
     const scheduledBy = req.user.id;
 
@@ -43,48 +40,19 @@ export const createFightSchedule = async (req, res) => {
       return res.status(404).json({ message: 'One or more cock profiles not found' });
     }
 
-    // Validate entry numbers
-    if (!entryNo || entryNo.length !== 2) {
-      return res.status(400).json({ message: 'Exactly 2 entry numbers are required' });
-    }
-
-    // Validate positions and bet amounts
-    if (!positions || positions.length !== 2) {
-      return res.status(400).json({ message: 'Bet amounts for both participants are required' });
-    }
-
-    // Total bet and plazada fee will be calculated automatically by the model
-
     // Get next fight number for this event
     const lastFight = await FightSchedule.findOne({ eventID }).sort({ fightNumber: -1 });
     const fightNumber = lastFight ? lastFight.fightNumber + 1 : 1;
-
-    // Create position array with participant IDs and bet amounts
-    const positionArray = positions.map(pos => ({
-      participantID: pos.participantID,
-      betAmount: pos.betAmount,
-      side: '' // Will be assigned based on bet amounts
-    }));
 
     // Create fight schedule
     const fightSchedule = new FightSchedule({
       eventID,
       participantsID,
       cockProfileID,
-      entryNo,
-      position: positionArray,
       fightNumber,
       scheduledTime: scheduledTime || new Date(),
-      scheduledBy,
-      notes
-      // totalBet and plazadaFee will be calculated in pre-save middleware
+      scheduledBy
     });
-
-    // Assign Meron/Wala positions based on bet amounts
-    fightSchedule.assignPositions();
-
-    // Calculate odds
-    fightSchedule.calculateOdds();
 
     await fightSchedule.save();
 
@@ -108,8 +76,7 @@ export const createFightSchedule = async (req, res) => {
 // Get all fight schedules (with filtering)
 export const getAllFightSchedules = async (req, res) => {
   try {
-    const { page = 1, limit = 10, eventID, status, fightNumber } = req.query;
-    const skip = (page - 1) * limit;
+    const { eventID, status, fightNumber } = req.query;
 
     let query = {};
 
@@ -131,21 +98,12 @@ export const getAllFightSchedules = async (req, res) => {
     const fightSchedules = await FightSchedule.find(query)
       .populate('eventID', 'eventName date location')
       .populate('participantsID', 'participantName contactNumber')
-      .populate('cockProfileID', 'legband weight ownerName entryNo')
+      .populate('cockProfileID', 'legband weight ownerName')
       .populate('scheduledBy', 'username')
-      .sort({ fightNumber: 1 })
-      .skip(skip)
-      .limit(parseInt(limit));
-
-    const total = await FightSchedule.countDocuments(query);
+      .sort({ fightNumber: 1 });
 
     res.json({
-      data: fightSchedules,
-      pagination: {
-        current: parseInt(page),
-        total: Math.ceil(total / limit),
-        totalRecords: total
-      }
+      data: fightSchedules
     });
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch fight schedules', error: error.message });
@@ -158,8 +116,8 @@ export const getFightScheduleById = async (req, res) => {
     const { id } = req.params;
     const fightSchedule = await FightSchedule.findById(id)
       .populate('eventID', 'eventName date location')
-      .populate('participantsID', 'participantName contactNumber email')
-      .populate('cockProfileID', 'legband weight ownerName entryNo')
+      .populate('participantsID', 'participantName contactNumber')
+      .populate('cockProfileID', 'legband weight ownerName')
       .populate('scheduledBy', 'username');
 
     if (!fightSchedule) {
@@ -177,9 +135,7 @@ export const updateFightSchedule = async (req, res) => {
   try {
     const { id } = req.params;
     const {
-      positions,
       scheduledTime,
-      notes,
       status
     } = req.body;
 
@@ -193,23 +149,8 @@ export const updateFightSchedule = async (req, res) => {
       return res.status(400).json({ message: 'Cannot update completed fight' });
     }
 
-    // Update positions and recalculate if provided
-    if (positions && positions.length === 2) {
-      fightSchedule.position = positions.map(pos => ({
-        participantID: pos.participantID,
-        betAmount: pos.betAmount,
-        side: ''
-      }));
-
-      // Reassign positions and recalculate odds
-      // totalBet and plazadaFee will be recalculated in pre-save middleware
-      fightSchedule.assignPositions();
-      fightSchedule.calculateOdds();
-    }
-
-    // Update other fields
+    // Update fields
     if (scheduledTime) fightSchedule.scheduledTime = scheduledTime;
-    if (notes !== undefined) fightSchedule.notes = notes;
     if (status) fightSchedule.status = status;
 
     await fightSchedule.save();
@@ -264,7 +205,7 @@ export const getFightSchedulesByEvent = async (req, res) => {
 
     const fightSchedules = await FightSchedule.find(query)
       .populate('participantsID', 'participantName contactNumber')
-      .populate('cockProfileID', 'legband weight ownerName entryNo')
+      .populate('cockProfileID', 'legband weight ownerName')
       .populate('scheduledBy', 'username')
       .sort({ fightNumber: 1 });
 
@@ -315,20 +256,28 @@ export const getAvailableParticipants = async (req, res) => {
       eventID,
       status: { $in: ['registered', 'confirmed'] }
     })
-      .select('participantName contactNumber email')
+      .select('participantName contactNumber')
       .sort({ participantName: 1 });
 
+    // Get participant IDs
+    const participantIDs = participants.map(p => p._id);
+
     // Get their active cock profiles (only cocks that haven't fought yet)
-    const participantNames = participants.map(p => p.participantName);
     const cockProfiles = await CockProfile.find({
       eventID,
-      ownerName: { $in: participantNames },
+      participantID: { $in: participantIDs },
       isActive: true
-    }).select('legband weight ownerName entryNo');
+    }).select('legband weight participantID');
+
+    // Add participantID to each cock profile (it's already there, but let's make sure it's included)
+    const cockProfilesWithParticipantID = cockProfiles.map(cock => ({
+      ...cock.toObject(),
+      participantID: cock.participantID
+    }));
 
     res.json({
       participants,
-      cockProfiles
+      cockProfiles: cockProfilesWithParticipantID
     });
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch available participants', error: error.message });
