@@ -784,7 +784,6 @@ export const getRentalSummary = async (req, res) => {
             .populate('cages.cageNo', 'cageNumber')
             .populate('eventID', 'eventName')
             .sort({ createdAt: -1 })
-            .limit(10)
             .select('nameOfRenter date totalPrice paymentStatus cages eventID');
 
         res.status(200).json({

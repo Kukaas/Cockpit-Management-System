@@ -38,16 +38,13 @@ export const useGetById = (endpoint, id, options = {}) => {
 }
 
 export const useGetWithFilters = (endpoint, filters = {}, options = {}) => {
-  const { page, limit, search, ...otherFilters } = filters
+  const { search, ...otherFilters } = filters
 
   return useApiQuery(
     [endpoint, 'filtered', filters],
     async () => {
       const params = new URLSearchParams()
 
-      // Add pagination params
-      if (page) params.append('page', page)
-      if (limit) params.append('limit', limit)
       if (search) params.append('search', search)
 
       // Add other filters
@@ -61,7 +58,7 @@ export const useGetWithFilters = (endpoint, filters = {}, options = {}) => {
       return response.data
     },
     {
-      staleTime: 2 * 60 * 1000, // 2 minutes for filtered results
+      staleTime: 5 * 60 * 1000, // 5 minutes for filtered results
       ...options,
     }
   )

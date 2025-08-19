@@ -91,8 +91,6 @@ export const createEvent = async (req, res) => {
 export const getAllEvents = async (req, res) => {
     try {
         const {
-            page = 1,
-            limit = 10,
             status,
             eventType,
             search,
@@ -127,29 +125,15 @@ export const getAllEvents = async (req, res) => {
         const sort = {};
         sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
 
-        // Calculate pagination
-        const skip = (Number(page) - 1) * Number(limit);
-
         // Execute query
         const events = await Event.find(filter)
             .populate('adminID', 'firstName lastName username')
             .sort(sort)
-            .skip(skip)
-            .limit(Number(limit));
-
-        // Get total count for pagination
-        const total = await Event.countDocuments(filter);
 
         res.status(200).json({
             success: true,
             message: 'Events retrieved successfully',
-            data: events,
-            pagination: {
-                currentPage: Number(page),
-                totalPages: Math.ceil(total / Number(limit)),
-                totalItems: total,
-                itemsPerPage: Number(limit)
-            }
+            data: events
         });
     } catch (error) {
         console.error('Error getting events:', error);
@@ -399,7 +383,7 @@ export const updateEventStatus = async (req, res) => {
 export const getEventsByAdmin = async (req, res) => {
     try {
         const { adminId } = req.params;
-        const { page = 1, limit = 10, status } = req.query;
+        const { status } = req.query;
 
         // Build filter
         const filter = { adminID: adminId };
@@ -408,29 +392,15 @@ export const getEventsByAdmin = async (req, res) => {
             filter.status = status;
         }
 
-        // Calculate pagination
-        const skip = (Number(page) - 1) * Number(limit);
-
         // Execute query
         const events = await Event.find(filter)
             .populate('adminID', 'firstName lastName username')
             .sort({ date: -1 })
-            .skip(skip)
-            .limit(Number(limit));
-
-        // Get total count
-        const total = await Event.countDocuments(filter);
 
         res.status(200).json({
             success: true,
             message: 'Events retrieved successfully',
-            data: events,
-            pagination: {
-                currentPage: Number(page),
-                totalPages: Math.ceil(total / Number(limit)),
-                totalItems: total,
-                itemsPerPage: Number(limit)
-            }
+            data: events
         });
     } catch (error) {
         console.error('Error getting events by admin:', error);
@@ -445,16 +415,13 @@ export const getEventsByAdmin = async (req, res) => {
 // Get upcoming events
 export const getUpcomingEvents = async (req, res) => {
     try {
-        const { limit = 5 } = req.query;
-
         const events = await Event.find({
             date: { $gt: new Date() },
             status: 'active',
             isPublic: true
         })
         .populate('adminID', 'firstName lastName username')
-        .sort({ date: 1 })
-        .limit(Number(limit));
+        .sort({ createdAt: -1 });
 
         res.status(200).json({
             success: true,

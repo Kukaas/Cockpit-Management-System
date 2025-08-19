@@ -242,7 +242,7 @@ export const resendVerificationEmail = async (req, res) => {
 // Get all staff members (Admin only)
 export const getAllStaff = async (req, res) => {
     try {
-        const { page = 1, limit = 10, search = '', role = '' } = req.query;
+        const { search = '', role = '' } = req.query;
 
         const query = { role: { $ne: 'admin' } };
 
@@ -261,25 +261,13 @@ export const getAllStaff = async (req, res) => {
             query.role = role;
         }
 
-        const skip = (page - 1) * limit;
-
         const staff = await User.find(query)
             .select('-password -verificationToken -verificationTokenExpires')
-            .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(parseInt(limit));
-
-        const total = await User.countDocuments(query);
+            .sort({ createdAt: -1 });
 
         res.status(200).json({
             success: true,
-            data: staff,
-            pagination: {
-                currentPage: parseInt(page),
-                totalPages: Math.ceil(total / limit),
-                totalItems: total,
-                itemsPerPage: parseInt(limit)
-            }
+            data: staff
         });
 
     } catch (error) {

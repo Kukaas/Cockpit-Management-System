@@ -70,7 +70,6 @@ export const getAllEntrances = async (req, res) => {
   try {
     const {
       page,
-      limit,
       eventID,
       dateFrom,
       dateTo
@@ -92,24 +91,13 @@ export const getAllEntrances = async (req, res) => {
 
     // If pagination parameters are provided, use them; otherwise get all records
     let entrances;
-    let pagination = null;
 
-    if (page && limit) {
-      const skip = (Number(page) - 1) * Number(limit);
+    if (page) {
       entrances = await Entrance.find(query)
         .populate('eventID', 'eventName date location maxCapacity')
         .populate('recordedBy', 'username firstName lastName')
         .sort({ date: -1 })
-        .skip(skip)
-        .limit(Number(limit));
 
-      const total = await Entrance.countDocuments(query);
-      pagination = {
-        currentPage: Number(page),
-        totalPages: Math.ceil(total / Number(limit)),
-        totalItems: total,
-        itemsPerPage: Number(limit)
-      };
     } else {
       // Get all records without pagination
       entrances = await Entrance.find(query)
@@ -121,8 +109,7 @@ export const getAllEntrances = async (req, res) => {
     res.status(200).json({
       success: true,
       message: 'Entrance records retrieved successfully',
-      data: entrances,
-      ...(pagination && { pagination })
+      data: entrances
     });
   } catch (error) {
     console.error('Error getting entrances:', error);
@@ -246,29 +233,16 @@ export const deleteEntrance = async (req, res) => {
 export const getEntrancesByEvent = async (req, res) => {
   try {
     const { eventID } = req.params;
-    const { page = 1, limit = 10 } = req.query;
-
-    const skip = (Number(page) - 1) * Number(limit);
 
     const entrances = await Entrance.find({ eventID })
       .populate('eventID', 'eventName date location maxCapacity')
       .populate('recordedBy', 'username firstName lastName')
       .sort({ date: -1 })
-      .skip(skip)
-      .limit(Number(limit));
-
-    const total = await Entrance.countDocuments({ eventID });
 
     res.status(200).json({
       success: true,
       message: 'Event entrance records retrieved successfully',
-      data: entrances,
-      pagination: {
-        currentPage: Number(page),
-        totalPages: Math.ceil(total / Number(limit)),
-        totalItems: total,
-        itemsPerPage: Number(limit)
-      }
+        data: entrances
     });
   } catch (error) {
     console.error('Error getting entrances by event:', error);
