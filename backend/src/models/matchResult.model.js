@@ -167,9 +167,9 @@ matchResultSchema.pre('save', function(next) {
     const walaBet = this.participantBets.find(bet => bet.position === 'Wala')
 
     if (meronBet && walaBet) {
-      const gap = meronBet.betAmount - walaBet.betAmount // Gap filled by outside bets
+      const gap = Math.max(0, meronBet.betAmount - walaBet.betAmount) // Gap filled by outside bets (only positive)
 
-      // Calculate total bet pool including outside bets
+      // Calculate total bet pool: Meron + Wala + Outside bets (gap)
       this.totalBetPool = meronBet.betAmount + walaBet.betAmount + gap
 
       // Calculate plazada (10% of each bet) for display purposes

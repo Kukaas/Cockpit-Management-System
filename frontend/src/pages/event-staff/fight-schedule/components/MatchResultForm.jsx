@@ -82,8 +82,8 @@ const MatchResultForm = ({
     const meronBet = bet1.betAmount > bet2.betAmount ? bet1 : bet2
     const walaBet = bet1.betAmount > bet2.betAmount ? bet2 : bet1
 
-    const gap = meronBet.betAmount - walaBet.betAmount // Gap filled by outside bets
-    const totalBetPool = meronBet.betAmount + walaBet.betAmount + gap // Include outside bets
+    const gap = Math.max(0, meronBet.betAmount - walaBet.betAmount) // Gap filled by outside bets (only positive)
+    const totalBetPool = meronBet.betAmount + walaBet.betAmount + gap // Total: Meron + Wala + Outside bets
 
     // Calculate plazada (10% of each bet) for display purposes
     const meronPlazada = meronBet.betAmount * 0.10
