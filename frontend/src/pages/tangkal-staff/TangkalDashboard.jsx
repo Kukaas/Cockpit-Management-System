@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Calendar, DollarSign, Users, Home, Settings, TrendingUp, TrendingDown, Activity, Filter } from 'lucide-react'
 import { useGetAll } from '@/hooks/useApiQueries'
 import NativeSelect from '@/components/custom/NativeSelect'
+import { RentalChart } from './rentals/components/RentalChart'
 
 const TangkalDashboard = () => {
   const navigate = useNavigate()
@@ -39,7 +40,8 @@ const TangkalDashboard = () => {
     unpaidRentals: filteredRentals.filter(rental => rental.paymentStatus === 'unpaid').length,
     activeRentals: filteredRentals.filter(rental => rental.rentalStatus === 'active').length,
     returnedRentals: filteredRentals.filter(rental => rental.rentalStatus === 'returned').length,
-    totalCagesRented: filteredRentals.reduce((sum, rental) => sum + (rental.quantity || 0), 0)
+    totalCagesRented: filteredRentals.reduce((sum, rental) => sum + (rental.quantity || 0), 0),
+    activeCagesRented: filteredRentals.filter(rental => rental.rentalStatus === 'active').reduce((sum, rental) => sum + (rental.quantity || 0), 0)
   }
 
   // Calculate filtered availability data
@@ -60,10 +62,10 @@ const TangkalDashboard = () => {
     }
 
     // If no venue filter, show all venues but calculate totals from filtered rentals
-    const totalCagesRentedInPeriod = filteredStats.totalCagesRented
+    const activeCagesRentedInPeriod = filteredStats.activeCagesRented
     const totalCages = availabilityData.totalCages
-    const availableCages = availabilityData.availableCages - totalCagesRentedInPeriod
-    const occupiedCages = availabilityData.occupiedCages + totalCagesRentedInPeriod
+    const availableCages = availabilityData.availableCages - activeCagesRentedInPeriod
+    const occupiedCages = availabilityData.occupiedCages + activeCagesRentedInPeriod
 
     return {
       ...availabilityData,
@@ -267,9 +269,9 @@ const TangkalDashboard = () => {
                <Activity className="h-4 w-4 text-muted-foreground" />
              </CardHeader>
              <CardContent>
-               <div className="text-2xl font-bold text-blue-600">{filteredAvailabilityData?.occupiedCages || 0}</div>
+               <div className="text-2xl font-bold text-blue-600">{filteredStats.activeRentals}</div>
                <p className="text-xs text-muted-foreground">
-                 Currently rented
+                 Currently active rentals
                </p>
              </CardContent>
            </Card>
@@ -292,16 +294,23 @@ const TangkalDashboard = () => {
            </Card>
          </div>
 
-        {/* Filtered Statistics */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Filtered Statistics</CardTitle>
-            <CardDescription>
-              Statistics for {months[selectedMonth].label} {selectedYear}
-              {selectedEvent && ` - ${events.find(e => e._id === selectedEvent)?.eventName}`}
-              {selectedVenue && ` - ${selectedVenue}`}
-            </CardDescription>
-          </CardHeader>
+                 {/* Rental Chart */}
+         <RentalChart
+           rentalsData={filteredRentals}
+           selectedMonth={selectedMonth}
+           selectedYear={selectedYear}
+         />
+
+         {/* Filtered Statistics */}
+         <Card>
+           <CardHeader>
+             <CardTitle className="text-lg">Filtered Statistics</CardTitle>
+             <CardDescription>
+               Statistics for {months[selectedMonth].label} {selectedYear}
+               {selectedEvent && ` - ${events.find(e => e._id === selectedEvent)?.eventName}`}
+               {selectedVenue && ` - ${selectedVenue}`}
+             </CardDescription>
+           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div className="space-y-4">
