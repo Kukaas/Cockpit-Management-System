@@ -23,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { useGetAll } from '@/hooks/useApiQueries'
 
 const chartConfig = {
   revenue: {
@@ -31,24 +32,35 @@ const chartConfig = {
   },
 }
 
-export function RentalChart({ rentalsData = [] }) {
+export function EventChart({ eventsData = [] }) {
   const [timeRange, setTimeRange] = React.useState("30d")
 
-  // Generate chart data from rentals
+  // Fetch entrance data for all events
+  const { data: entranceData = [] } = useGetAll('/entrances')
+
+  // Generate chart data from entrances for the filtered events
   const generateChartData = () => {
-    if (!rentalsData || rentalsData.length === 0) return []
+    if (!entranceData || entranceData.length === 0 || !eventsData || eventsData.length === 0) return []
 
-    // Group rentals by date
-    const groupedByDate = rentalsData.reduce((acc, rental) => {
-      const date = new Date(rental.date).toISOString().split('T')[0]
+    // Get event IDs from filtered events
+    const eventIds = eventsData.map(event => event._id)
+
+    // Filter entrances for the selected events
+    const filteredEntrances = entranceData.filter(entrance =>
+      eventIds.includes(entrance.eventID?._id || entrance.eventID)
+    )
+
+    // Group entrances by date
+    const groupedByDate = filteredEntrances.reduce((acc, entrance) => {
+      const date = new Date(entrance.date).toISOString().split('T')[0]
       if (!acc[date]) {
-              acc[date] = {
-        date,
-        revenue: 0
-      }
+        acc[date] = {
+          date,
+          revenue: 0
+        }
       }
 
-      acc[date].revenue += rental.totalPrice || 0
+      acc[date].revenue += (entrance.count || 0) * 100 // Assuming 100 pesos per entrance
 
       return acc
     }, {})
@@ -57,7 +69,7 @@ export function RentalChart({ rentalsData = [] }) {
     const sortedData = Object.values(groupedByDate).sort((a, b) => new Date(a.date) - new Date(b.date))
 
     // Debug log to check the data
-    console.log('Chart data:', sortedData)
+    console.log('Event entrance chart data:', sortedData)
 
     return sortedData
   }
@@ -93,9 +105,9 @@ export function RentalChart({ rentalsData = [] }) {
     <Card className="pt-0">
       <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
         <div className="grid flex-1 gap-1">
-          <CardTitle>Rental Statistics</CardTitle>
+          <CardTitle>Entrance Revenue</CardTitle>
           <CardDescription>
-            Showing rental activity and revenue over time
+            Showing entrance revenue for selected events over time
           </CardDescription>
         </div>
         <Select value={timeRange} onValueChange={setTimeRange}>
@@ -138,7 +150,6 @@ export function RentalChart({ rentalsData = [] }) {
                     stopOpacity={0.1}
                   />
                 </linearGradient>
-
               </defs>
               <CartesianGrid vertical={false} />
               <XAxis
@@ -167,27 +178,27 @@ export function RentalChart({ rentalsData = [] }) {
                   return value.toString()
                 }}
               />
-                             <ChartTooltip
-                 cursor={false}
-                 content={
-                   <ChartTooltipContent
-                     labelFormatter={(value) => {
-                       return new Date(value).toLocaleDateString("en-US", {
-                         month: "short",
-                         day: "numeric",
-                         year: "numeric"
-                       })
-                     }}
-                     formatter={(value, name) => {
-                       if (name === 'revenue') {
-                         return [formatCurrency(value), ' Revenue']
-                       }
-                       return [value, name]
-                     }}
-                     indicator="dot"
-                   />
-                 }
-               />
+              <ChartTooltip
+                cursor={false}
+                content={
+                  <ChartTooltipContent
+                    labelFormatter={(value) => {
+                      return new Date(value).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric"
+                      })
+                    }}
+                    formatter={(value, name) => {
+                      if (name === 'revenue') {
+                        return [formatCurrency(value), ' Revenue']
+                      }
+                      return [value, name]
+                    }}
+                    indicator="dot"
+                  />
+                }
+              />
               <Area
                 dataKey="revenue"
                 type="natural"
@@ -200,7 +211,7 @@ export function RentalChart({ rentalsData = [] }) {
           </ChartContainer>
         ) : (
           <div className="flex items-center justify-center h-[300px] text-muted-foreground">
-            <p>No rental data available for the selected time period</p>
+            <p>No entrance data available for the selected events and time period</p>
           </div>
         )}
       </CardContent>
