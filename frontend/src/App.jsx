@@ -28,6 +28,7 @@ import Entrance from './pages/entrance-staff/entrance-registration/Entrance'
 import TangkalDashboard from './pages/tangkal-staff/TangkalDashboard'
 import Rentals from './pages/tangkal-staff/rentals/Rentals'
 import CageAvailability from './pages/tangkal-staff/cage-availability/CageAvailability'
+import RentalEventSelection from './pages/tangkal-staff/rentals/EventSelection'
 import AdminTangkalEventSelection from './pages/admin/tangkal/EventSelection'
 import AdminEventRentals from './pages/admin/tangkal/EventRentals'
 import AdminCageAvailability from './pages/admin/cage-availability/AdminCageAvailability'
@@ -189,6 +190,11 @@ function App() {
 						</PrivateRoute>
 					} />
 					<Route path="/tangkal-staff/cage-rentals" element={
+						<PrivateRoute>
+							<RentalEventSelection />
+						</PrivateRoute>
+					} />
+					<Route path="/tangkal-staff/cage-rentals/:eventId" element={
 						<PrivateRoute>
 							<Rentals />
 						</PrivateRoute>

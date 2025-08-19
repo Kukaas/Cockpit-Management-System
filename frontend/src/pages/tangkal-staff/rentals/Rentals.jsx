@@ -1,10 +1,10 @@
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, Plus } from 'lucide-react'
 import PageLayout from '@/layouts/PageLayout'
 import { toast } from 'sonner'
-import { useGetAll } from '@/hooks/useApiQueries'
+import { useGetAll, useGetById } from '@/hooks/useApiQueries'
 import { useCreateMutation, usePutMutation, useCustomMutation } from '@/hooks/useApiMutations'
 import api from '@/services/api'
 import ConfirmationDialog from '@/components/custom/ConfirmationDialog'
@@ -13,10 +13,15 @@ import DataTable from '@/components/custom/DataTable'
 // Import custom components
 import RentalForm from './components/RentalForm'
 import DetailsDialog from './components/DetailsDialog'
+import EventDetailsCard from './components/EventDetailsCard'
 import { createRentalColumns } from './components/TableColumns'
 
 const Rentals = () => {
+  const { eventId } = useParams()
   const navigate = useNavigate()
+
+  // State management
+  const [selectedEvent, setSelectedEvent] = useState(null)
 
   // Dialog states
   const [addRentalDialogOpen, setAddRentalDialogOpen] = useState(false)
@@ -44,9 +49,11 @@ const Rentals = () => {
     selectedCageIds: []
   })
 
-  // Fetch rentals and summary
-  const { data: rentalsData = [], refetch: refetchRentals } = useGetAll('/cage-rentals')
-  const { refetch: refetchSummary } = useGetAll('/cage-rentals/summary')
+  // Fetch event details
+  const { data: event, isLoading: eventLoading } = useGetById('/events', eventId)
+
+  // Fetch rentals for this specific event
+  const { data: rentalsData = [], refetch: refetchRentals } = useGetAll(`/cage-rentals/event/${eventId}`)
 
   // Mutations
   const createRentalMutation = useCreateMutation('/cage-rentals', {
@@ -58,7 +65,6 @@ const Rentals = () => {
       setAddRentalDialogOpen(false)
       resetRentalForm()
       refetchRentals()
-      refetchSummary()
     }
   })
 
@@ -72,7 +78,6 @@ const Rentals = () => {
       setSelectedRental(null)
       resetRentalForm()
       refetchRentals()
-      refetchSummary()
     }
   })
 
@@ -90,7 +95,6 @@ const Rentals = () => {
         setDeleteRentalDialogOpen(false)
         setSelectedRental(null)
         refetchRentals()
-        refetchSummary()
       }
     }
   )
@@ -110,7 +114,6 @@ const Rentals = () => {
         setStatusChangeDialogOpen(false)
         setPendingStatusChange(null)
         refetchRentals()
-        refetchSummary()
       },
     }
   )
@@ -130,10 +133,22 @@ const Rentals = () => {
         setRentalStatusDialogOpen(false)
         setPendingRentalStatusChange(null)
         refetchRentals()
-        refetchSummary()
       },
     }
   )
+
+  // Update state when data changes
+  useEffect(() => {
+    if (event && event._id && (!selectedEvent || selectedEvent._id !== event._id)) {
+      setSelectedEvent(event)
+      // Auto-set arena from event location
+      setRentalFormData(prev => ({
+        ...prev,
+        arena: event.location,
+        eventID: event._id
+      }))
+    }
+  }, [event, selectedEvent])
 
   // Use the API data directly instead of local state
   const rentals = rentalsData || []
@@ -146,11 +161,11 @@ const Rentals = () => {
   const resetRentalForm = () => {
     setRentalFormData({
       quantity: '0',
-      arena: '',
+      arena: selectedEvent?.location || '',
       date: new Date().toISOString().split('T')[0], // Default to today
       nameOfRenter: '',
       contactNumber: '',
-      eventID: '',
+      eventID: selectedEvent?._id || '',
       paymentStatus: 'paid',
       selectedCageIds: []
     })
@@ -215,7 +230,7 @@ const Rentals = () => {
       date: rental.date.split('T')[0], // Format date for input
       nameOfRenter: rental.nameOfRenter,
       contactNumber: rental.contactNumber || '',
-      eventID: rental.eventID?._id || '',
+      eventID: rental.eventID?._id || selectedEvent?._id || '',
       paymentStatus: rental.paymentStatus
     })
     setEditRentalDialogOpen(true)
@@ -321,22 +336,52 @@ const Rentals = () => {
     handleViewDetails
   )
 
+  if (eventLoading) {
+    return (
+      <PageLayout title="Loading..." description="Loading event details...">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        </div>
+      </PageLayout>
+    )
+  }
+
+  if (!selectedEvent) {
+    return (
+      <PageLayout title="Event Not Found" description="The requested event could not be found.">
+        <div className="flex items-center justify-center h-64">
+          <p className="text-gray-500">Event not found</p>
+        </div>
+      </PageLayout>
+    )
+  }
+
   return (
     <PageLayout
-      title="Cage Rentals Management"
-      description="Manage cage rentals, track payments, and monitor availability"
+      title={`Cage Rentals - ${selectedEvent.eventName}`}
+      description="Manage cage rentals for this event"
       headerButton={
-        <Button variant="outline" onClick={() => navigate('/tangkal-staff')}>
+        <Button variant="outline" onClick={() => navigate('/tangkal-staff/cage-rentals')}>
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Dashboard
+          Back to Events
         </Button>
       }
     >
+      {/* Event Details Card */}
+      <EventDetailsCard
+        event={selectedEvent}
+        formatDate={formatDate}
+        formatCurrency={formatCurrency}
+      />
 
       {/* Cage Rentals Section */}
       <div className="space-y-4">
         <div className="flex justify-end items-center">
-          <Button onClick={() => setAddRentalDialogOpen(true)}>
+          <Button
+            onClick={() => setAddRentalDialogOpen(true)}
+            disabled={selectedEvent?.status === 'completed'}
+            title={selectedEvent?.status === 'completed' ? 'Cannot add rentals to completed events' : 'Add new cage rental'}
+          >
             <Plus className="h-4 w-4 mr-2" />
             Add Rental
           </Button>
@@ -349,7 +394,7 @@ const Rentals = () => {
           filterable={true}
           title="Cage Rentals"
           loading={false}
-          emptyMessage="No cage rentals yet"
+          emptyMessage="No cage rentals yet for this event"
           className="shadow-sm"
         />
       </div>
@@ -359,13 +404,14 @@ const Rentals = () => {
         open={addRentalDialogOpen}
         onOpenChange={setAddRentalDialogOpen}
         title="Add Cage Rental"
-        description="Create a new cage rental record"
+        description="Create a new cage rental record for this event"
         formData={rentalFormData}
         onInputChange={handleRentalInputChange}
         onSubmit={handleAddRental}
         onCancel={() => setAddRentalDialogOpen(false)}
         isPending={createRentalMutation.isPending}
         isEdit={false}
+        eventId={eventId}
       />
 
       {/* Edit Rental Dialog */}
@@ -380,6 +426,7 @@ const Rentals = () => {
         onCancel={() => setEditRentalDialogOpen(false)}
         isPending={updateRentalMutation.isPending}
         isEdit={true}
+        eventId={eventId}
       />
 
       {/* Delete Rental Confirmation Dialog */}

@@ -32,10 +32,6 @@ const RentalForm = ({
 
   const { data: availableCagesResponse, isLoading: isLoadingCages } = useGetAll(apiUrl)
 
-  // Fetch active events for selection
-  const { data: eventsResponse } = useGetAll('/events?status=active')
-  const events = eventsResponse || []
-
   // Get available cages from response
   const availableCages = availableCagesResponse?.availableCages || []
 
@@ -46,24 +42,6 @@ const RentalForm = ({
     }
     return true
   })
-
-
-
-    // Handle event selection and auto-set arena
-  const handleEventSelection = (eventId) => {
-    onInputChange('eventID', eventId)
-
-    if (eventId) {
-      const selectedEvent = events.find(event => event._id === eventId)
-      if (selectedEvent) {
-        // Use event location directly as arena
-        onInputChange('arena', selectedEvent.location)
-      }
-    } else {
-      // Reset arena if no event selected
-      onInputChange('arena', '')
-    }
-  }
 
 
 
@@ -127,90 +105,23 @@ const RentalForm = ({
       }
     >
       <div className="space-y-6 overflow-y-auto pr-2">
-        {/* Event Selection */}
+
+
+
+        {/* Arena Display - Auto-selected from event */}
         <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <MapPin className="h-4 w-4" />
-            <Label className="text-sm font-medium">Select Associated Event</Label>
+            <Shield className="h-4 w-4" />
+            <Label className="text-sm font-medium">Arena (Auto-selected from event)</Label>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor={isEdit ? "editEventID" : "eventID"} className="text-sm font-medium">
-              Associated Event *
-            </Label>
-            {isEdit ? (
-              // Show event info as read-only in edit mode
-              <div className="p-3 bg-gray-50 border border-gray-200 rounded-md">
-                {(() => {
-                  const selectedEvent = events.find(event => event._id === formData.eventID)
-                  return selectedEvent ? (
-                    <div className="text-sm">
-                      <p className="font-medium">{selectedEvent.eventName}</p>
-                      <p className="text-gray-600">
-                        {new Date(selectedEvent.date).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })} at {new Date(selectedEvent.date).toLocaleTimeString('en-US', {
-                          hour: 'numeric',
-                          minute: '2-digit',
-                          hour12: true
-                        })}
-                      </p>
-                      <p className="text-gray-600">@ {selectedEvent.location}</p>
-                    </div>
-                  ) : (
-                    <p className="text-gray-500">Event information not available</p>
-                  )
-                })()}
-              </div>
-            ) : (
-              // Show dropdown in add mode
-              <NativeSelect
-                id={isEdit ? "editEventID" : "eventID"}
-                value={formData.eventID || ''}
-                onChange={(e) => handleEventSelection(e.target.value)}
-                placeholder="Select an event (required)"
-                required
-              >
-                <option value="">Select an event...</option>
-                {events.map((event) => (
-                  <option key={event._id} value={event._id}>
-                    {event.eventName} - {new Date(event.date).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })} at {new Date(event.date).toLocaleTimeString('en-US', {
-                      hour: 'numeric',
-                      minute: '2-digit',
-                      hour12: true
-                    })} @ {event.location}
-                  </option>
-                ))}
-              </NativeSelect>
-            )}
+          <div className="p-3 bg-green-50 border border-green-200 rounded-md">
+            <p className="text-sm text-green-800 font-medium">{formData.arena}</p>
+            <p className="text-xs text-green-600 mt-1">✓ Arena automatically selected based on event location</p>
           </div>
         </div>
 
-        <Separator />
-
-
-
-        {/* Arena Display - Show when event is selected */}
-        {formData.eventID && (
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Shield className="h-4 w-4" />
-              <Label className="text-sm font-medium">Arena (Auto-selected from event)</Label>
-            </div>
-            <div className="p-3 bg-green-50 border border-green-200 rounded-md">
-              <p className="text-sm text-green-800 font-medium">{formData.arena}</p>
-              <p className="text-xs text-green-600 mt-1">✓ Arena automatically selected based on event location</p>
-            </div>
-          </div>
-        )}
-
         {/* Cage Selection */}
-        {formData.eventID && !isEdit && (
+        {!isEdit && (
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <Shield className="h-4 w-4" />
