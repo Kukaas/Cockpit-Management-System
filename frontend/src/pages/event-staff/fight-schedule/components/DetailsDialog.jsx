@@ -272,8 +272,12 @@ const DetailsDialog = ({
                 </div>
 
                 <div>
-                  <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Plazada (10%)</label>
-                  <p className="mt-1 text-sm font-semibold text-emerald-600">{formatCurrency(bet.betAmount * 0.10)}</p>
+                  <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                    {result.betWinner === bet.position ? 'Plazada (10% - Winner)' : 'Plazada (10% - Loser)'}
+                  </label>
+                  <p className="mt-1 text-sm font-semibold text-emerald-600">
+                    {result.betWinner === bet.position ? formatCurrency(bet.betAmount * 0.10) : '₱0'}
+                  </p>
                 </div>
               </div>
             </div>

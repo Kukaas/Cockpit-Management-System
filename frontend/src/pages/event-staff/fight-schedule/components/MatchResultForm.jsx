@@ -85,15 +85,28 @@ const MatchResultForm = ({
     const gap = Math.max(0, meronBet.betAmount - walaBet.betAmount) // Gap filled by outside bets (only positive)
     const totalBetPool = meronBet.betAmount + walaBet.betAmount + gap // Total: Meron + Wala + Outside bets
 
-    // Calculate plazada (10% of each bet) for display purposes
-    const meronPlazada = meronBet.betAmount * 0.10
-    const walaPlazada = walaBet.betAmount * 0.10
-    const totalPlazada = meronPlazada + walaPlazada
+    // Calculate plazada only for the winner (10% of winner's bet)
+    let winnerPlazada = 0
+    let meronPayout = 0
+    let walaPayout = 0
 
-    // Calculate payouts based on the betting system
-    // Winner gets double their bet amount (2x their bet)
-    const meronPayout = meronBet.betAmount * 2
-    const walaPayout = walaBet.betAmount * 2
+    if (formData.winnerParticipantID) {
+      const winnerBet = formData.participantBets.find(bet => bet.participantID === formData.winnerParticipantID)
+      if (winnerBet) {
+        winnerPlazada = winnerBet.betAmount * 0.10
+
+        // Calculate payouts: winner gets their bet + opponent's bet + outside bets - plazada
+        if (meronBet.participantID === formData.winnerParticipantID) {
+          // When Meron wins, they get their bet + opponent's bet + outside bets - plazada
+          meronPayout = meronBet.betAmount + walaBet.betAmount + gap - winnerPlazada
+          walaPayout = 0
+        } else {
+          // When Wala wins, they get their bet + the smaller bet amount - plazada
+          walaPayout = walaBet.betAmount + walaBet.betAmount - winnerPlazada
+          meronPayout = 0
+        }
+      }
+    }
 
     return {
       meronBet,
@@ -102,9 +115,8 @@ const MatchResultForm = ({
       meronPayout,
       walaPayout,
       outsideBets: gap, // Gap filled by others
-      meronPlazada,
-      walaPlazada,
-      totalPlazada
+      winnerPlazada,
+      totalPlazada: winnerPlazada
     }
   }
 
@@ -339,8 +351,8 @@ const MatchResultForm = ({
                       <span className="font-semibold text-gray-900">₱{bettingInfo.meronBet.betAmount?.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-xs text-gray-500">Plazada (10%):</span>
-                      <span className="font-semibold text-emerald-600">₱{bettingInfo.meronPlazada?.toLocaleString()}</span>
+                      <span className="text-xs text-gray-500">Plazada (if wins):</span>
+                      <span className="font-semibold text-emerald-600">₱{(bettingInfo.meronBet.betAmount * 0.10)?.toLocaleString()}</span>
                     </div>
                   </div>
                 </div>
@@ -362,8 +374,8 @@ const MatchResultForm = ({
                       <span className="font-semibold text-gray-900">₱{bettingInfo.walaBet.betAmount?.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-xs text-gray-500">Plazada (10%):</span>
-                      <span className="font-semibold text-emerald-600">₱{bettingInfo.walaPlazada?.toLocaleString()}</span>
+                      <span className="text-xs text-gray-500">Plazada (if wins):</span>
+                      <span className="font-semibold text-emerald-600">₱{(bettingInfo.walaBet.betAmount * 0.10)?.toLocaleString()}</span>
                     </div>
                   </div>
                 </div>
@@ -383,7 +395,7 @@ const MatchResultForm = ({
                 </div>
                 <div className="text-center p-3 bg-emerald-50 rounded-lg">
                   <div className="text-xs text-gray-500 mb-1">Plazada Collected</div>
-                  <div className="font-semibold text-emerald-700">₱{bettingInfo.totalPlazada?.toLocaleString()}</div>
+                  <div className="font-semibold text-emerald-700">₱{bettingInfo.winnerPlazada?.toLocaleString() || '0'}</div>
                 </div>
                 <div className="text-center p-3 bg-gray-50 rounded-lg">
                   <div className="text-xs text-gray-500 mb-1">Outside Bets</div>
@@ -402,9 +414,9 @@ const MatchResultForm = ({
                     if (winnerBet) {
                       const isMeron = bettingInfo.meronBet.participantID === formData.winnerParticipantID
                       if (isMeron) {
-                        return `Meron wins! ₱${bettingInfo.meronPayout?.toLocaleString()}`
+                        return `Meron wins! ₱${bettingInfo.meronPayout?.toLocaleString()} (Bet: ₱${bettingInfo.meronBet.betAmount?.toLocaleString()} + Opponent: ₱${bettingInfo.walaBet.betAmount?.toLocaleString()} + Outside: ₱${bettingInfo.outsideBets?.toLocaleString()} - Plazada: ₱${bettingInfo.winnerPlazada?.toLocaleString()})`
                       } else {
-                        return `Wala wins! ₱${bettingInfo.walaPayout?.toLocaleString()}`
+                        return `Wala wins! ₱${bettingInfo.walaPayout?.toLocaleString()} (Bet: ₱${bettingInfo.walaBet.betAmount?.toLocaleString()} + Opponent: ₱${bettingInfo.walaBet.betAmount?.toLocaleString()} - Plazada: ₱${bettingInfo.winnerPlazada?.toLocaleString()})`
                       }
                     }
                     return 'Select winner to see payout'

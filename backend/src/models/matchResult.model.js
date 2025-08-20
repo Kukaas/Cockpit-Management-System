@@ -160,6 +160,11 @@ matchResultSchema.index({ status: 1 });
 matchResultSchema.index({ verified: 1 });
 
 // Pre-save middleware to calculate payouts
+// NEW PLAZADA CALCULATION: Only the winner pays plazada (10% of their bet amount)
+// Example: Player 1 bets 5000, Player 2 bets 4000
+// - Total bet pool: 10000 (5000 + 4000 + 1000 outside bets)
+// - If Player 1 wins: Plazada = 500 (10% of 5000), Winner gets 9500 (5000 + 4000 + 1000 - 500)
+// - If Player 2 wins: Plazada = 400 (10% of 4000), Winner gets 7600 (4000 + 4000 - 400)
 matchResultSchema.pre('save', function(next) {
   if (this.participantBets && this.participantBets.length === 2) {
     // Find Meron and Wala bets
@@ -172,18 +177,31 @@ matchResultSchema.pre('save', function(next) {
       // Calculate total bet pool: Meron + Wala + Outside bets (gap)
       this.totalBetPool = meronBet.betAmount + walaBet.betAmount + gap
 
-      // Calculate plazada (10% of each bet) for display purposes
-      const meronPlazada = meronBet.betAmount * 0.10
-      const walaPlazada = walaBet.betAmount * 0.10
-      this.totalPlazada = meronPlazada + walaPlazada
+      // Calculate plazada only for the winner (10% of winner's bet)
+      let winnerBet = null
+      let totalPlazada = 0
+
+      if (this.betWinner === 'Meron') {
+        winnerBet = meronBet
+        totalPlazada = meronBet.betAmount * 0.10
+      } else if (this.betWinner === 'Wala') {
+        winnerBet = walaBet
+        totalPlazada = walaBet.betAmount * 0.10
+      } else if (this.betWinner === 'Draw') {
+        // Draw: no plazada collected
+        totalPlazada = 0
+      }
+
+      this.totalPlazada = totalPlazada
 
       // Calculate payouts based on bet winner
-      // Winner gets double their bet amount (2x their bet)
       if (this.betWinner === 'Meron') {
-        this.payouts.meronPayout = meronBet.betAmount * 2
+        // When Meron wins, they get their bet + opponent's bet + outside bets - plazada
+        this.payouts.meronPayout = meronBet.betAmount + walaBet.betAmount + gap - totalPlazada
         this.payouts.walaPayout = 0
       } else if (this.betWinner === 'Wala') {
-        this.payouts.walaPayout = walaBet.betAmount * 2
+        // When Wala wins, they get their bet + the smaller bet amount - plazada
+        this.payouts.walaPayout = walaBet.betAmount + walaBet.betAmount - totalPlazada
         this.payouts.meronPayout = 0
       } else if (this.betWinner === 'Draw') {
         // Draw: each participant gets their bet amount back

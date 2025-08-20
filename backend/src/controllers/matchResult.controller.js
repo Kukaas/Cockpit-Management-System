@@ -71,10 +71,9 @@ export const createMatchResult = async (req, res) => {
     const gap = Math.max(0, meronBet.betAmount - walaBet.betAmount) // Gap filled by outside bets (only positive)
     const totalBetPool = meronBet.betAmount + walaBet.betAmount + gap // Total: Meron + Wala + Outside bets
 
-    // Calculate plazada (10% of each bet)
-    const meronPlazada = meronBet.betAmount * 0.10
-    const walaPlazada = walaBet.betAmount * 0.10
-    const totalPlazada = meronPlazada + walaPlazada
+    // Calculate plazada (will be calculated in the model based on winner)
+    // NEW: Plazada is now only collected from the winner (10% of winner's bet)
+    const totalPlazada = 0 // This will be calculated in the model after betWinner is determined
 
     // Create match result
     const matchResult = new MatchResult({
@@ -273,13 +272,10 @@ export const updateMatchResult = async (req, res) => {
       const gap = Math.max(0, meronBet.betAmount - walaBet.betAmount); // Gap filled by outside bets (only positive)
       const totalBetPool = meronBet.betAmount + walaBet.betAmount + gap; // Total: Meron + Wala + Outside bets
 
-      // Calculate plazada (10% of each bet)
-      const meronPlazada = meronBet.betAmount * 0.10;
-      const walaPlazada = walaBet.betAmount * 0.10;
-      const totalPlazada = meronPlazada + walaPlazada;
-
+      // Plazada will be calculated in the model based on winner
+      // NEW: Plazada is now only collected from the winner (10% of winner's bet)
       matchResult.totalBetPool = totalBetPool;
-      matchResult.totalPlazada = totalPlazada;
+      // totalPlazada will be calculated in the model after betWinner is determined
     }
 
     // Update result match fields

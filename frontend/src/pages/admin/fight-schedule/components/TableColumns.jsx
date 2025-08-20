@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Trophy, Clock, Users, Target, Award, Calendar, Info, Eye } from 'lucide-react'
 
-export const createFightColumns = (formatCurrency, formatDate, handleViewDetails) => [
+export const createFightColumns = (formatCurrency, formatDate, handleViewDetails, eventType = 'regular') => [
   {
     key: 'fightNumber',
     label: 'Fight #',
@@ -42,7 +42,10 @@ export const createFightColumns = (formatCurrency, formatDate, handleViewDetails
         {value?.map((cock) => (
           <div key={cock._id} className="flex items-center gap-2 text-sm">
             <Trophy className="h-3 w-3 text-purple-600" />
-            <span>{cock.legband} ({cock.weight}kg)</span>
+            <span>
+              #{cock.entryNo}
+              {eventType === 'derby' && ` - ${cock.legband} (${cock.weight}kg)`}
+            </span>
           </div>
         ))}
       </div>
@@ -73,24 +76,9 @@ export const createFightColumns = (formatCurrency, formatDate, handleViewDetails
       'Cancelled': 'cancelled'
     },
     render: (value) => {
-      // Helper function to get status icon
-      const getStatusIcon = (status) => {
-        switch (status) {
-          case 'completed':
-            return <Trophy className="h-3 w-3 text-green-600" />
-          case 'in_progress':
-            return <Clock className="h-3 w-3 text-blue-600" />
-          case 'cancelled':
-            return <Info className="h-3 w-3 text-red-600" />
-          case 'scheduled':
-          default:
-            return <Calendar className="h-3 w-3 text-muted-foreground" />
-        }
-      }
 
       return (
         <div className="flex items-center gap-2">
-          {getStatusIcon(value)}
           <Badge
             variant={
               value === 'completed' ? 'default' :
@@ -126,7 +114,7 @@ export const createFightColumns = (formatCurrency, formatDate, handleViewDetails
   }
 ]
 
-export const createMatchResultColumns = (formatCurrency, formatDate, handleViewDetails) => [
+export const createMatchResultColumns = (formatCurrency, formatDate, handleViewDetails, eventType = 'regular') => [
   {
     key: 'matchID',
     label: 'Fight #',

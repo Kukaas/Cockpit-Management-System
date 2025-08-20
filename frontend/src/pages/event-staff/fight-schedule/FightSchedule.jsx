@@ -281,16 +281,11 @@ const FightSchedule = () => {
     const gap = Math.max(0, meronBet.betAmount - walaBet.betAmount) // Gap filled by outside bets (only positive)
     const totalBetPool = meronBet.betAmount + walaBet.betAmount + gap // Total: Meron + Wala + Outside bets
 
-    // Calculate plazada (10% of each bet)
-    const meronPlazada = meronBet.betAmount * 0.10
-    const walaPlazada = walaBet.betAmount * 0.10
-    const totalPlazada = meronPlazada + walaPlazada
-
+    // Plazada will be calculated in the model based on winner
     const resultData = {
       matchID: selectedFight._id,
       participantBets,
       totalBetPool,
-      totalPlazada,
       ...resultFormData
     }
 
@@ -547,16 +542,11 @@ const FightSchedule = () => {
             const gap = Math.max(0, meronBet.betAmount - walaBet.betAmount) // Gap filled by outside bets (only positive)
             const totalBetPool = meronBet.betAmount + walaBet.betAmount + gap // Total: Meron + Wala + Outside bets
 
-            // Calculate plazada (10% of each bet)
-            const meronPlazada = meronBet.betAmount * 0.10
-            const walaPlazada = walaBet.betAmount * 0.10
-            const totalPlazada = meronPlazada + walaPlazada
-
+            // Plazada will be calculated in the model based on winner
             const updateData = {
               ...resultFormData,
               participantBets,
-              totalBetPool,
-              totalPlazada
+              totalBetPool
             }
             updateResultMutation.mutate({ id: selectedResult._id, data: updateData })
           } else {
