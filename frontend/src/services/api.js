@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1";
+const API_URL = import.meta.env.VITE_API_URL || "https://cockpit-management-system.vercel.app/api/v1";
 
 // Helper function to get access token from cookies
 const getAccessToken = () => {
