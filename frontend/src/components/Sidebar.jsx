@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarInset, SidebarRail, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarSeparator } from '@/components/ui/sidebar'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -11,6 +11,7 @@ import logo from '@/assets/logo.png'
 const SidebarComponent = () => {
 	const { user, logout } = useAuth()
 	const location = useLocation()
+	const navigate = useNavigate()
 
 	// Navigation items based on user role
 	const getNavigationItems = (role) => {
@@ -244,11 +245,7 @@ const SidebarComponent = () => {
 							</Button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align="end" className="w-56">
-							<DropdownMenuItem>
-								<User className="mr-2 h-4 w-4" />
-								Profile
-							</DropdownMenuItem>
-							<DropdownMenuItem>
+							<DropdownMenuItem onClick={() => navigate('/settings')}>
 								<Settings className="mr-2 h-4 w-4" />
 								Settings
 							</DropdownMenuItem>

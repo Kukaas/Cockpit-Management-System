@@ -4,7 +4,6 @@ import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/s
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
 import { Separator } from '@/components/ui/separator'
 import SidebarComponent from '@/components/Sidebar'
-import Avatar from '@/components/Avatar'
 
 function useBreadcrumbs() {
 	const location = useLocation()

@@ -337,3 +337,76 @@ export const changePassword = async (req, res) => {
         });
     }
 };
+
+// Update profile
+export const updateProfile = async (req, res) => {
+    try {
+        const { firstName, lastName, username } = req.body;
+        const userId = req.user._id;
+
+        // Validate required fields
+        if (!firstName || !lastName || !username) {
+            return res.status(400).json({
+                success: false,
+                message: 'First name, last name, and username are required.'
+            });
+        }
+
+        // Validate username length
+        if (username.length < 3) {
+            return res.status(400).json({
+                success: false,
+                message: 'Username must be at least 3 characters long.'
+            });
+        }
+
+        // Check if username is already taken by another user
+        const existingUser = await User.findOne({
+            username: username,
+            _id: { $ne: userId } // Exclude current user
+        });
+
+        if (existingUser) {
+            return res.status(400).json({
+                success: false,
+                message: 'Username is already taken.'
+            });
+        }
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found.'
+            });
+        }
+
+        // Update user profile
+        user.firstName = firstName.trim();
+        user.lastName = lastName.trim();
+        user.username = username.trim();
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Profile updated successfully.',
+            user: {
+                id: user._id,
+                username: user.username,
+                email: user.email,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                role: user.role,
+                fullName: user.fullName,
+                passwordChanged: user.passwordChanged
+            }
+        });
+
+    } catch (error) {
+        console.error('Update profile error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error.'
+        });
+    }
+};

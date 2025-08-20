@@ -5,7 +5,8 @@ import {
     refreshToken,
     logout,
     getCurrentUser,
-    changePassword
+    changePassword,
+    updateProfile
 } from '../controllers/auth.controller.js';
 import {
     verifyToken,
@@ -24,5 +25,6 @@ router.post('/register', verifyToken, requireRole('admin'), register);
 router.post('/refresh', verifyRefreshToken, refreshToken);
 router.get('/me', verifyToken, getCurrentUser);
 router.post('/change-password', verifyToken, changePassword);
+router.put('/profile', verifyToken, updateProfile);
 
 export default router;
