@@ -45,6 +45,12 @@ const cockProfileSchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true
+  },
+  
+  status: {
+    type: String,
+    enum: ['available', 'scheduled', 'fought'],
+    default: 'available'
   }
 }, { timestamps: true });
 
@@ -53,6 +59,7 @@ cockProfileSchema.index({ eventID: 1, entryNo: 1 }, { unique: true });
 // Only create legband index for documents where legband exists (derby events)
 cockProfileSchema.index({ eventID: 1, legband: 1 }, { unique: true, sparse: true, partialFilterExpression: { legband: { $exists: true, $ne: null } } });
 cockProfileSchema.index({ isActive: 1 });
+cockProfileSchema.index({ status: 1 });
 cockProfileSchema.index({ eventID: 1 });
 
 export default mongoose.model('CockProfile', cockProfileSchema);

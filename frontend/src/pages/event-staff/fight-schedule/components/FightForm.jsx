@@ -25,7 +25,7 @@ const FightForm = ({
     if (!participantId) return []
 
     // Filter cock profiles by participant ID
-    // Backend already filters for active cocks, so we don't need to check isActive here
+    // Backend already filters for available cocks (status: 'available')
     return availableCockProfiles.filter(
       cock => cock.participantID === participantId
     )
@@ -225,12 +225,12 @@ const FightForm = ({
             <h4 className="font-medium text-yellow-800 mb-2">⚠️ Cock Availability Warning</h4>
             <div className="text-sm text-yellow-700 space-y-1">
               {participant1CockProfiles.length === 0 && formData.participant1 && (
-                <p>• <strong>{availableParticipants.find(p => p._id === formData.participant1)?.participantName}</strong> has no available cocks (all cocks have already fought)</p>
+                <p>• <strong>{availableParticipants.find(p => p._id === formData.participant1)?.participantName}</strong> has no available cocks (all cocks are either scheduled or have already fought)</p>
               )}
               {participant2CockProfiles.length === 0 && formData.participant2 && (
-                <p>• <strong>{availableParticipants.find(p => p._id === formData.participant2)?.participantName}</strong> has no available cocks (all cocks have already fought)</p>
+                <p>• <strong>{availableParticipants.find(p => p._id === formData.participant2)?.participantName}</strong> has no available cocks (all cocks are either scheduled or have already fought)</p>
               )}
-              <p className="text-xs mt-2">Note: Cocks become unavailable after participating in a completed fight.</p>
+              <p className="text-xs mt-2">Note: Cocks become unavailable when scheduled for a fight or after participating in a completed fight.</p>
             </div>
           </div>
         )}

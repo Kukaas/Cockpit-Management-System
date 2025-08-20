@@ -120,7 +120,7 @@ export const createMatchResult = async (req, res) => {
       console.error('Failed to update fight schedule status to completed');
     }
 
-    // Deactivate the cock profiles that participated in this fight
+    // Deactivate the cock profiles that participated in this fight and set status to 'fought'
     try {
       await CockProfile.updateMany(
         {
@@ -128,7 +128,7 @@ export const createMatchResult = async (req, res) => {
             $in: [winnerCockProfileID, loserCockProfileID]
           }
         },
-        { isActive: false }
+        { isActive: false, status: 'fought' }
       );
     } catch (error) {
       console.error('Error deactivating cock profiles:', error);
@@ -349,7 +349,7 @@ export const deleteMatchResult = async (req, res) => {
       runValidators: true
     });
 
-    // Reactivate the cock profiles since the result is being deleted
+    // Reactivate the cock profiles since the result is being deleted and set status back to 'scheduled'
     try {
       await CockProfile.updateMany(
         {
@@ -357,7 +357,7 @@ export const deleteMatchResult = async (req, res) => {
             $in: [matchResult.resultMatch.winnerCockProfileID, matchResult.resultMatch.loserCockProfileID]
           }
         },
-        { isActive: true }
+        { isActive: true, status: 'scheduled' }
       );
     } catch (error) {
       console.error('Error reactivating cock profiles:', error);

@@ -66,7 +66,7 @@ export const createCockProfile = async (req, res) => {
 // Get all cock profiles (with filtering)
 export const getAllCockProfiles = async (req, res) => {
   try {
-    const { eventID, isActive, search } = req.query;
+    const { eventID, isActive, status, search } = req.query;
 
     let query = {};
 
@@ -78,6 +78,11 @@ export const getAllCockProfiles = async (req, res) => {
     // Filter by active status
     if (isActive !== undefined) {
       query.isActive = isActive === 'true';
+    }
+
+    // Filter by status
+    if (status) {
+      query.status = status;
     }
 
     // Search functionality
@@ -229,12 +234,16 @@ export const deleteCockProfile = async (req, res) => {
 export const getCockProfilesByEvent = async (req, res) => {
   try {
     const { eventID } = req.params;
-    const { isActive } = req.query;
+    const { isActive, status } = req.query;
 
     let query = { eventID };
 
     if (isActive !== undefined) {
       query.isActive = isActive === 'true';
+    }
+
+    if (status) {
+      query.status = status;
     }
 
     const cockProfiles = await CockProfile.find(query)
@@ -254,7 +263,7 @@ export const getCockProfilesByEvent = async (req, res) => {
 export const getCockProfilesByParticipant = async (req, res) => {
   try {
     const { participantID } = req.params;
-    const { eventID, isActive } = req.query;
+    const { eventID, isActive, status } = req.query;
 
     let query = { participantID };
 
@@ -264,6 +273,10 @@ export const getCockProfilesByParticipant = async (req, res) => {
 
     if (isActive !== undefined) {
       query.isActive = isActive === 'true';
+    }
+
+    if (status) {
+      query.status = status;
     }
 
     const cockProfiles = await CockProfile.find(query)

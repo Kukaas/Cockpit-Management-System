@@ -18,15 +18,20 @@ export const createFightColumns = (formatCurrency, formatDate, handleEditClick, 
   },
   {
     key: 'participantsID',
-    label: 'Participants',
+    label: 'Participants & Cocks',
     sortable: false,
     filterable: false,
-    render: (value) => (
+    render: (value, row) => (
       <div className="space-y-1">
-        {value?.map((participant) => (
+        {value?.map((participant, index) => (
           <div key={participant._id} className="flex items-center gap-2 text-sm">
             <Users className="h-3 w-3" />
             <span>{participant.participantName}</span>
+            {row.cockProfileID?.[index] && (
+              <span className="text-xs text-muted-foreground">
+                ({row.cockProfileID[index].entryNo || row.cockProfileID[index].legband || 'N/A'})
+              </span>
+            )}
           </div>
         ))}
       </div>

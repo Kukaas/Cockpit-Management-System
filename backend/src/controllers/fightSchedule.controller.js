@@ -56,6 +56,12 @@ export const createFightSchedule = async (req, res) => {
 
     await fightSchedule.save();
 
+    // Update cock profiles status to 'scheduled'
+    await CockProfile.updateMany(
+      { _id: { $in: cockProfileID } },
+      { status: 'scheduled' }
+    );
+
     // Populate references for response
     await fightSchedule.populate([
       { path: 'eventID', select: 'eventName date location' },
@@ -184,6 +190,12 @@ export const deleteFightSchedule = async (req, res) => {
       return res.status(400).json({ message: 'Cannot delete fight that is in progress or completed' });
     }
 
+    // Reset cock profiles status back to 'available' when fight is deleted
+    await CockProfile.updateMany(
+      { _id: { $in: fightSchedule.cockProfileID } },
+      { status: 'available' }
+    );
+
     await FightSchedule.findByIdAndDelete(id);
     res.json({ message: 'Fight schedule deleted successfully' });
   } catch (error) {
@@ -262,12 +274,13 @@ export const getAvailableParticipants = async (req, res) => {
     // Get participant IDs
     const participantIDs = participants.map(p => p._id);
 
-    // Get their active cock profiles (only cocks that haven't fought yet)
+    // Get their available cock profiles (only cocks that are available for scheduling)
     const cockProfiles = await CockProfile.find({
       eventID,
       participantID: { $in: participantIDs },
-      isActive: true
-    }).select('legband weight entryNo participantID');
+      isActive: true,
+      status: 'available'
+    }).select('legband weight entryNo participantID status');
 
     // Add participantID to each cock profile (it's already there, but let's make sure it's included)
     const cockProfilesWithParticipantID = cockProfiles.map(cock => ({

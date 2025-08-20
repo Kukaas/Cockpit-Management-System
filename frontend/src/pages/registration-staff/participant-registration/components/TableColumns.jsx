@@ -151,7 +151,7 @@ export const createCockProfileColumns = (handleEditClick, handleDeleteClick, han
   ] : []),
   {
     key: 'isActive',
-    label: 'Status',
+    label: 'Active Status',
     sortable: true,
     filterable: true,
     filterOptions: ['Active', 'Inactive'],
@@ -166,6 +166,27 @@ export const createCockProfileColumns = (handleEditClick, handleDeleteClick, han
           className="text-xs"
         >
           {value ? 'Active' : 'Inactive'}
+        </Badge>
+      </div>
+    )
+  },
+  {
+    key: 'status',
+    label: 'Fight Status',
+    sortable: true,
+    filterable: true,
+    filterOptions: ['available', 'scheduled', 'fought'],
+    render: (value) => (
+      <div className="flex items-center gap-2">
+        <Badge
+          variant={
+            value === 'available' ? 'default' :
+            value === 'scheduled' ? 'secondary' :
+            value === 'fought' ? 'destructive' : 'outline'
+          }
+          className="text-xs capitalize"
+        >
+          {value || 'available'}
         </Badge>
       </div>
     )
