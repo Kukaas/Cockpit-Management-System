@@ -1,8 +1,6 @@
 import React from 'react'
-import { Button } from '@/components/ui/button'
-import { Edit, Trash2 } from 'lucide-react'
 
-export const createAdminEntranceColumns = (formatDate, handleEditClick, handleDeleteClick, isEventCompleted = false) => [
+export const createAdminEntranceColumns = (formatDate) => [
   {
     key: 'count',
     label: 'Number of Entrances',
@@ -20,39 +18,5 @@ export const createAdminEntranceColumns = (formatDate, handleEditClick, handleDe
     sortable: true,
     filterable: false,
     render: (value) => formatDate(value)
-  },
-  {
-    key: 'actions',
-    label: 'Actions',
-    sortable: false,
-    filterable: false,
-    render: (_, row) => (
-      <div className="flex items-center space-x-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={(e) => {
-            e.stopPropagation()
-            handleEditClick(row)
-          }}
-          className="h-8 w-8 p-0"
-          disabled={isEventCompleted}
-        >
-          <Edit className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={(e) => {
-            e.stopPropagation()
-            handleDeleteClick(row)
-          }}
-          className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-          disabled={isEventCompleted}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </div>
-    )
   }
 ]
