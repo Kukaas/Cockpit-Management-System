@@ -294,7 +294,7 @@ export function EventChart({ matchResultsData = [], fightSchedulesData = [] }) {
                      cursor={false}
                      content={<ChartTooltipContent hideLabel />}
                    />
-                                       <Bar dataKey="count" fill="var(--color-count)" radius={8} />
+                    <Bar dataKey="count" fill="var(--color-count)" radius={8} />
                  </BarChart>
                </ChartContainer>
              ) : (
@@ -316,27 +316,21 @@ export function EventChart({ matchResultsData = [], fightSchedulesData = [] }) {
            <CardContent>
              {chartData.length > 0 ? (
                                <ChartContainer config={betWinnerConfig}>
-                  <BarChart
-                    data={[
-                      {
-                        name: 'Meron',
-                        meron: chartData.reduce((sum, item) => sum + item.meronWins, 0),
-                        wala: 0,
-                        draws: 0
-                      },
-                      {
-                        name: 'Wala',
-                        meron: 0,
-                        wala: chartData.reduce((sum, item) => sum + item.walaWins, 0),
-                        draws: 0
-                      },
-                      {
-                        name: 'Draws',
-                        meron: 0,
-                        wala: 0,
-                        draws: chartData.reduce((sum, item) => sum + item.draws, 0)
-                      }
-                    ]}
+                                     <BarChart
+                     data={[
+                       {
+                         name: 'Meron',
+                         value: chartData.reduce((sum, item) => sum + item.meronWins, 0)
+                       },
+                       {
+                         name: 'Wala',
+                         value: chartData.reduce((sum, item) => sum + item.walaWins, 0)
+                       },
+                       {
+                         name: 'Draws',
+                         value: chartData.reduce((sum, item) => sum + item.draws, 0)
+                       }
+                     ]}
                     margin={{
                       top: 20,
                     }}
@@ -350,11 +344,21 @@ export function EventChart({ matchResultsData = [], fightSchedulesData = [] }) {
                     />
                     <ChartTooltip
                       cursor={false}
-                      content={<ChartTooltipContent hideLabel />}
+                                             content={
+                         <ChartTooltipContent
+                           formatter={(value, name, props) => {
+                             return <span>{props.payload.name}: {value}</span>
+                           }}
+                           hideLabel
+                         />
+                       }
                     />
-                                         <Bar dataKey="meron" fill="var(--color-meron)" radius={8} barSize={60} />
-                     <Bar dataKey="wala" fill="var(--color-wala)" radius={8} barSize={60} />
-                     <Bar dataKey="draws" fill="var(--color-draws)" radius={8} barSize={60} />
+                        <Bar
+                        dataKey="value"
+                        fill="var(--color-wala)"
+                        radius={8}
+                        barSize={60}
+                      />
                   </BarChart>
                 </ChartContainer>
              ) : (
