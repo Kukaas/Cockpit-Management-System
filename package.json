@@ -5,8 +5,7 @@
   "private": true,
   "scripts": {
     "build": "cd frontend && npm run build",
-    "dev:backend": "cd backend && npm run dev",
-    "dev:frontend": "cd frontend && npm run dev",
+    "dev": "concurrently \"cd frontend && npm run dev\" \"cd backend && npm run dev\"",
     "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install"
   },
   "workspaces": [
@@ -15,5 +14,8 @@
   ],
   "engines": {
     "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
   }
 }
