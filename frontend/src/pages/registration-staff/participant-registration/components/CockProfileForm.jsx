@@ -29,6 +29,15 @@ const CockProfileForm = ({
   const { data: participantsData = [] } = useGetAll(`/participants?eventID=${eventId}`)
   const participantRecords = participantsData || []
 
+  // Fetch existing cock profiles to determine next entry number
+  const { data: cockProfilesData = [] } = useGetAll(`/cock-profiles?eventID=${eventId}`)
+  const existingCockProfiles = cockProfilesData || []
+
+  // Calculate next entry number
+  const nextEntryNo = existingCockProfiles.length > 0
+    ? Math.max(...existingCockProfiles.map(cp => cp.entryNo)) + 1
+    : 1
+
   // Filter participants based on search query
   const filteredParticipants = participantRecords.filter(participant =>
     (participant.participantName?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
@@ -184,14 +193,13 @@ const CockProfileForm = ({
 
         {/* Cock Profile Information Form */}
         <div className="space-y-4">
-          <InputField
-            id={isEdit ? "editEntryNo" : "entryNo"}
-            label="Entry Number *"
-            value={formData.entryNo}
-            onChange={(e) => onInputChange('entryNo', e.target.value)}
-            placeholder="Enter entry number"
-            required
-          />
+          {/* Entry number is auto-generated - show next available number */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Entry Number</Label>
+            <div className="p-3 bg-muted/50 rounded-md border text-sm text-muted-foreground">
+              Next available entry number: <span className="font-mono font-semibold text-primary">#{nextEntryNo}</span>
+            </div>
+          </div>
 
           {/* Derby Event Fields */}
           {event?.eventType === 'derby' && (

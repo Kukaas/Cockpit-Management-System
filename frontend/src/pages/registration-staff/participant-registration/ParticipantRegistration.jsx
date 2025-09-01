@@ -47,7 +47,6 @@ const ParticipantRegistration = () => {
   })
 
   const [cockProfileFormData, setCockProfileFormData] = useState({
-    entryNo: '',
     participantID: '',
     legband: '',
     weight: ''
@@ -192,7 +191,6 @@ const ParticipantRegistration = () => {
 
   const resetCockProfileForm = () => {
     setCockProfileFormData({
-      entryNo: '',
       participantID: '',
       legband: '',
       weight: ''
@@ -218,7 +216,7 @@ const ParticipantRegistration = () => {
   }
 
   const handleAddCockProfile = async () => {
-    const requiredFields = ['entryNo', 'participantID']
+    const requiredFields = ['participantID']
     const missingFields = requiredFields.filter(field => !cockProfileFormData[field])
 
     if (missingFields.length > 0) {
@@ -228,7 +226,7 @@ const ParticipantRegistration = () => {
 
     // For derby events, also require legband and weight
     if (selectedEvent?.eventType === 'derby') {
-      const derbyRequiredFields = ['entryNo', 'participantID', 'legband', 'weight']
+      const derbyRequiredFields = ['participantID', 'legband', 'weight']
       const derbyMissingFields = derbyRequiredFields.filter(field => !cockProfileFormData[field])
 
       if (derbyMissingFields.length > 0) {
@@ -269,7 +267,7 @@ const ParticipantRegistration = () => {
   const handleEditCockProfile = async () => {
     if (!selectedCockProfile) return
 
-    const requiredFields = ['entryNo', 'participantID']
+    const requiredFields = ['participantID']
     const missingFields = requiredFields.filter(field => !cockProfileFormData[field])
 
     if (missingFields.length > 0) {
@@ -279,7 +277,7 @@ const ParticipantRegistration = () => {
 
     // For derby events, also require legband and weight
     if (selectedEvent?.eventType === 'derby') {
-      const derbyRequiredFields = ['entryNo', 'participantID', 'legband', 'weight']
+      const derbyRequiredFields = ['participantID', 'legband', 'weight']
       const derbyMissingFields = derbyRequiredFields.filter(field => !cockProfileFormData[field])
 
       if (derbyMissingFields.length > 0) {
@@ -322,7 +320,6 @@ const ParticipantRegistration = () => {
   const handleEditCockProfileClick = (cockProfile) => {
     setSelectedCockProfile(cockProfile)
     setCockProfileFormData({
-      entryNo: cockProfile.entryNo,
       participantID: cockProfile.participantID?._id || cockProfile.participantID,
       legband: cockProfile.legband || '',
       weight: cockProfile.weight || ''

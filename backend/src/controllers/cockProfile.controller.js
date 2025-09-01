@@ -4,7 +4,7 @@ import Event from '../models/event.model.js';
 // Create new cock profile
 export const createCockProfile = async (req, res) => {
   try {
-    const { eventID, participantID, entryNo, legband, weight } = req.body;
+    const { eventID, participantID, legband, weight } = req.body;
 
     // Get event details to check event type
     const event = await Event.findById(eventID);
@@ -35,11 +35,9 @@ export const createCockProfile = async (req, res) => {
       }
     }
 
-    // Check if entry number already exists for this event
-    const existingCock = await CockProfile.findOne({ eventID, entryNo });
-    if (existingCock) {
-      return res.status(400).json({ message: 'Cock with this entry number already exists for this event' });
-    }
+    // Auto-generate entry number for this event
+    const lastCockProfile = await CockProfile.findOne({ eventID }).sort({ entryNo: -1 });
+    const nextEntryNo = lastCockProfile ? lastCockProfile.entryNo + 1 : 1;
 
 
     // For derby events, validate legband and weight
@@ -61,7 +59,7 @@ export const createCockProfile = async (req, res) => {
     const cockProfileData = {
       eventID,
       participantID,
-      entryNo
+      entryNo: nextEntryNo
     };
 
     // Only add legband and weight for derby events
@@ -110,10 +108,19 @@ export const getAllCockProfiles = async (req, res) => {
 
     // Search functionality
     if (search) {
-      query.$or = [
-        { entryNo: { $regex: search, $options: 'i' } },
-        { legband: { $regex: search, $options: 'i' } }
-      ];
+      const searchNum = parseInt(search);
+      if (!isNaN(searchNum)) {
+        // If search is a number, search by entryNo
+        query.$or = [
+          { entryNo: searchNum },
+          { legband: { $regex: search, $options: 'i' } }
+        ];
+      } else {
+        // If search is not a number, only search by legband
+        query.$or = [
+          { legband: { $regex: search, $options: 'i' } }
+        ];
+      }
     }
 
     const cockProfiles = await CockProfile.find(query)
@@ -151,7 +158,7 @@ export const getCockProfileById = async (req, res) => {
 export const updateCockProfile = async (req, res) => {
   try {
     const { id } = req.params;
-    const { eventID, participantID, entryNo, legband, weight, isActive } = req.body;
+    const { eventID, participantID, legband, weight, isActive } = req.body;
 
     const cockProfile = await CockProfile.findById(id);
     if (!cockProfile) {
@@ -162,18 +169,6 @@ export const updateCockProfile = async (req, res) => {
     const event = await Event.findById(eventID || cockProfile.eventID);
     if (!event) {
       return res.status(404).json({ message: 'Event not found' });
-    }
-
-    // Check if entry number is being changed and if it already exists for this event
-    if (entryNo && entryNo !== cockProfile.entryNo) {
-      const existingCock = await CockProfile.findOne({
-        eventID: eventID || cockProfile.eventID,
-        entryNo,
-        _id: { $ne: id }
-      });
-      if (existingCock) {
-        return res.status(400).json({ message: 'Cock with this entry number already exists for this event' });
-      }
     }
 
     // Check if participant is being changed and if they already have a cock profile for this event
@@ -210,7 +205,7 @@ export const updateCockProfile = async (req, res) => {
       }
     }
 
-    const updateData = { eventID, participantID, entryNo, isActive };
+    const updateData = { eventID, participantID, isActive };
 
     // Only include legband and weight for derby events
     if (event.eventType === 'derby') {

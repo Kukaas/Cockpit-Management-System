@@ -16,9 +16,9 @@ const cockProfileSchema = new mongoose.Schema({
   },
 
   entryNo: {
-    type: String,
+    type: Number,
     required: true,
-    trim: true,
+    min: 1
   },
 
   // Fields for derby events only
@@ -46,7 +46,7 @@ const cockProfileSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
-  
+
   status: {
     type: String,
     enum: ['available', 'scheduled', 'fought'],
