@@ -33,6 +33,7 @@ const Events = () => {
     maxParticipants: '',
     registrationDeadline: '',
     maxCapacity: '',
+    entranceFee: '',
     isPublic: true
   })
   const [editFormData, setEditFormData] = useState({
@@ -45,6 +46,7 @@ const Events = () => {
     maxParticipants: '',
     registrationDeadline: '',
     maxCapacity: '',
+    entranceFee: '',
     isPublic: true
   })
 
@@ -132,7 +134,7 @@ const Events = () => {
 
   const handleAddEvent = async () => {
     // Basic required fields for all events
-    const basicRequiredFields = ['eventName', 'location', 'date', 'eventType', 'maxCapacity']
+    const basicRequiredFields = ['eventName', 'location', 'date', 'eventType', 'maxCapacity', 'entranceFee']
     const missingBasicFields = basicRequiredFields.filter(field => !formData[field])
 
     if (missingBasicFields.length > 0) {
@@ -159,7 +161,7 @@ const Events = () => {
     }
 
     // Validate numeric fields
-    const numericFields = ['maxCapacity']
+    const numericFields = ['maxCapacity', 'entranceFee']
     if (formData.eventType === 'derby') {
       numericFields.push('prize', 'noCockRequirements', 'maxParticipants')
     }
@@ -187,7 +189,7 @@ const Events = () => {
 
   const handleEditEvent = async () => {
     // Basic required fields for all events
-    const basicRequiredFields = ['eventName', 'location', 'date', 'eventType', 'maxCapacity']
+    const basicRequiredFields = ['eventName', 'location', 'date', 'eventType', 'maxCapacity', 'entranceFee']
     const missingBasicFields = basicRequiredFields.filter(field => !editFormData[field])
 
     if (missingBasicFields.length > 0) {
@@ -216,7 +218,7 @@ const Events = () => {
     }
 
     // Validate numeric fields
-    const numericFields = ['maxCapacity']
+    const numericFields = ['maxCapacity', 'entranceFee']
     if (editFormData.eventType === 'derby') {
       numericFields.push('prize', 'noCockRequirements', 'maxParticipants')
     }
@@ -264,6 +266,7 @@ const Events = () => {
       maxParticipants: '',
       registrationDeadline: '',
       maxCapacity: '',
+      entranceFee: '',
       isPublic: true
     })
   }
@@ -279,6 +282,7 @@ const Events = () => {
       maxParticipants: '',
       registrationDeadline: '',
       maxCapacity: '',
+      entranceFee: '',
       isPublic: true
     })
   }
@@ -369,6 +373,7 @@ const Events = () => {
       maxParticipants: event.maxParticipants ? event.maxParticipants.toString() : '',
       registrationDeadline: event.registrationDeadline ? new Date(event.registrationDeadline).toISOString().slice(0, 16) : '',
       maxCapacity: event.maxCapacity ? event.maxCapacity.toString() : '',
+      entranceFee: event.entranceFee ? event.entranceFee.toString() : '',
       isPublic: event.isPublic !== undefined ? event.isPublic : true
     })
     setEditEventDialogOpen(true)

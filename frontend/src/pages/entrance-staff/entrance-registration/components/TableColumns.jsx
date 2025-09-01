@@ -2,15 +2,18 @@ import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Edit, Trash2 } from 'lucide-react'
 
-export const createEntranceColumns = (formatDate, handleEditClick, handleDeleteClick, isEventCompleted = false) => [
+export const createEntranceColumns = (formatDate, formatCurrency, handleEditClick, handleDeleteClick, isEventCompleted = false) => [
   {
     key: 'count',
     label: 'Number of Entrances',
     sortable: true,
     filterable: false,
-    render: (value) => (
+    render: (value, row) => (
       <div className="font-medium text-blue-600">
         {value} {value === 1 ? 'entrance' : 'entrances'}
+        <div className="text-xs text-muted-foreground">
+          {formatCurrency((row.eventID?.entranceFee || 0) * value)} total
+        </div>
       </div>
     )
   },

@@ -31,7 +31,7 @@ const EntranceDashboard = () => {
   const filteredStats = {
     totalTallyRecords: filteredEntrances.length,
     totalEntrances: filteredEntrances.reduce((sum, entrance) => sum + (entrance.count || 0), 0),
-    totalRevenue: filteredEntrances.reduce((sum, entrance) => sum + ((entrance.count || 0) * 100), 0), // Assuming 100 pesos per entrance
+    totalRevenue: filteredEntrances.reduce((sum, entrance) => sum + ((entrance.count || 0) * (entrance.eventID?.entranceFee || 0)), 0), // Use dynamic entrance fee
     averageEntrancesPerRecord: filteredEntrances.length > 0
       ? Math.round(filteredEntrances.reduce((sum, entrance) => sum + (entrance.count || 0), 0) / filteredEntrances.length)
       : 0

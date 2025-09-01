@@ -13,11 +13,12 @@ export const createEvent = async (req, res) => {
             maxParticipants,
             registrationDeadline,
             maxCapacity,
+            entranceFee,
             isPublic
         } = req.body;
 
         // Validate required fields based on event type
-        const basicRequiredFields = ['eventName', 'location', 'date', 'eventType', 'maxCapacity'];
+        const basicRequiredFields = ['eventName', 'location', 'date', 'eventType', 'maxCapacity', 'entranceFee'];
         const missingBasicFields = basicRequiredFields.filter(field => !req.body[field]);
 
         if (missingBasicFields.length > 0) {
@@ -57,6 +58,7 @@ export const createEvent = async (req, res) => {
             eventType,
             adminID: req.user._id,
             maxCapacity: Number(maxCapacity),
+            entranceFee: Number(entranceFee),
             maxParticipants: maxParticipants ? Number(maxParticipants) : null,
             registrationDeadline: registrationDeadline ? new Date(registrationDeadline) : null,
             isPublic: isPublic !== undefined ? isPublic : true
@@ -209,7 +211,7 @@ export const updateEvent = async (req, res) => {
 
         // Validate required fields based on event type
         const eventType = updateData.eventType || event.eventType;
-        const basicRequiredFields = ['eventName', 'location', 'date', 'eventType', 'maxCapacity'];
+        const basicRequiredFields = ['eventName', 'location', 'date', 'eventType', 'maxCapacity', 'entranceFee'];
         const missingBasicFields = basicRequiredFields.filter(field => !updateData[field] && !event[field]);
 
         if (missingBasicFields.length > 0) {
@@ -248,6 +250,7 @@ export const updateEvent = async (req, res) => {
         if (updateData.noCockRequirements) updateData.noCockRequirements = Number(updateData.noCockRequirements);
         if (updateData.maxParticipants) updateData.maxParticipants = Number(updateData.maxParticipants);
         if (updateData.maxCapacity) updateData.maxCapacity = Number(updateData.maxCapacity);
+        if (updateData.entranceFee) updateData.entranceFee = Number(updateData.entranceFee);
 
         // For regular events, remove the fields that are not required
         if (eventType === 'regular') {

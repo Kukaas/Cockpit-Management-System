@@ -60,7 +60,7 @@ export function EventChart({ eventsData = [] }) {
         }
       }
 
-      acc[date].revenue += (entrance.count || 0) * 100 // Assuming 100 pesos per entrance
+      acc[date].revenue += (entrance.count || 0) * (entrance.eventID?.entranceFee || 0) // Use dynamic entrance fee
 
       return acc
     }, {})

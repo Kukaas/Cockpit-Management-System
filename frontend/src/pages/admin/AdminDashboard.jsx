@@ -134,8 +134,8 @@ const AdminDashboard = () => {
     // Entrance Statistics
     totalEntrances: filteredEntrances.reduce((sum, entrance) => sum + (entrance.count || 0), 0),
     entranceRecords: filteredEntrances.length,
-    // Calculate entrance revenue (assuming 50 PHP per entrance)
-    totalEntranceRevenue: filteredEntrances.reduce((sum, entrance) => sum + ((entrance.count || 0) * 50), 0),
+    // Calculate entrance revenue using dynamic entrance fees
+    totalEntranceRevenue: filteredEntrances.reduce((sum, entrance) => sum + ((entrance.count || 0) * (entrance.eventID?.entranceFee || 0)), 0),
   }
 
   // Get unique venues from events

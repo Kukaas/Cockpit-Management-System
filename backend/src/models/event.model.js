@@ -62,6 +62,12 @@ const eventSchema = new mongoose.Schema({
         required: true,
         min: 1
     },
+    entranceFee: {
+        type: Number,
+        required: true,
+        min: 0,
+        default: 100
+    },
     isPublic: {
         type: Boolean,
         default: true

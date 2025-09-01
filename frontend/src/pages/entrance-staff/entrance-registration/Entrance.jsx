@@ -181,11 +181,15 @@ const Entrance = () => {
 
   // Calculate total entrances and revenue
   const totalEntrances = entrances.reduce((sum, entrance) => sum + entrance.count, 0)
-  const totalRevenue = totalEntrances * 100 // 100 pesos per entrance
+  const totalRevenue = totalEntrances * (selectedEvent?.entranceFee || 0) // Use dynamic entrance fee
+
+  // Check if event is at capacity
+  const isAtCapacity = totalEntrances >= (selectedEvent?.maxCapacity || 0)
 
   // Create table columns
   const entranceColumns = createEntranceColumns(
     formatDate,
+    formatCurrency,
     handleEditEntranceClick,
     handleDeleteEntranceClick,
     isEventCompleted
@@ -230,7 +234,7 @@ const Entrance = () => {
       />
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white p-4 rounded-lg border shadow-sm">
           <h3 className="text-sm font-medium text-gray-600">Total Tally Records</h3>
           <p className="text-2xl font-bold text-gray-900">{entrances.length}</p>
@@ -243,13 +247,22 @@ const Entrance = () => {
           <h3 className="text-sm font-medium text-gray-600">Total Revenue</h3>
           <p className="text-2xl font-bold text-green-600">{formatCurrency(totalRevenue)}</p>
         </div>
+        <div className="bg-white p-4 rounded-lg border shadow-sm">
+          <h3 className="text-sm font-medium text-gray-600">Capacity Status</h3>
+          <p className={`text-2xl font-bold ${isAtCapacity ? 'text-red-600' : totalEntrances / (selectedEvent?.maxCapacity || 1) >= 0.8 ? 'text-orange-600' : 'text-green-600'}`}>
+            {totalEntrances} / {selectedEvent?.maxCapacity || 0}
+          </p>
+          <p className="text-xs text-gray-500">
+            {selectedEvent?.maxCapacity ? Math.round((totalEntrances / selectedEvent.maxCapacity) * 100) : 0}% full
+          </p>
+        </div>
       </div>
 
       {/* Entrance Records Section */}
       <div className="space-y-4">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold">Entrance Tally Records ({entrances.length})</h3>
-          <Button onClick={() => setAddEntranceDialogOpen(true)} disabled={isEventCompleted}>
+          <Button onClick={() => setAddEntranceDialogOpen(true)} disabled={isEventCompleted || isAtCapacity}>
             <Plus className="h-4 w-4 mr-2" />
             Add Tally
           </Button>

@@ -54,10 +54,10 @@ const Entrance = () => {
 
   // Calculate total entrances and revenue
   const totalEntrances = entrances.reduce((sum, entrance) => sum + entrance.count, 0)
-  const totalRevenue = totalEntrances * 100 // 100 pesos per entrance
+  const totalRevenue = totalEntrances * (selectedEvent?.entranceFee || 0) // Use dynamic entrance fee
 
   // Create table columns (view-only)
-  const entranceColumns = createAdminEntranceColumns(formatDate)
+  const entranceColumns = createAdminEntranceColumns(formatDate, formatCurrency)
 
   if (eventLoading) {
     return (
@@ -103,6 +103,7 @@ const Entrance = () => {
         totalEntrances={totalEntrances}
         totalRevenue={totalRevenue}
         formatCurrency={formatCurrency}
+        maxCapacity={selectedEvent?.maxCapacity}
       />
 
       {/* Entrance Records Section */}

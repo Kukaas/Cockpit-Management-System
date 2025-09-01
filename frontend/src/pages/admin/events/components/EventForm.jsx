@@ -101,6 +101,20 @@ const EventForm = ({
           required
         />
 
+        {/* Entrance Fee - Always required */}
+        <InputField
+          id={isEdit ? "editEntranceFee" : "entranceFee"}
+          label="Entrance Fee (PHP) *"
+          icon={DollarSign}
+          type="number"
+          value={formData.entranceFee}
+          onChange={(e) => onInputChange('entranceFee', e.target.value)}
+          placeholder="Enter entrance fee per person"
+          min="0"
+          step="0.01"
+          required
+        />
+
         {/* Date and Time */}
         <InputField
           id={isEdit ? "editDate" : "date"}

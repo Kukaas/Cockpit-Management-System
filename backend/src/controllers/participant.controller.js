@@ -23,6 +23,24 @@ export const registerParticipant = async (req, res) => {
       return res.status(400).json({ message: 'Event is not active for registration' });
     }
 
+    // Check registration deadline for derby events
+    if (event.eventType === 'derby' && event.registrationDeadline) {
+      const currentTime = new Date();
+      const deadline = new Date(event.registrationDeadline);
+
+      if (currentTime > deadline) {
+        return res.status(400).json({
+          message: `Registration deadline has passed. Registration closed on ${deadline.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          })}`
+        });
+      }
+    }
+
     // Check if participant is already registered for this event
     const existingRegistration = await Participant.findOne({ eventID, participantName });
     if (existingRegistration) {

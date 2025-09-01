@@ -6,7 +6,8 @@ import {
   updateEntrance,
   deleteEntrance,
   getEntrancesByEvent,
-  getEntranceStats
+  getEntranceStats,
+  getCapacityStatus
 } from '../controllers/entrance.controller.js';
 import {
   verifyToken,
@@ -17,9 +18,10 @@ const router = express.Router();
 
 // Protected routes - require authentication
 router.get('/', verifyToken, getAllEntrances);
-router.get('/:id', verifyToken, getEntranceById);
 router.get('/event/:eventID', verifyToken, getEntrancesByEvent);
 router.get('/stats/:eventID', verifyToken, getEntranceStats);
+router.get('/capacity/:eventID', verifyToken, getCapacityStatus);
+router.get('/:id', verifyToken, getEntranceById);
 
 // Routes requiring admin, event_staff, or entrance_staff role
 router.post('/', verifyToken, requireRole(['admin', 'event_staff', 'entrance_staff']), recordEntrance);

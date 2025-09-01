@@ -1,5 +1,18 @@
 import Entrance from '../models/entrance.model.js';
 import Event from '../models/event.model.js';
+import mongoose from 'mongoose';
+
+// Helper function to calculate current total entrances for an event
+const getCurrentTotalEntrances = async (eventID) => {
+  // Convert eventID to ObjectId if it's a string
+  const eventObjectId = typeof eventID === 'string' ? new mongoose.Types.ObjectId(eventID) : eventID;
+
+  const result = await Entrance.aggregate([
+    { $match: { eventID: eventObjectId } },
+    { $group: { _id: null, total: { $sum: '$count' } } }
+  ]);
+  return result.length > 0 ? result[0].total : 0;
+};
 
 // Record entrance tally
 export const recordEntrance = async (req, res) => {
@@ -34,6 +47,17 @@ export const recordEntrance = async (req, res) => {
       });
     }
 
+    // Check capacity limit
+    const currentTotal = await getCurrentTotalEntrances(eventID);
+    const newTotal = currentTotal + Number(count);
+
+    if (newTotal > event.maxCapacity) {
+      return res.status(400).json({
+        success: false,
+        message: `Maximum capacity reached. Current entrances: ${currentTotal}, Maximum capacity: ${event.maxCapacity}. Cannot add ${count} more entrances.`
+      });
+    }
+
     // Create entrance record
     const entrance = new Entrance({
       eventID,
@@ -46,7 +70,7 @@ export const recordEntrance = async (req, res) => {
 
     // Populate references for response
     await entrance.populate([
-      { path: 'eventID', select: 'eventName date location maxCapacity' },
+      { path: 'eventID', select: 'eventName date location maxCapacity entranceFee' },
       { path: 'recordedBy', select: 'username firstName lastName' }
     ]);
 
@@ -94,14 +118,14 @@ export const getAllEntrances = async (req, res) => {
 
     if (page) {
       entrances = await Entrance.find(query)
-        .populate('eventID', 'eventName date location maxCapacity')
+        .populate('eventID', 'eventName date location maxCapacity entranceFee')
         .populate('recordedBy', 'username firstName lastName')
         .sort({ date: -1 })
 
     } else {
       // Get all records without pagination
       entrances = await Entrance.find(query)
-        .populate('eventID', 'eventName date location maxCapacity')
+        .populate('eventID', 'eventName date location maxCapacity entranceFee')
         .populate('recordedBy', 'username firstName lastName')
         .sort({ date: -1 });
     }
@@ -127,7 +151,7 @@ export const getEntranceById = async (req, res) => {
     const { id } = req.params;
 
     const entrance = await Entrance.findById(id)
-      .populate('eventID', 'eventName date location maxCapacity')
+      .populate('eventID', 'eventName date location maxCapacity entranceFee')
       .populate('recordedBy', 'username firstName lastName');
 
     if (!entrance) {
@@ -174,6 +198,28 @@ export const updateEntrance = async (req, res) => {
       });
     }
 
+    // Check capacity limit if count is being updated
+    if (count !== undefined) {
+      const event = await Event.findById(entrance.eventID);
+      if (!event) {
+        return res.status(404).json({
+          success: false,
+          message: 'Associated event not found'
+        });
+      }
+
+      const currentTotal = await getCurrentTotalEntrances(entrance.eventID);
+      const currentRecordCount = entrance.count || 0;
+      const newTotal = currentTotal - currentRecordCount + Number(count);
+
+      if (newTotal > event.maxCapacity) {
+        return res.status(400).json({
+          success: false,
+          message: `Maximum capacity reached. Current entrances: ${currentTotal - currentRecordCount}, Maximum capacity: ${event.maxCapacity}. Cannot update to ${count} entrances.`
+        });
+      }
+    }
+
     const updatedEntrance = await Entrance.findByIdAndUpdate(
       id,
       {
@@ -181,7 +227,7 @@ export const updateEntrance = async (req, res) => {
       },
       { new: true, runValidators: true }
     ).populate([
-      { path: 'eventID', select: 'eventName date location maxCapacity' },
+      { path: 'eventID', select: 'eventName date location maxCapacity entranceFee' },
       { path: 'recordedBy', select: 'username firstName lastName' }
     ]);
 
@@ -235,7 +281,7 @@ export const getEntrancesByEvent = async (req, res) => {
     const { eventID } = req.params;
 
     const entrances = await Entrance.find({ eventID })
-      .populate('eventID', 'eventName date location maxCapacity')
+      .populate('eventID', 'eventName date location maxCapacity entranceFee')
       .populate('recordedBy', 'username firstName lastName')
       .sort({ date: -1 })
 
@@ -276,7 +322,7 @@ export const getEntranceStats = async (req, res) => {
           _id: null,
           totalTallyRecords: { $sum: 1 },
           totalEntrances: { $sum: '$count' },
-          totalRevenue: { $sum: { $multiply: ['$count', 100] } } // Assuming 100 pesos per entrance
+          totalRevenue: { $sum: { $multiply: ['$count', event.entranceFee] } }
         }
       }
     ]);
@@ -291,7 +337,7 @@ export const getEntranceStats = async (req, res) => {
           },
           tallyRecords: { $sum: 1 },
           entrances: { $sum: '$count' },
-          revenue: { $sum: { $multiply: ['$count', 100] } }
+          revenue: { $sum: { $multiply: ['$count', event.entranceFee] } }
         }
       },
       { $sort: { _id: 1 } }
@@ -301,7 +347,8 @@ export const getEntranceStats = async (req, res) => {
       event: {
         _id: event._id,
         eventName: event.eventName,
-        maxCapacity: event.maxCapacity
+        maxCapacity: event.maxCapacity,
+        entranceFee: event.entranceFee
       },
       summary: stats[0] || {
         totalTallyRecords: 0,
@@ -321,6 +368,53 @@ export const getEntranceStats = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to fetch entrance statistics',
+      error: error.message
+    });
+  }
+};
+
+// Get capacity status for an event
+export const getCapacityStatus = async (req, res) => {
+  try {
+    const { eventID } = req.params;
+
+    // Validate event exists
+    const event = await Event.findById(eventID);
+    if (!event) {
+      return res.status(404).json({
+        success: false,
+        message: 'Event not found'
+      });
+    }
+
+    // Get current total entrances
+    const currentTotal = await getCurrentTotalEntrances(eventID);
+    const remainingCapacity = event.maxCapacity - currentTotal;
+    const isAtCapacity = currentTotal >= event.maxCapacity;
+    const capacityPercentage = Math.round((currentTotal / event.maxCapacity) * 100);
+
+    const capacityStatus = {
+      event: {
+        _id: event._id,
+        eventName: event.eventName,
+        maxCapacity: event.maxCapacity
+      },
+      currentTotal,
+      remainingCapacity: Math.max(0, remainingCapacity),
+      isAtCapacity,
+      capacityPercentage: Math.min(100, capacityPercentage)
+    };
+
+    res.status(200).json({
+      success: true,
+      message: 'Capacity status retrieved successfully',
+      data: capacityStatus
+    });
+  } catch (error) {
+    console.error('Error getting capacity status:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch capacity status',
       error: error.message
     });
   }
