@@ -4,6 +4,7 @@ import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/s
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
 import { Separator } from '@/components/ui/separator'
 import SidebarComponent from '@/components/Sidebar'
+import useAuth from '@/hooks/useAuth'
 
 function useBreadcrumbs() {
 	const location = useLocation()
@@ -21,6 +22,28 @@ function useBreadcrumbs() {
 
 const HeaderBar = () => {
 	const crumbs = useBreadcrumbs()
+	const { user } = useAuth()
+
+	// Determine the correct home route based on user role
+	const getHomeRoute = () => {
+		if (!user) return '/admin'
+
+		switch (user.role) {
+			case 'admin':
+				return '/admin'
+			case 'event_staff':
+				return '/event-staff'
+			case 'entrance_staff':
+				return '/entrance-staff'
+			case 'registration_staff':
+				return '/registration-staff'
+			case 'tangkal_staff':
+				return '/tangkal-staff'
+			default:
+				return '/admin'
+		}
+	}
+
 	return (
 		<div className="sticky top-0 z-10 bg-background/80 backdrop-blur border-b">
 			<div className="flex items-center gap-2 px-4 h-14">
@@ -30,7 +53,7 @@ const HeaderBar = () => {
 					<BreadcrumbList>
 						<BreadcrumbItem>
 							<BreadcrumbLink asChild>
-								<Link to="/admin">Home</Link>
+								<Link to={getHomeRoute()}>Home</Link>
 							</BreadcrumbLink>
 						</BreadcrumbItem>
 						{crumbs.map((c) => (
