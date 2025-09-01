@@ -1,7 +1,7 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Swords, Trophy, Plus } from 'lucide-react'
+import { Swords, Trophy, Plus, Award } from 'lucide-react'
 import DataTable from '@/components/custom/DataTable'
 
 const FightTabs = ({
@@ -12,14 +12,15 @@ const FightTabs = ({
   fightColumns,
   resultColumns,
   onAddFight,
-  eventStatus = 'active' // Add event status prop with default value
+  eventStatus = 'active', // Add event status prop with default value
+  eventType = 'regular'
 }) => {
   // Check if event is completed or cancelled
   const isEventCompleted = eventStatus === 'completed' || eventStatus === 'cancelled'
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-      <TabsList className="grid w-full grid-cols-2">
+      <TabsList className={`grid w-full ${eventType === 'derby' ? 'grid-cols-3' : 'grid-cols-2'}`}>
         <TabsTrigger value="fights" className="flex items-center gap-2">
           <Swords className="h-4 w-4" />
           Fight Schedule ({fights.length})
@@ -28,6 +29,12 @@ const FightTabs = ({
           <Trophy className="h-4 w-4" />
           Match Results ({results.length})
         </TabsTrigger>
+        {eventType === 'derby' && (
+          <TabsTrigger value="championship" className="flex items-center gap-2">
+            <Award className="h-4 w-4" />
+            Championship
+          </TabsTrigger>
+        )}
       </TabsList>
 
       <TabsContent value="fights" className="space-y-4">

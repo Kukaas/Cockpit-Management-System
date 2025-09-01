@@ -428,6 +428,7 @@ const AdminEventSelection = () => {
         <EventChart
           matchResultsData={filteredMatchResults}
           fightSchedulesData={filteredFightSchedules}
+          eventType="regular"
         />
 
         {/* Events Table */}

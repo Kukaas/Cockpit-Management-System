@@ -262,6 +262,7 @@ const EventDashboard = () => {
          <EventChart
            matchResultsData={filteredMatchResults}
            fightSchedulesData={filteredFightSchedules}
+           eventType="regular"
          />
       </div>
     </PageLayout>

@@ -9,6 +9,7 @@ import { useGetById, useGetAll } from '@/hooks/useApiQueries'
 import EventDetailsCard from './components/EventDetailsCard'
 import AdminFightTabs from './components/FightTabs'
 import DetailsDialog from './components/DetailsDialog'
+import ChampionshipTab from './components/ChampionshipTab'
 import { createFightColumns, createMatchResultColumns } from './components/TableColumns'
 
 const AdminFightSchedule = () => {
@@ -103,7 +104,17 @@ const AdminFightSchedule = () => {
         results={resultsData}
         fightColumns={fightColumns}
         resultColumns={resultColumns}
+        eventType={event.eventType}
       />
+
+      {/* Championship Tab Content for Derby Events */}
+      {event.eventType === 'derby' && activeTab === 'championship' && (
+        <ChampionshipTab
+          eventId={eventId}
+          eventType={event.eventType}
+          formatCurrency={formatCurrency}
+        />
+      )}
 
       {/* Detail View Dialog */}
       <DetailsDialog

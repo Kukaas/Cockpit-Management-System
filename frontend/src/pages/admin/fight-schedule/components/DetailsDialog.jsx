@@ -1,5 +1,6 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import CustomAlertDialog from '@/components/custom/CustomAlertDialog'
 
 const DetailsDialog = ({
@@ -378,27 +379,46 @@ const DetailsDialog = ({
           </div>
         </div>
 
-                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-           <div className="bg-gray-50 rounded-lg p-6 text-center">
-             <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Meron Payout</label>
-             <p className="mt-2 text-xl font-semibold text-purple-700">{formatCurrency(result.payouts?.meronPayout || 0)}</p>
-           </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="bg-gray-50 rounded-lg p-6 text-center">
+            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Meron Payout</label>
+            <p className="mt-2 text-xl font-semibold text-purple-700">{formatCurrency(result.payouts?.meronPayout || 0)}</p>
+          </div>
 
-           <div className="bg-gray-50 rounded-lg p-6 text-center">
-             <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Wala Payout</label>
-             <p className="mt-2 text-xl font-semibold text-purple-700">{formatCurrency(result.payouts?.walaPayout || 0)}</p>
-           </div>
+          <div className="bg-gray-50 rounded-lg p-6 text-center">
+            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Wala Payout</label>
+            <p className="mt-2 text-xl font-semibold text-purple-700">{formatCurrency(result.payouts?.walaPayout || 0)}</p>
+          </div>
 
-           <div className="bg-gray-50 rounded-lg p-6 text-center">
-             <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Outside Bets</label>
-             <p className="mt-2 text-xl font-semibold text-purple-700">{formatCurrency(result.payouts?.outsideBets || 0)}</p>
-           </div>
+          <div className="bg-gray-50 rounded-lg p-6 text-center">
+            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Outside Bets</label>
+            <p className="mt-2 text-xl font-semibold text-purple-700">{formatCurrency(result.payouts?.outsideBets || 0)}</p>
+          </div>
 
-           <div className="bg-gray-50 rounded-lg p-6 text-center">
-             <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Plazada</label>
-             <p className="mt-2 text-xl font-semibold text-emerald-700">{formatCurrency(result.totalPlazada || 0)}</p>
-           </div>
-         </div>
+          <div className="bg-gray-50 rounded-lg p-6 text-center">
+            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Plazada</label>
+            <p className="mt-2 text-xl font-semibold text-emerald-700">{formatCurrency(result.totalPlazada || 0)}</p>
+          </div>
+        </div>
+
+        {/* Championship Progress for Derby Events */}
+        {event?.eventType === 'derby' && (
+          <div className="mt-6 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                <span className="text-yellow-600 font-semibold text-sm">🏆</span>
+              </div>
+              <h4 className="font-semibold text-yellow-800">Championship Progress</h4>
+            </div>
+            <div className="text-sm text-yellow-700">
+              <p>This match contributes to the derby championship. Participants need {event.noCockRequirements} wins to become champions.</p>
+              <p className="mt-2">
+                <strong>Winner:</strong> {result.resultMatch?.winnerParticipantID?.participantName} -
+                Check the Championship tab for current standings and prize distribution.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

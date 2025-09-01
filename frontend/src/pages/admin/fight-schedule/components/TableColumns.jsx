@@ -114,7 +114,7 @@ export const createFightColumns = (formatCurrency, formatDate, handleViewDetails
   }
 ]
 
-export const createMatchResultColumns = (formatCurrency, formatDate, handleViewDetails, eventType = 'regular') => [
+export const createMatchResultColumns = (formatCurrency, formatDate, handleViewDetails) => [
   {
     key: 'matchID',
     label: 'Fight #',
@@ -255,5 +255,121 @@ export const createMatchResultColumns = (formatCurrency, formatDate, handleViewD
         <Eye className="h-4 w-4" />
       </Button>
     )
+  }
+]
+
+export const createChampionshipColumns = (formatCurrency) => [
+  {
+    key: 'position',
+    label: 'Position',
+    sortable: true,
+    filterable: false,
+    render: (value, row) => {
+      if (!row.isChampion) return '-'
+
+      const positionColors = {
+        1: 'bg-yellow-500',
+        2: 'bg-gray-400',
+        3: 'bg-amber-600'
+      }
+
+      return (
+        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white font-bold text-sm ${
+          positionColors[value] || 'bg-blue-500'
+        }`}>
+          {value}
+        </div>
+      )
+    }
+  },
+  {
+    key: 'participant',
+    label: 'Participant',
+    sortable: true,
+    filterable: false,
+    render: (value) => (
+      <div>
+        <div className="font-medium">{value.participantName}</div>
+        <div className="text-sm text-muted-foreground">{value.contactNumber}</div>
+      </div>
+    )
+  },
+  {
+    key: 'wins',
+    label: 'Wins',
+    sortable: true,
+    filterable: false,
+    render: (value) => (
+      <Badge variant="default" className="bg-green-100 text-green-800">
+        {value}
+      </Badge>
+    )
+  },
+  {
+    key: 'losses',
+    label: 'Losses',
+    sortable: true,
+    filterable: false,
+    render: (value) => (
+      <Badge variant="secondary" className="bg-red-100 text-red-800">
+        {value}
+      </Badge>
+    )
+  },
+  {
+    key: 'totalMatches',
+    label: 'Total',
+    sortable: true,
+    filterable: false,
+    render: (value) => (
+      <span className="font-medium">{value}</span>
+    )
+  },
+  {
+    key: 'remainingCocks',
+    label: 'Remaining',
+    sortable: true,
+    filterable: false,
+    render: (value) => (
+      <span className="text-muted-foreground">{value}</span>
+    )
+  },
+  {
+    key: 'status',
+    label: 'Status',
+    sortable: true,
+    filterable: true,
+    filterOptions: ['Champion', 'Active', 'Eliminated'],
+    render: (value, row) => (
+      <Badge
+        variant={
+          row.isChampion ? 'default' :
+          row.isEliminated ? 'destructive' : 'secondary'
+        }
+        className={
+          row.isChampion ? 'bg-yellow-100 text-yellow-800' :
+          row.isEliminated ? 'bg-red-100 text-red-800' :
+          'bg-blue-100 text-blue-800'
+        }
+      >
+        {value}
+      </Badge>
+    )
+  },
+  {
+    key: 'prize',
+    label: 'Prize',
+    sortable: false,
+    filterable: false,
+    render: (value, row) => {
+      if (!row.isChampion) return '-'
+
+      return (
+        <div className="text-center">
+          <div className="font-semibold text-green-600">{row.prizePercentage}%</div>
+          <div className="text-sm text-green-600">{formatCurrency(row.prizeAmount)}</div>
+        </div>
+      )
+    }
   }
 ]

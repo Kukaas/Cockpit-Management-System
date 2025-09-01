@@ -2,6 +2,7 @@ import MatchResult from '../models/matchResult.model.js';
 import FightSchedule from '../models/fightSchedule.model.js';
 import Participant from '../models/participant.model.js';
 import CockProfile from '../models/cockProfile.model.js';
+import Event from '../models/event.model.js';
 
 // Create a match result
 export const createMatchResult = async (req, res) => {
@@ -529,5 +530,164 @@ export const getMatchStatistics = async (req, res) => {
     res.json({ data: statistics });
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch match statistics', error: error.message });
+  }
+};
+
+// Get derby championship standings
+export const getDerbyChampionshipStandings = async (req, res) => {
+  try {
+    const { eventID } = req.params;
+
+    // Get event details to check if it's a derby and get requirements
+    const event = await Event.findById(eventID);
+    if (!event) {
+      return res.status(404).json({ message: 'Event not found' });
+    }
+
+    if (event.eventType !== 'derby') {
+      return res.status(400).json({ message: 'This endpoint is only for derby events' });
+    }
+
+    // Get all match results for this event
+    const fightSchedules = await FightSchedule.find({ eventID }).select('_id');
+    const matchIDs = fightSchedules.map(f => f._id);
+
+    if (matchIDs.length === 0) {
+      return res.json({
+        data: {
+          event: { eventName: event.eventName, noCockRequirements: event.noCockRequirements, prize: event.prize },
+          standings: [],
+          totalMatches: 0,
+          completedMatches: 0
+        }
+      });
+    }
+
+    const matchResults = await MatchResult.find({ matchID: { $in: matchIDs } })
+      .populate('resultMatch.winnerParticipantID', 'participantName')
+      .populate('resultMatch.loserParticipantID', 'participantName');
+
+    // Count wins for each participant
+    const participantWins = {};
+    const participantMatches = {};
+
+    matchResults.forEach(result => {
+      const winnerId = result.resultMatch.winnerParticipantID._id.toString();
+      const loserId = result.resultMatch.loserParticipantID._id.toString();
+
+      // Count wins
+      participantWins[winnerId] = (participantWins[winnerId] || 0) + 1;
+      participantWins[loserId] = participantWins[loserId] || 0;
+
+      // Count total matches
+      participantMatches[winnerId] = (participantMatches[winnerId] || 0) + 1;
+      participantMatches[loserId] = (participantMatches[loserId] || 0) + 1;
+    });
+
+    // Get all participants for this event
+    const participants = await Participant.find({ eventID })
+      .select('participantName contactNumber');
+
+    // Create standings with win counts
+    const standings = participants.map(participant => {
+      const participantId = participant._id.toString();
+      const wins = participantWins[participantId] || 0;
+      const totalMatches = participantMatches[participantId] || 0;
+      const losses = totalMatches - wins;
+      const remainingCocks = event.noCockRequirements - totalMatches;
+      const isChampion = wins >= event.noCockRequirements;
+      const isEliminated = losses >= event.noCockRequirements;
+
+      return {
+        participant: {
+          _id: participant._id,
+          participantName: participant.participantName,
+          contactNumber: participant.contactNumber
+        },
+        wins,
+        losses,
+        totalMatches,
+        remainingCocks: Math.max(0, remainingCocks),
+        isChampion,
+        isEliminated,
+        status: isChampion ? 'Champion' : isEliminated ? 'Eliminated' : 'Active'
+      };
+    });
+
+    // Sort standings: champions first (by wins), then active participants (by wins), then eliminated
+    standings.sort((a, b) => {
+      if (a.isChampion && !b.isChampion) return -1;
+      if (!a.isChampion && b.isChampion) return 1;
+      if (a.isChampion && b.isChampion) return b.wins - a.wins;
+      if (a.isEliminated && !b.isEliminated) return 1;
+      if (!a.isEliminated && b.isEliminated) return -1;
+      return b.wins - a.wins;
+    });
+
+    // Calculate prize distribution
+    const champions = standings.filter(s => s.isChampion);
+    const prizeDistribution = champions.map((champion, index) => {
+      let prizePercentage = 0;
+      let prizeAmount = 0;
+
+      if (champions.length === 1) {
+        // Single champion gets 100%
+        prizePercentage = 100;
+        prizeAmount = event.prize;
+      } else if (champions.length === 2) {
+        // 1st: 70%, 2nd: 30%
+        prizePercentage = index === 0 ? 70 : 30;
+        prizeAmount = Math.round((event.prize * prizePercentage) / 100);
+      } else if (champions.length === 3) {
+        // 1st: 50%, 2nd: 30%, 3rd: 20%
+        if (index === 0) {
+          prizePercentage = 50;
+        } else if (index === 1) {
+          prizePercentage = 30;
+        } else {
+          prizePercentage = 20;
+        }
+        prizeAmount = Math.round((event.prize * prizePercentage) / 100);
+      } else if (champions.length >= 4) {
+        // 1st: 40%, 2nd: 25%, 3rd: 20%, 4th+: 15% (divided equally)
+        if (index === 0) {
+          prizePercentage = 40;
+        } else if (index === 1) {
+          prizePercentage = 25;
+        } else if (index === 2) {
+          prizePercentage = 20;
+        } else {
+          prizePercentage = Math.round(15 / (champions.length - 3));
+        }
+        prizeAmount = Math.round((event.prize * prizePercentage) / 100);
+      }
+
+      return {
+        ...champion,
+        position: index + 1,
+        prizePercentage,
+        prizeAmount
+      };
+    });
+
+    const totalMatches = matchIDs.length;
+    const completedMatches = matchResults.length;
+
+    res.json({
+      data: {
+        event: {
+          eventName: event.eventName,
+          noCockRequirements: event.noCockRequirements,
+          prize: event.prize
+        },
+        standings,
+        prizeDistribution,
+        totalMatches,
+        completedMatches,
+        remainingMatches: totalMatches - completedMatches
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch derby championship standings', error: error.message });
   }
 };

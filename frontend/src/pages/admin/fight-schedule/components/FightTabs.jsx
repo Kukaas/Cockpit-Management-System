@@ -1,6 +1,6 @@
 import React from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Swords, Trophy } from 'lucide-react'
+import { Award, Swords, Trophy } from 'lucide-react'
 import DataTable from '@/components/custom/DataTable'
 
 const AdminFightTabs = ({
@@ -9,11 +9,12 @@ const AdminFightTabs = ({
   fights,
   results,
   fightColumns,
-  resultColumns
+  resultColumns,
+  eventType = 'regular'
 }) => {
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-      <TabsList className="grid w-full grid-cols-2">
+      <TabsList className={`grid w-full ${eventType === 'derby' ? 'grid-cols-3' : 'grid-cols-2'}`}>
         <TabsTrigger value="fights" className="flex items-center gap-2">
           <Swords className="h-4 w-4" />
           Fight Schedule ({fights.length})
@@ -22,6 +23,12 @@ const AdminFightTabs = ({
           <Trophy className="h-4 w-4" />
           Match Results ({results.length})
         </TabsTrigger>
+        {eventType === 'derby' && (
+          <TabsTrigger value="championship" className="flex items-center gap-2">
+            <Award className="h-4 w-4" />
+            Championship
+          </TabsTrigger>
+        )}
       </TabsList>
 
       <TabsContent value="fights" className="space-y-4">
