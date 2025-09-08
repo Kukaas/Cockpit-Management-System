@@ -2,6 +2,7 @@ import React from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { UserPlus, Feather, Swords, Trophy } from 'lucide-react'
 import DataTable from '@/components/custom/DataTable'
+import ChampionshipTab from '../../fight-schedule/components/ChampionshipTab'
 
 const AdminEventTabs = ({
   activeTab,
@@ -13,11 +14,13 @@ const AdminEventTabs = ({
   fightSchedules = [],
   fightScheduleColumns,
   matchResults = [],
-  matchResultColumns
+  matchResultColumns,
+  event = null,
+  formatCurrency
 }) => {
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-      <TabsList className="grid w-full grid-cols-4">
+      <TabsList className={`grid w-full ${event?.eventType === 'derby' ? 'grid-cols-5' : 'grid-cols-4'}`}>
         <TabsTrigger value="participants" className="flex items-center gap-2">
           <UserPlus className="h-4 w-4" />
           Participants ({participants.length})
@@ -34,6 +37,12 @@ const AdminEventTabs = ({
           <Trophy className="h-4 w-4" />
           Match Results ({matchResults.length})
         </TabsTrigger>
+        {event?.eventType === 'derby' && (
+          <TabsTrigger value="championship" className="flex items-center gap-2">
+            <Trophy className="h-4 w-4" />
+            Championship
+          </TabsTrigger>
+        )}
       </TabsList>
 
       <TabsContent value="participants" className="space-y-4">
@@ -103,6 +112,16 @@ const AdminEventTabs = ({
           className="shadow-sm"
         />
       </TabsContent>
+
+      {event?.eventType === 'derby' && (
+        <TabsContent value="championship" className="space-y-4">
+          <ChampionshipTab
+            eventId={event?._id}
+            eventType={event?.eventType}
+            formatCurrency={formatCurrency}
+          />
+        </TabsContent>
+      )}
     </Tabs>
   )
 }

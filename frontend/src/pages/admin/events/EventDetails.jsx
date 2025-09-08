@@ -151,6 +151,8 @@ const EventDetails = () => {
         fightScheduleColumns={fightScheduleColumns}
         matchResults={matchResults}
         matchResultColumns={matchResultColumns}
+        event={selectedEvent}
+        formatCurrency={formatCurrency}
       />
 
       {/* Detail View Dialog */}
