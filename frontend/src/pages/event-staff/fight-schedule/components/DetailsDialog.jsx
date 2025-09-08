@@ -379,27 +379,53 @@ const DetailsDialog = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <div className="bg-gray-50 rounded-lg p-6 text-center">
-            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Meron Payout</label>
-            <p className="mt-2 text-xl font-semibold text-purple-700">{formatCurrency(result.payouts?.meronPayout || 0)}</p>
-          </div>
+        {(() => {
+          // Derive net winnings (excluding winner's own stake)
+          const bets = result.participantBets || []
+          const meron = bets.find(b => b.position === 'Meron')
+          const wala = bets.find(b => b.position === 'Wala')
+          const meronAmt = meron?.betAmount || 0
+          const walaAmt = wala?.betAmount || 0
 
-          <div className="bg-gray-50 rounded-lg p-6 text-center">
-            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Wala Payout</label>
-            <p className="mt-2 text-xl font-semibold text-purple-700">{formatCurrency(result.payouts?.walaPayout || 0)}</p>
-          </div>
+          const opponentContribution = Math.min(meronAmt, walaAmt)
+          const winnerIsMeron = result.betWinner === 'Meron'
 
-          <div className="bg-gray-50 rounded-lg p-6 text-center">
-            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Outside Bets</label>
-            <p className="mt-2 text-xl font-semibold text-purple-700">{formatCurrency(result.payouts?.outsideBets || 0)}</p>
-          </div>
+          // Outside bets are considered only when Meron has the larger bet
+          const outsideBets = Math.max(0, meronAmt - walaAmt)
 
-          <div className="bg-gray-50 rounded-lg p-6 text-center">
-            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Plazada</label>
-            <p className="mt-2 text-xl font-semibold text-emerald-700">{formatCurrency(result.totalPlazada || 0)}</p>
-          </div>
-        </div>
+          const winnerBetAmt = winnerIsMeron ? meronAmt : walaAmt
+          const winnerPlazada = winnerBetAmt * 0.10
+
+          const meronNet = winnerIsMeron
+            ? Math.max(0, opponentContribution + outsideBets - winnerPlazada)
+            : 0
+          const walaNet = !winnerIsMeron
+            ? Math.max(0, opponentContribution - winnerPlazada)
+            : 0
+
+          return (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="bg-gray-50 rounded-lg p-6 text-center">
+                  <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Meron Net Winnings</label>
+                  <p className="mt-2 text-xl font-semibold text-purple-700">{formatCurrency(meronNet)}</p>
+                </div>
+
+                <div className="bg-gray-50 rounded-lg p-6 text-center">
+                  <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Wala Net Winnings</label>
+                  <p className="mt-2 text-xl font-semibold text-purple-700">{formatCurrency(walaNet)}</p>
+                </div>
+
+                <div className="bg-gray-50 rounded-lg p-6 text-center">
+                  <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Outside Bets</label>
+                  <p className="mt-2 text-xl font-semibold text-purple-700">{formatCurrency(outsideBets)}</p>
+                </div>
+              </div>
+            </>
+          )
+        })()}
+
+
 
         {/* Championship Progress for Derby Events */}
         {event?.eventType === 'derby' && (

@@ -169,32 +169,8 @@ export const createMatchResultColumns = (formatCurrency, formatDate, handleDelet
     )
   },
   {
-    key: 'participantBets',
-    label: 'Participant Bets',
-    sortable: false,
-    filterable: false,
-    render: (value) => (
-      <div className="space-y-1 text-sm">
-        {value?.map((bet) => {
-          const plazada = bet.betAmount * 0.10
-          return (
-            <div key={bet.participantID._id} className="flex items-center gap-2">
-              <Badge variant={bet.position === 'Meron' ? 'default' : 'secondary'} className="text-xs">
-                {bet.position}
-              </Badge>
-              <div>
-                <div>{bet.participantID.participantName}: ₱{bet.betAmount?.toLocaleString()}</div>
-                <div className="text-xs text-muted-foreground">Plazada: ₱{plazada?.toLocaleString()}</div>
-              </div>
-            </div>
-          )
-        })}
-      </div>
-    )
-  },
-  {
     key: 'betWinner',
-    label: 'Bet Winner',
+    label: 'Winner',
     sortable: true,
     filterable: true,
     filterOptions: ['Meron', 'Wala', 'Draw'],
@@ -228,12 +204,27 @@ export const createMatchResultColumns = (formatCurrency, formatDate, handleDelet
     sortable: false,
     filterable: false,
     render: (value, row) => {
+      // Compute net winnings from row.participantBets (exclude winner's own stake)
+      const bets = row.participantBets || []
+      const meron = bets.find(b => b.position === 'Meron')
+      const wala = bets.find(b => b.position === 'Wala')
+      const meronAmt = meron?.betAmount || 0
+      const walaAmt = wala?.betAmount || 0
+      const opponentContribution = Math.min(meronAmt, walaAmt)
+      const winnerIsMeron = row.betWinner === 'Meron'
+      const outsideBets = Math.max(0, meronAmt - walaAmt)
+      const winnerBetAmt = winnerIsMeron ? meronAmt : row.betWinner === 'Wala' ? walaAmt : 0
+      const winnerPlazada = winnerBetAmt * 0.10
+
+      const meronNet = winnerIsMeron ? Math.max(0, opponentContribution + outsideBets - winnerPlazada) : 0
+      const walaNet = row.betWinner === 'Wala' ? Math.max(0, opponentContribution - winnerPlazada) : 0
+
       if (row.betWinner === 'Meron') {
         return (
           <div className="space-y-1 text-sm">
             <div className="flex items-center gap-1">
               <Trophy className="h-3 w-3 text-yellow-600" />
-              <span className="text-green-600 font-medium">Meron: {formatCurrency(value.meronPayout)}</span>
+              <span className="text-green-600 font-medium">Meron: {formatCurrency(meronNet)}</span>
             </div>
           </div>
         )
@@ -242,7 +233,7 @@ export const createMatchResultColumns = (formatCurrency, formatDate, handleDelet
           <div className="space-y-1 text-sm">
             <div className="flex items-center gap-1">
               <Trophy className="h-3 w-3 text-yellow-600" />
-              <span className="text-green-600 font-medium">Wala: {formatCurrency(value.walaPayout)}</span>
+              <span className="text-green-600 font-medium">Wala: {formatCurrency(walaNet)}</span>
             </div>
           </div>
         )
@@ -261,17 +252,12 @@ export const createMatchResultColumns = (formatCurrency, formatDate, handleDelet
     label: 'Match Time',
     sortable: true,
     filterable: false,
-    render: (value, row) => (
+    render: (value) => (
       <div className="space-y-1 text-sm">
         <div className="flex items-center gap-1">
           <Clock className="h-3 w-3" />
           <span>{formatDate(value)}</span>
         </div>
-        {row.resultMatch?.matchDuration && (
-          <div className="text-muted-foreground">
-            Duration: {row.resultMatch.matchDuration} min
-          </div>
-        )}
       </div>
     )
   },

@@ -228,29 +228,6 @@ const DetailsDialog = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-          <div className="bg-gray-50 rounded-lg p-4 text-center">
-            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Bet Pool</label>
-            <p className="mt-1 text-lg font-semibold text-blue-700">{formatCurrency(result.totalBetPool)}</p>
-          </div>
-          <div className="bg-gray-50 rounded-lg p-4 text-center">
-            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Plazada</label>
-            <p className="mt-1 text-lg font-semibold text-emerald-700">{formatCurrency(result.totalPlazada)}</p>
-          </div>
-          <div className="bg-gray-50 rounded-lg p-4 text-center">
-            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Bet Winner</label>
-            <div className="mt-1">
-              <span className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${
-                result.betWinner === 'Meron' ? 'bg-blue-100 text-blue-800' :
-                result.betWinner === 'Wala' ? 'bg-gray-100 text-gray-800' :
-                'bg-yellow-100 text-yellow-800'
-              }`}>
-                {result.betWinner}
-              </span>
-            </div>
-          </div>
-        </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {result.participantBets?.map((bet) => (
             <div key={bet.participantID._id} className="bg-gray-50 rounded-lg p-4">
@@ -272,17 +249,32 @@ const DetailsDialog = ({
                   <p className="mt-1 text-sm font-semibold text-gray-900">{formatCurrency(bet.betAmount)}</p>
                 </div>
 
-                <div>
-                  <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                    {result.betWinner === bet.position ? 'Plazada (10% - Winner)' : 'Plazada (10% - Loser)'}
-                  </label>
-                  <p className="mt-1 text-sm font-semibold text-emerald-600">
-                    {result.betWinner === bet.position ? formatCurrency(bet.betAmount * 0.10) : '₱0'}
-                  </p>
-                </div>
               </div>
             </div>
           ))}
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <div className="bg-gray-50 rounded-lg p-4 text-center">
+            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Bet Pool</label>
+            <p className="mt-1 text-lg font-semibold text-blue-700">{formatCurrency(result.totalBetPool)}</p>
+          </div>
+          <div className="bg-gray-50 rounded-lg p-4 text-center">
+            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Plazada</label>
+            <p className="mt-1 text-lg font-semibold text-emerald-700">{formatCurrency(result.totalPlazada)}</p>
+          </div>
+          <div className="bg-gray-50 rounded-lg p-4 text-center">
+            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Bet Winner</label>
+            <div className="mt-1">
+              <span className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${
+                result.betWinner === 'Meron' ? 'bg-blue-100 text-blue-800' :
+                result.betWinner === 'Wala' ? 'bg-gray-100 text-gray-800' :
+                'bg-yellow-100 text-yellow-800'
+              }`}>
+                {result.betWinner}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -379,27 +371,45 @@ const DetailsDialog = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <div className="bg-gray-50 rounded-lg p-6 text-center">
-            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Meron Payout</label>
-            <p className="mt-2 text-xl font-semibold text-purple-700">{formatCurrency(result.payouts?.meronPayout || 0)}</p>
-          </div>
+        {(() => {
+          const bets = result.participantBets || []
+          const meron = bets.find(b => b.position === 'Meron')
+          const wala = bets.find(b => b.position === 'Wala')
+          const meronAmt = meron?.betAmount || 0
+          const walaAmt = wala?.betAmount || 0
+          const opponentContribution = Math.min(meronAmt, walaAmt)
+          const winnerIsMeron = result.betWinner === 'Meron'
+          const outsideBets = Math.max(0, meronAmt - walaAmt)
+          const winnerBetAmt = winnerIsMeron ? meronAmt : result.betWinner === 'Wala' ? walaAmt : 0
+          const winnerPlazada = winnerBetAmt * 0.10
 
-          <div className="bg-gray-50 rounded-lg p-6 text-center">
-            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Wala Payout</label>
-            <p className="mt-2 text-xl font-semibold text-purple-700">{formatCurrency(result.payouts?.walaPayout || 0)}</p>
-          </div>
+          const meronNet = winnerIsMeron ? Math.max(0, opponentContribution + outsideBets - winnerPlazada) : 0
+          const walaNet = !winnerIsMeron && result.betWinner === 'Wala' ? Math.max(0, opponentContribution - winnerPlazada) : 0
 
-          <div className="bg-gray-50 rounded-lg p-6 text-center">
-            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Outside Bets</label>
-            <p className="mt-2 text-xl font-semibold text-purple-700">{formatCurrency(result.payouts?.outsideBets || 0)}</p>
-          </div>
+          return (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="bg-gray-50 rounded-lg p-6 text-center">
+                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Meron Net Winnings</label>
+                <p className="mt-2 text-xl font-semibold text-purple-700">{formatCurrency(meronNet)}</p>
+              </div>
 
-          <div className="bg-gray-50 rounded-lg p-6 text-center">
-            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Plazada</label>
-            <p className="mt-2 text-xl font-semibold text-emerald-700">{formatCurrency(result.totalPlazada || 0)}</p>
-          </div>
-        </div>
+              <div className="bg-gray-50 rounded-lg p-6 text-center">
+                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Wala Net Winnings</label>
+                <p className="mt-2 text-xl font-semibold text-purple-700">{formatCurrency(walaNet)}</p>
+              </div>
+
+              <div className="bg-gray-50 rounded-lg p-6 text-center">
+                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Outside Bets</label>
+                <p className="mt-2 text-xl font-semibold text-purple-700">{formatCurrency(outsideBets)}</p>
+              </div>
+
+              <div className="bg-gray-50 rounded-lg p-6 text-center">
+                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Plazada</label>
+                <p className="mt-2 text-xl font-semibold text-emerald-700">{formatCurrency(winnerPlazada)}</p>
+              </div>
+            </div>
+          )
+        })()}
 
         {/* Championship Progress for Derby Events */}
         {event?.eventType === 'derby' && (

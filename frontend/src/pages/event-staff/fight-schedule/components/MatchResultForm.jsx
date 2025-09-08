@@ -82,28 +82,30 @@ const MatchResultForm = ({
     const meronBet = bet1.betAmount > bet2.betAmount ? bet1 : bet2
     const walaBet = bet1.betAmount > bet2.betAmount ? bet2 : bet1
 
-    const gap = Math.max(0, meronBet.betAmount - walaBet.betAmount) // Gap filled by outside bets (only positive)
-    const totalBetPool = meronBet.betAmount + walaBet.betAmount + gap // Total: Meron + Wala + Outside bets
+    const gap = Math.max(0, meronBet.betAmount - walaBet.betAmount) // Outside bets only exist when Meron > Wala
+    const opponentContribution = Math.min(bet1.betAmount, bet2.betAmount)
 
-    // Calculate plazada only for the winner (10% of winner's bet)
+    // Calculate net winnings (excluding winner's own stake)
     let winnerPlazada = 0
-    let meronPayout = 0
-    let walaPayout = 0
+    let meronNetWinnings = 0
+    let walaNetWinnings = 0
 
     if (formData.winnerParticipantID) {
       const winnerBet = formData.participantBets.find(bet => bet.participantID === formData.winnerParticipantID)
       if (winnerBet) {
         winnerPlazada = winnerBet.betAmount * 0.10
 
-        // Calculate payouts: winner gets their bet + opponent's bet + outside bets - plazada
-        if (meronBet.participantID === formData.winnerParticipantID) {
-          // When Meron wins, they get their bet + opponent's bet + outside bets - plazada
-          meronPayout = meronBet.betAmount + walaBet.betAmount + gap - winnerPlazada
-          walaPayout = 0
+        const winnerIsMeron = meronBet.participantID === formData.winnerParticipantID
+        const outsideForWinner = winnerIsMeron ? gap : 0
+
+        const netWinnings = opponentContribution + outsideForWinner - winnerPlazada
+
+        if (winnerIsMeron) {
+          meronNetWinnings = Math.max(0, netWinnings)
+          walaNetWinnings = 0
         } else {
-          // When Wala wins, they get their bet + the smaller bet amount - plazada
-          walaPayout = walaBet.betAmount + walaBet.betAmount - winnerPlazada
-          meronPayout = 0
+          walaNetWinnings = Math.max(0, netWinnings)
+          meronNetWinnings = 0
         }
       }
     }
@@ -111,10 +113,10 @@ const MatchResultForm = ({
     return {
       meronBet,
       walaBet,
-      totalBetPool,
-      meronPayout,
-      walaPayout,
-      outsideBets: gap, // Gap filled by others
+      opponentContribution,
+      meronNetWinnings,
+      walaNetWinnings,
+      outsideBets: gap,
       winnerPlazada,
       totalPlazada: winnerPlazada
     }
@@ -383,7 +385,7 @@ const MatchResultForm = ({
             </div>
 
             {/* Summary */}
-            <div className="bg-white p-4 rounded-lg border border-emerald-100">
+            {/* <div className="bg-white p-4 rounded-lg border border-emerald-100">
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
                 <span className="font-medium text-gray-700">Summary</span>
@@ -402,7 +404,7 @@ const MatchResultForm = ({
                   <div className="font-semibold text-gray-700">₱{bettingInfo.outsideBets?.toLocaleString()}</div>
                 </div>
               </div>
-            </div>
+            </div> */}
 
             {/* Winner Payout */}
             <div className="mt-4 bg-gradient-to-r from-emerald-100 to-green-100 p-4 rounded-lg border border-emerald-200">
@@ -414,9 +416,9 @@ const MatchResultForm = ({
                     if (winnerBet) {
                       const isMeron = bettingInfo.meronBet.participantID === formData.winnerParticipantID
                       if (isMeron) {
-                        return `Meron wins! ₱${bettingInfo.meronPayout?.toLocaleString()} (Bet: ₱${bettingInfo.meronBet.betAmount?.toLocaleString()} + Opponent: ₱${bettingInfo.walaBet.betAmount?.toLocaleString()} + Outside: ₱${bettingInfo.outsideBets?.toLocaleString()} - Plazada: ₱${bettingInfo.winnerPlazada?.toLocaleString()})`
+                        return `Meron wins! ₱${bettingInfo.meronNetWinnings?.toLocaleString()} (Opponent: ₱${bettingInfo.opponentContribution?.toLocaleString()} + Outside: ₱${bettingInfo.outsideBets?.toLocaleString()} - Plazada: ₱${bettingInfo.winnerPlazada?.toLocaleString()})`
                       } else {
-                        return `Wala wins! ₱${bettingInfo.walaPayout?.toLocaleString()} (Bet: ₱${bettingInfo.walaBet.betAmount?.toLocaleString()} + Opponent: ₱${bettingInfo.walaBet.betAmount?.toLocaleString()} - Plazada: ₱${bettingInfo.winnerPlazada?.toLocaleString()})`
+                        return `Wala wins! ₱${bettingInfo.walaNetWinnings?.toLocaleString()} (Opponent: ₱${bettingInfo.opponentContribution?.toLocaleString()} - Plazada: ₱${bettingInfo.winnerPlazada?.toLocaleString()})`
                       }
                     }
                     return 'Select winner to see payout'
