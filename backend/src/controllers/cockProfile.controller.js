@@ -35,6 +35,16 @@ export const createCockProfile = async (req, res) => {
       }
     }
 
+    // Enforce per-participant cock limit for derby events
+    if (event.eventType === 'derby' && typeof event.noCockRequirements === 'number' && event.noCockRequirements > 0) {
+      const currentCount = await CockProfile.countDocuments({ eventID, participantID });
+      if (currentCount >= event.noCockRequirements) {
+        return res.status(400).json({
+          message: `Limit reached: Participant may register up to ${event.noCockRequirements} cocks for this event`
+        });
+      }
+    }
+
     // Auto-generate entry number for this event
     const lastCockProfile = await CockProfile.findOne({ eventID }).sort({ entryNo: -1 });
     const nextEntryNo = lastCockProfile ? lastCockProfile.entryNo + 1 : 1;
@@ -171,15 +181,19 @@ export const updateCockProfile = async (req, res) => {
       return res.status(404).json({ message: 'Event not found' });
     }
 
-    // Check if participant is being changed and if they already have a cock profile for this event
-    if (participantID && participantID !== cockProfile.participantID.toString()) {
-      const existingParticipantCock = await CockProfile.findOne({
-        eventID: eventID || cockProfile.eventID,
-        participantID,
+    // Enforce per-participant cock limit for derby events (when changing participant or event)
+    const targetEventId = eventID || cockProfile.eventID;
+    const targetParticipantId = participantID || cockProfile.participantID;
+    if (event.eventType === 'derby' && typeof event.noCockRequirements === 'number' && event.noCockRequirements > 0) {
+      const currentCount = await CockProfile.countDocuments({
+        eventID: targetEventId,
+        participantID: targetParticipantId,
         _id: { $ne: id }
       });
-      if (existingParticipantCock) {
-        return res.status(400).json({ message: 'Participant already has a cock profile for this event' });
+      if (currentCount >= event.noCockRequirements) {
+        return res.status(400).json({
+          message: `Limit reached: Participant may register up to ${event.noCockRequirements} cocks for this event`
+        });
       }
     }
 
