@@ -184,7 +184,7 @@ const AdminDashboard = () => {
 
     // Add plazada data
     filteredMatchResults.forEach(result => {
-      const date = new Date(result.matchStartTime || result.createdAt).toISOString().split('T')[0]
+      const date = new Date(result.createdAt).toISOString().split('T')[0]
       if (!groupedByDate[date]) {
         groupedByDate[date] = { date, plazada: 0, rentals: 0, entrances: 0 }
       }
@@ -534,143 +534,143 @@ const AdminDashboard = () => {
           </Card>
         </div>
 
-                     {/* Revenue Chart */}
-           <Card className="pt-0">
-             <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
-               <div className="grid flex-1 gap-1">
-                 <CardTitle className="flex items-center gap-2">
-                   <TrendingUp className="h-5 w-5" />
-                   Revenue Overview
-                 </CardTitle>
-                 <CardDescription>
-                   Plazada, rental, and entrance revenue over time
-                 </CardDescription>
-               </div>
-               <Select value={timeRange} onValueChange={setTimeRange}>
-                 <SelectTrigger
-                   className="hidden w-[160px] rounded-lg sm:ml-auto sm:flex"
-                   aria-label="Select time range"
-                 >
-                   <SelectValue placeholder="Last 3 months" />
-                 </SelectTrigger>
-                 <SelectContent className="rounded-xl">
-                   <SelectItem value="90d" className="rounded-lg">
-                     Last 3 months
-                   </SelectItem>
-                   <SelectItem value="30d" className="rounded-lg">
-                     Last 30 days
-                   </SelectItem>
-                   <SelectItem value="7d" className="rounded-lg">
-                     Last 7 days
-                   </SelectItem>
-                 </SelectContent>
-               </Select>
-             </CardHeader>
-             <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
-               {revenueData.length > 0 ? (
-                 <ChartContainer
-                   config={chartConfig}
-                   className="aspect-auto h-[250px] w-full"
-                 >
-                   <AreaChart data={revenueData}>
-                     <defs>
-                       <linearGradient id="fillPlazada" x1="0" y1="0" x2="0" y2="1">
-                         <stop
-                           offset="5%"
-                           stopColor="var(--color-plazada)"
-                           stopOpacity={0.8}
-                         />
-                         <stop
-                           offset="95%"
-                           stopColor="var(--color-plazada)"
-                           stopOpacity={0.1}
-                         />
-                       </linearGradient>
-                       <linearGradient id="fillRentals" x1="0" y1="0" x2="0" y2="1">
-                         <stop
-                           offset="5%"
-                           stopColor="var(--color-rentals)"
-                           stopOpacity={0.8}
-                         />
-                         <stop
-                           offset="95%"
-                           stopColor="var(--color-rentals)"
-                           stopOpacity={0.1}
-                         />
-                       </linearGradient>
-                       <linearGradient id="fillEntrances" x1="0" y1="0" x2="0" y2="1">
-                         <stop
-                           offset="5%"
-                           stopColor="var(--color-entrances)"
-                           stopOpacity={0.8}
-                         />
-                         <stop
-                           offset="95%"
-                           stopColor="var(--color-entrances)"
-                           stopOpacity={0.1}
-                         />
-                       </linearGradient>
-                     </defs>
-                     <CartesianGrid vertical={false} />
-                     <XAxis
-                       dataKey="date"
-                       tickLine={false}
-                       axisLine={false}
-                       tickMargin={8}
-                       minTickGap={32}
-                       tickFormatter={(value) => {
-                         const date = new Date(value)
-                         return date.toLocaleDateString("en-US", {
-                           month: "short",
-                           day: "numeric",
-                         })
-                       }}
-                     />
-                     <ChartTooltip
-                       cursor={false}
-                       content={
-                         <ChartTooltipContent
-                           labelFormatter={(value) => {
-                             return new Date(value).toLocaleDateString("en-US", {
-                               month: "short",
-                               day: "numeric",
-                             })
-                           }}
-                           indicator="dot"
-                         />
-                       }
-                     />
-                     <Area
-                       dataKey="entrances"
-                       type="natural"
-                       fill="url(#fillEntrances)"
-                       stroke="var(--color-entrances)"
-                       stackId="a"
-                     />
-                     <Area
-                       dataKey="rentals"
-                       type="natural"
-                       fill="url(#fillRentals)"
-                       stroke="var(--color-rentals)"
-                       stackId="a"
-                     />
-                     <Area
-                       dataKey="plazada"
-                       type="natural"
-                       fill="url(#fillPlazada)"
-                       stroke="var(--color-plazada)"
-                       stackId="a"
-                     />
-                     <ChartLegend content={<ChartLegendContent />} />
-                   </AreaChart>
-                 </ChartContainer>
-               ) : (
-                 <div className="flex items-center justify-center h-[250px] text-muted-foreground">
-                   <p>No revenue data available</p>
-                 </div>
-               )}
-             </CardContent>
-           </Card>
+        {/* Revenue Chart */}
+        <Card className="pt-0">
+          <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
+            <div className="grid flex-1 gap-1">
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                Revenue Overview
+              </CardTitle>
+              <CardDescription>
+                Plazada, rental, and entrance revenue over time
+              </CardDescription>
+            </div>
+            <Select value={timeRange} onValueChange={setTimeRange}>
+              <SelectTrigger
+                className="hidden w-[160px] rounded-lg sm:ml-auto sm:flex"
+                aria-label="Select time range"
+              >
+                <SelectValue placeholder="Last 3 months" />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl">
+                <SelectItem value="90d" className="rounded-lg">
+                  Last 3 months
+                </SelectItem>
+                <SelectItem value="30d" className="rounded-lg">
+                  Last 30 days
+                </SelectItem>
+                <SelectItem value="7d" className="rounded-lg">
+                  Last 7 days
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </CardHeader>
+          <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
+            {revenueData.length > 0 ? (
+              <ChartContainer
+                config={chartConfig}
+                className="aspect-auto h-[250px] w-full"
+              >
+                <AreaChart data={revenueData}>
+                  <defs>
+                    <linearGradient id="fillPlazada" x1="0" y1="0" x2="0" y2="1">
+                      <stop
+                        offset="5%"
+                        stopColor="var(--color-plazada)"
+                        stopOpacity={0.8}
+                      />
+                      <stop
+                        offset="95%"
+                        stopColor="var(--color-plazada)"
+                        stopOpacity={0.1}
+                      />
+                    </linearGradient>
+                    <linearGradient id="fillRentals" x1="0" y1="0" x2="0" y2="1">
+                      <stop
+                        offset="5%"
+                        stopColor="var(--color-rentals)"
+                        stopOpacity={0.8}
+                      />
+                      <stop
+                        offset="95%"
+                        stopColor="var(--color-rentals)"
+                        stopOpacity={0.1}
+                      />
+                    </linearGradient>
+                    <linearGradient id="fillEntrances" x1="0" y1="0" x2="0" y2="1">
+                      <stop
+                        offset="5%"
+                        stopColor="var(--color-entrances)"
+                        stopOpacity={0.8}
+                      />
+                      <stop
+                        offset="95%"
+                        stopColor="var(--color-entrances)"
+                        stopOpacity={0.1}
+                      />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid vertical={false} />
+                  <XAxis
+                    dataKey="date"
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={8}
+                    minTickGap={32}
+                    tickFormatter={(value) => {
+                      const date = new Date(value)
+                      return date.toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      })
+                    }}
+                  />
+                  <ChartTooltip
+                    cursor={false}
+                    content={
+                      <ChartTooltipContent
+                        labelFormatter={(value) => {
+                          return new Date(value).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                          })
+                        }}
+                        indicator="dot"
+                      />
+                    }
+                  />
+                  <Area
+                    dataKey="entrances"
+                    type="natural"
+                    fill="url(#fillEntrances)"
+                    stroke="var(--color-entrances)"
+                    stackId="a"
+                  />
+                  <Area
+                    dataKey="rentals"
+                    type="natural"
+                    fill="url(#fillRentals)"
+                    stroke="var(--color-rentals)"
+                    stackId="a"
+                  />
+                  <Area
+                    dataKey="plazada"
+                    type="natural"
+                    fill="url(#fillPlazada)"
+                    stroke="var(--color-plazada)"
+                    stackId="a"
+                  />
+                  <ChartLegend content={<ChartLegendContent />} />
+                </AreaChart>
+              </ChartContainer>
+            ) : (
+              <div className="flex items-center justify-center h-[250px] text-muted-foreground">
+                <p>No revenue data available</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Quick Actions */}
         <Card>

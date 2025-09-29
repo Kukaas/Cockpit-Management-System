@@ -257,7 +257,14 @@ const FightSchedule = () => {
   }
 
   const handleAddResult = async () => {
-    const requiredFields = ['winnerParticipantID', 'loserParticipantID', 'winnerCockProfileID', 'loserCockProfileID', 'matchStartTime', 'matchEndTime', 'matchType']
+    // Base required fields for all events
+    const baseRequiredFields = ['winnerParticipantID', 'loserParticipantID', 'winnerCockProfileID', 'loserCockProfileID', 'matchType']
+
+    // Add timing fields only for fastest kill events
+    const requiredFields = event?.eventType === 'fastest_kill'
+      ? [...baseRequiredFields, 'matchStartTime', 'matchEndTime']
+      : baseRequiredFields
+
     const missingFields = requiredFields.filter(field => !resultFormData[field])
 
     if (missingFields.length > 0) {
@@ -284,8 +291,19 @@ const FightSchedule = () => {
       matchID: selectedFight._id,
       participantBets,
       totalBetPool,
-      ...resultFormData
+      winnerParticipantID: resultFormData.winnerParticipantID,
+      loserParticipantID: resultFormData.loserParticipantID,
+      winnerCockProfileID: resultFormData.winnerCockProfileID,
+      loserCockProfileID: resultFormData.loserCockProfileID,
+      matchType: resultFormData.matchType
     }
+
+    // Only include match times for fastest kill events
+    if (event?.eventType === 'fastest_kill') {
+      resultData.matchStartTime = resultFormData.matchStartTime
+      resultData.matchEndTime = resultFormData.matchEndTime
+    }
+    // For Derby/Regular events, don't include match times at all
 
     createResultMutation.mutate(resultData)
   }
@@ -407,7 +425,8 @@ const FightSchedule = () => {
     formatDate,
     handleDeleteResultClick,
     handleViewDetails,
-    handleStatusChange
+    handleStatusChange,
+    event?.eventType
   )
 
   if (eventLoading) {

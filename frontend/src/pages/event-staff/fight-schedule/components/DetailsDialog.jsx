@@ -33,12 +33,11 @@ const DetailsDialog = ({
               <div>
                 <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Status</label>
                 <div className="mt-1">
-                  <span className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${
-                    fight.status === 'completed' ? 'bg-green-100 text-green-800' :
+                  <span className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${fight.status === 'completed' ? 'bg-green-100 text-green-800' :
                     fight.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
-                    fight.status === 'cancelled' ? 'bg-red-100 text-red-800' :
-                    'bg-gray-100 text-gray-800'
-                  }`}>
+                      fight.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                        'bg-gray-100 text-gray-800'
+                    }`}>
                     {fight.status.replace('_', ' ').charAt(0).toUpperCase() + fight.status.replace('_', ' ').slice(1)}
                   </span>
                 </div>
@@ -140,9 +139,8 @@ const DetailsDialog = ({
                 <div>
                   <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Status</label>
                   <div className="mt-1">
-                    <span className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${
-                      cock.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }`}>
+                    <span className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${cock.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      }`}>
                       {cock.isActive ? 'Active' : 'Inactive'}
                     </span>
                   </div>
@@ -174,11 +172,10 @@ const DetailsDialog = ({
             <div>
               <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Status</label>
               <div className="mt-1">
-                <span className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${
-                  result.status === 'final' ? 'bg-green-100 text-green-800' :
+                <span className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${result.status === 'final' ? 'bg-green-100 text-green-800' :
                   result.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                  'bg-gray-100 text-gray-800'
-                }`}>
+                    'bg-gray-100 text-gray-800'
+                  }`}>
                   {result.status.charAt(0).toUpperCase() + result.status.slice(1)}
                 </span>
               </div>
@@ -190,24 +187,27 @@ const DetailsDialog = ({
             </div>
           </div>
 
-          <div className="space-y-4">
-            <div>
-              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Start Time</label>
-              <p className="mt-1 text-sm text-gray-900">{formatDate(result.matchStartTime)}</p>
-            </div>
-
-            <div>
-              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">End Time</label>
-              <p className="mt-1 text-sm text-gray-900">{formatDate(result.matchEndTime)}</p>
-            </div>
-
-            {result.resultMatch?.matchDuration && (
+          {/* Only show match timing for fastest kill events */}
+          {event?.eventType === 'fastest_kill' && (
+            <div className="space-y-4">
               <div>
-                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Duration</label>
-                <p className="mt-1 text-sm text-gray-900">{result.resultMatch.matchDuration} minutes</p>
+                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Start Time</label>
+                <p className="mt-1 text-sm text-gray-900">{formatDate(result.matchStartTime)}</p>
               </div>
-            )}
-          </div>
+
+              <div>
+                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">End Time</label>
+                <p className="mt-1 text-sm text-gray-900">{formatDate(result.matchEndTime)}</p>
+              </div>
+
+              {result.resultMatch?.matchDuration && (
+                <div>
+                  <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Duration</label>
+                  <p className="mt-1 text-sm text-gray-900">{result.resultMatch.matchDuration} minutes</p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -235,11 +235,10 @@ const DetailsDialog = ({
           <div className="bg-gray-50 rounded-lg p-4 text-center">
             <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Bet Winner</label>
             <div className="mt-1">
-              <span className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${
-                result.betWinner === 'Meron' ? 'bg-blue-100 text-blue-800' :
+              <span className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${result.betWinner === 'Meron' ? 'bg-blue-100 text-blue-800' :
                 result.betWinner === 'Wala' ? 'bg-gray-100 text-gray-800' :
-                'bg-yellow-100 text-yellow-800'
-              }`}>
+                  'bg-yellow-100 text-yellow-800'
+                }`}>
                 {result.betWinner}
               </span>
             </div>
@@ -250,9 +249,8 @@ const DetailsDialog = ({
           {result.participantBets?.map((bet) => (
             <div key={bet.participantID._id} className="bg-gray-50 rounded-lg p-4">
               <div className="flex items-center gap-3 mb-4">
-                <div className={`w-3 h-3 rounded-full ${
-                  bet.position === 'Meron' ? 'bg-blue-500' : 'bg-gray-500'
-                }`}></div>
+                <div className={`w-3 h-3 rounded-full ${bet.position === 'Meron' ? 'bg-blue-500' : 'bg-gray-500'
+                  }`}></div>
                 <h4 className="font-medium text-gray-900">{bet.position}</h4>
               </div>
 

@@ -102,7 +102,7 @@ export const createFightColumns = (formatCurrency, formatDate, handleViewDetails
   }
 ]
 
-export const createMatchResultColumns = (formatCurrency, formatDate, handleViewDetails) => [
+export const createMatchResultColumns = (formatCurrency, formatDate, handleViewDetails, eventType = 'regular') => [
   {
     key: 'matchID',
     label: 'Fight #',
@@ -174,25 +174,28 @@ export const createMatchResultColumns = (formatCurrency, formatDate, handleViewD
       </div>
     )
   },
-  {
-    key: 'matchStartTime',
-    label: 'Match Time',
-    sortable: true,
-    filterable: false,
-    render: (value, row) => (
-      <div className="space-y-1 text-sm">
-        <div className="flex items-center gap-1">
-          <Clock className="h-3 w-3" />
-          <span>{formatDate(value)}</span>
-        </div>
-        {row.resultMatch?.matchDuration && (
-          <div className="text-muted-foreground">
-            Duration: {row.resultMatch.matchDuration} min
+  // Only show match time for fastest kill events
+  ...(eventType === 'fastest_kill' ? [
+    {
+      key: 'matchStartTime',
+      label: 'Match Time',
+      sortable: true,
+      filterable: false,
+      render: (value, row) => (
+        <div className="space-y-1 text-sm">
+          <div className="flex items-center gap-1">
+            <Clock className="h-3 w-3" />
+            <span>{formatDate(value)}</span>
           </div>
-        )}
-      </div>
-    )
-  },
+          {row.resultMatch?.matchDuration && (
+            <div className="text-muted-foreground">
+              Duration: {row.resultMatch.matchDuration} min
+            </div>
+          )}
+        </div>
+      )
+    }
+  ] : []),
   {
     key: 'status',
     label: 'Status',

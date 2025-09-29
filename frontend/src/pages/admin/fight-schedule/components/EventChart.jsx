@@ -67,20 +67,20 @@ export function EventChart({ matchResultsData = [], fightSchedulesData = [], eve
 
     // Group data by date
     const groupedByDate = matchResultsData.reduce((acc, result) => {
-      const date = new Date(result.matchStartTime || result.createdAt).toISOString().split('T')[0]
-             if (!acc[date]) {
-         acc[date] = {
-           date,
-           plazada: 0,
-           fights: 0,
-           meronWins: 0,
-           walaWins: 0,
-           draws: 0
-         }
-       }
+      const date = new Date(result.createdAt).toISOString().split('T')[0]
+      if (!acc[date]) {
+        acc[date] = {
+          date,
+          plazada: 0,
+          fights: 0,
+          meronWins: 0,
+          walaWins: 0,
+          draws: 0
+        }
+      }
 
-       acc[date].plazada += result.totalPlazada || 0
-       acc[date].fights += 1
+      acc[date].plazada += result.totalPlazada || 0
+      acc[date].fights += 1
 
       // Count bet winners
       if (result.betWinner === 'Meron') {
@@ -151,10 +151,10 @@ export function EventChart({ matchResultsData = [], fightSchedulesData = [], eve
       <Card className="pt-0">
         <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
           <div className="grid flex-1 gap-1">
-                       <CardTitle>Plazada Statistics</CardTitle>
-           <CardDescription>
-             Showing plazada earnings over time
-           </CardDescription>
+            <CardTitle>Plazada Statistics</CardTitle>
+            <CardDescription>
+              Showing plazada earnings over time
+            </CardDescription>
           </div>
           <Select value={timeRange} onValueChange={setTimeRange}>
             <SelectTrigger
@@ -235,12 +235,12 @@ export function EventChart({ matchResultsData = [], fightSchedulesData = [], eve
                           year: "numeric"
                         })
                       }}
-                                             formatter={(value, name) => {
-                         if (name === 'plazada') {
-                           return [formatCurrency(value), ' Plazada']
-                         }
-                         return [value, name]
-                       }}
+                      formatter={(value, name) => {
+                        if (name === 'plazada') {
+                          return [formatCurrency(value), ' Plazada']
+                        }
+                        return [value, name]
+                      }}
                       indicator="dot"
                     />
                   }
@@ -264,7 +264,7 @@ export function EventChart({ matchResultsData = [], fightSchedulesData = [], eve
         </CardContent>
       </Card>
 
-            {/* Fight Statistics */}
+      {/* Fight Statistics */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Fight Status Distribution */}
         <Card>

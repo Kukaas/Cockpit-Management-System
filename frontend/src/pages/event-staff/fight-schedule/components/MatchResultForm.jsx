@@ -288,22 +288,28 @@ const MatchResultForm = ({
         <div className="space-y-4">
           <h4 className="font-medium">Match Timing</h4>
           <div className="space-y-4">
-            <InputField
-              id={isEdit ? "editMatchStartTime" : "matchStartTime"}
-              label="Match Start Time *"
-              type="datetime-local"
-              value={formData.matchStartTime}
-              onChange={(e) => onInputChange('matchStartTime', e.target.value)}
-              required
-            />
-            <InputField
-              id={isEdit ? "editMatchEndTime" : "matchEndTime"}
-              label="Match End Time *"
-              type="datetime-local"
-              value={formData.matchEndTime}
-              onChange={(e) => onInputChange('matchEndTime', e.target.value)}
-              required
-            />
+            {/* Only show match start time for fastest kill events */}
+            {event?.eventType === 'fastest_kill' && (
+              <InputField
+                id={isEdit ? "editMatchStartTime" : "matchStartTime"}
+                label="Match Start Time *"
+                type="datetime-local"
+                value={formData.matchStartTime}
+                onChange={(e) => onInputChange('matchStartTime', e.target.value)}
+                required
+              />
+            )}
+            {/* Only show match end time for fastest kill events */}
+            {event?.eventType === 'fastest_kill' && (
+              <InputField
+                id={isEdit ? "editMatchEndTime" : "matchEndTime"}
+                label="Match End Time *"
+                type="datetime-local"
+                value={formData.matchEndTime}
+                onChange={(e) => onInputChange('matchEndTime', e.target.value)}
+                required
+              />
+            )}
           </div>
         </div>
 

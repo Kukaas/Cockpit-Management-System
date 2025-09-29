@@ -195,7 +195,7 @@ export const createViewOnlyFightScheduleColumns = (formatCurrency, formatDate, h
   }
 ]
 
-export const createViewOnlyMatchResultColumns = (formatCurrency, formatDate, handleViewDetails) => [
+export const createViewOnlyMatchResultColumns = (formatCurrency, formatDate, handleViewDetails, eventType = 'regular') => [
   {
     key: 'matchID',
     label: 'Fight #',
@@ -267,20 +267,23 @@ export const createViewOnlyMatchResultColumns = (formatCurrency, formatDate, han
       </div>
     )
   },
-  {
-    key: 'matchStartTime',
-    label: 'Match Time',
-    sortable: true,
-    filterable: false,
-    render: (value) => (
-      <div className="space-y-1 text-sm">
-        <div className="flex items-center gap-1">
-          <Clock className="h-3 w-3" />
-          <span>{formatDate(value)}</span>
+  // Only show match time for fastest kill events
+  ...(eventType === 'fastest_kill' ? [
+    {
+      key: 'matchStartTime',
+      label: 'Match Time',
+      sortable: true,
+      filterable: false,
+      render: (value) => (
+        <div className="space-y-1 text-sm">
+          <div className="flex items-center gap-1">
+            <Clock className="h-3 w-3" />
+            <span>{formatDate(value)}</span>
+          </div>
         </div>
-      </div>
-    )
-  },
+      )
+    }
+  ] : []),
   {
     key: 'status',
     label: 'Status',

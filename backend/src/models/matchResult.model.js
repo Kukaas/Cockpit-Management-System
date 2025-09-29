@@ -113,12 +113,12 @@ const matchResultSchema = new mongoose.Schema({
   // Match timing
   matchStartTime: {
     type: Date,
-    required: true
+    required: false
   },
 
   matchEndTime: {
     type: Date,
-    required: true
+    required: false
   },
 
   // Who recorded the result
@@ -165,7 +165,7 @@ matchResultSchema.index({ verified: 1 });
 // - Total bet pool: 10000 (5000 + 4000 + 1000 outside bets)
 // - If Player 1 wins: Plazada = 500 (10% of 5000), Winner gets 9500 (5000 + 4000 + 1000 - 500)
 // - If Player 2 wins: Plazada = 400 (10% of 4000), Winner gets 7600 (4000 + 4000 - 400)
-matchResultSchema.pre('save', function(next) {
+matchResultSchema.pre('save', function (next) {
   if (this.participantBets && this.participantBets.length === 2) {
     // Find Meron and Wala bets
     const meronBet = this.participantBets.find(bet => bet.position === 'Meron')
@@ -228,7 +228,7 @@ matchResultSchema.pre('save', function(next) {
 })
 
 // Post-save middleware to deactivate cocks after fight completion
-matchResultSchema.post('save', async function(doc) {
+matchResultSchema.post('save', async function (doc) {
   // Only deactivate cocks if this is a new result (not an update)
   if (this.isNew) {
     try {
@@ -250,7 +250,7 @@ matchResultSchema.post('save', async function(doc) {
 });
 
 // Method to determine the winning side based on participant
-matchResultSchema.methods.determineBetWinner = function() {
+matchResultSchema.methods.determineBetWinner = function () {
   const winnerBet = this.participantBets.find(
     bet => bet.participantID.toString() === this.resultMatch.winnerParticipantID.toString()
   );
@@ -261,7 +261,7 @@ matchResultSchema.methods.determineBetWinner = function() {
 };
 
 // Method to assign Meron/Wala positions based on bet amounts
-matchResultSchema.methods.assignPositions = function() {
+matchResultSchema.methods.assignPositions = function () {
   if (this.participantBets.length === 2) {
     const [bet1, bet2] = this.participantBets;
 
@@ -280,22 +280,21 @@ matchResultSchema.methods.assignPositions = function() {
 };
 
 // Method to calculate plazada fees
-matchResultSchema.methods.calculatePlazada = function() {
+matchResultSchema.methods.calculatePlazada = function () {
   this.participantBets.forEach(bet => {
     bet.plazadaFee = bet.betAmount * 0.10; // 10% plazada
   });
 };
 
 // Method to validate match result
-matchResultSchema.methods.validateResult = function() {
+matchResultSchema.methods.validateResult = function () {
   const errors = [];
 
-  if (!this.matchStartTime || !this.matchEndTime) {
-    errors.push('Match start and end times are required');
-  }
-
-  if (this.matchEndTime <= this.matchStartTime) {
-    errors.push('Match end time must be after start time');
+  // Only validate match times if they are provided
+  if (this.matchStartTime && this.matchEndTime) {
+    if (this.matchEndTime <= this.matchStartTime) {
+      errors.push('Match end time must be after start time');
+    }
   }
 
   if (!this.resultMatch.winnerParticipantID || !this.resultMatch.loserParticipantID) {

@@ -98,7 +98,8 @@ const EventDetails = () => {
   const matchResultColumns = createViewOnlyMatchResultColumns(
     formatCurrency,
     formatDate,
-    handleViewDetails
+    handleViewDetails,
+    selectedEvent?.eventType
   )
 
   if (eventLoading) {
@@ -453,24 +454,27 @@ const EventDetails = () => {
                       </div>
                     </div>
 
-                    <div className="space-y-4">
-                      <div>
-                        <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Start Time</label>
-                        <p className="mt-1 text-sm text-gray-900">{formatDate(selectedItem.matchStartTime)}</p>
-                      </div>
-
-                      <div>
-                        <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">End Time</label>
-                        <p className="mt-1 text-sm text-gray-900">{formatDate(selectedItem.matchEndTime)}</p>
-                      </div>
-
-                      {selectedItem.resultMatch?.matchDuration && (
+                    {/* Only show match timing for fastest kill events */}
+                    {selectedEvent?.eventType === 'fastest_kill' && (
+                      <div className="space-y-4">
                         <div>
-                          <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Duration</label>
-                          <p className="mt-1 text-sm text-gray-900">{selectedItem.resultMatch.matchDuration} minutes</p>
+                          <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Start Time</label>
+                          <p className="mt-1 text-sm text-gray-900">{formatDate(selectedItem.matchStartTime)}</p>
                         </div>
-                      )}
-                    </div>
+
+                        <div>
+                          <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">End Time</label>
+                          <p className="mt-1 text-sm text-gray-900">{formatDate(selectedItem.matchEndTime)}</p>
+                        </div>
+
+                        {selectedItem.resultMatch?.matchDuration && (
+                          <div>
+                            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Duration</label>
+                            <p className="mt-1 text-sm text-gray-900">{selectedItem.resultMatch.matchDuration} minutes</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 
