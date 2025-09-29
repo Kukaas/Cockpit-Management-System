@@ -110,15 +110,11 @@ const matchResultSchema = new mongoose.Schema({
     }
   },
 
-  // Match timing
-  matchStartTime: {
-    type: Date,
-    required: false
-  },
-
-  matchEndTime: {
-    type: Date,
-    required: false
+  // Match time in seconds (for fastest kill events)
+  matchTimeSeconds: {
+    type: Number,
+    required: false,
+    min: 0
   },
 
   // Who recorded the result
@@ -155,7 +151,6 @@ const matchResultSchema = new mongoose.Schema({
 matchResultSchema.index({ matchID: 1 }, { unique: true });
 matchResultSchema.index({ betWinner: 1 });
 matchResultSchema.index({ 'resultMatch.winnerParticipantID': 1 });
-matchResultSchema.index({ matchStartTime: 1 });
 matchResultSchema.index({ status: 1 });
 matchResultSchema.index({ verified: 1 });
 
@@ -218,11 +213,6 @@ matchResultSchema.pre('save', function (next) {
     }
   }
 
-  // Calculate match duration if both times are set
-  if (this.matchStartTime && this.matchEndTime) {
-    const durationMs = this.matchEndTime.getTime() - this.matchStartTime.getTime()
-    this.resultMatch.matchDuration = Math.round(durationMs / (1000 * 60)) // Convert to minutes
-  }
 
   next()
 })
@@ -290,12 +280,6 @@ matchResultSchema.methods.calculatePlazada = function () {
 matchResultSchema.methods.validateResult = function () {
   const errors = [];
 
-  // Only validate match times if they are provided
-  if (this.matchStartTime && this.matchEndTime) {
-    if (this.matchEndTime <= this.matchStartTime) {
-      errors.push('Match end time must be after start time');
-    }
-  }
 
   if (!this.resultMatch.winnerParticipantID || !this.resultMatch.loserParticipantID) {
     errors.push('Winner and loser participants must be specified');

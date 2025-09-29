@@ -66,6 +66,7 @@ export const createCockProfile = async (req, res) => {
       }
     }
 
+
     const cockProfileData = {
       eventID,
       participantID,
@@ -77,6 +78,7 @@ export const createCockProfile = async (req, res) => {
       cockProfileData.legband = legband;
       cockProfileData.weight = parseFloat(weight);
     }
+
 
     const cockProfile = new CockProfile(cockProfileData);
 

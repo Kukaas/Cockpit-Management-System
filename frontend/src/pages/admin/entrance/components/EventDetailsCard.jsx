@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { Calendar, MapPin, DollarSign, Users, Clock, Award, Building, AlertTriangle } from 'lucide-react'
+import { Calendar, MapPin, DollarSign, Users, Clock, Award, Building, AlertTriangle, Zap } from 'lucide-react'
 import api from '@/services/api'
 
 const EventDetailsCard = ({ event, formatDate, formatCurrency }) => {
@@ -33,6 +33,8 @@ const EventDetailsCard = ({ event, formatDate, formatCurrency }) => {
     switch (eventType) {
       case 'derby':
         return 'default'
+      case 'fastest_kill':
+        return 'secondary'
       case 'regular':
       default:
         return 'outline'
@@ -44,6 +46,8 @@ const EventDetailsCard = ({ event, formatDate, formatCurrency }) => {
     switch (eventType) {
       case 'derby':
         return <Award className="h-4 w-4" />
+      case 'fastest_kill':
+        return <Zap className="h-4 w-4" />
       case 'regular':
       default:
         return <Calendar className="h-4 w-4" />
@@ -55,6 +59,8 @@ const EventDetailsCard = ({ event, formatDate, formatCurrency }) => {
     switch (eventType) {
       case 'derby':
         return 'Derby event with prizes and specific requirements'
+      case 'fastest_kill':
+        return 'Fastest kill event with prize pool'
       case 'regular':
       default:
         return 'Standard regular event'
@@ -165,7 +171,7 @@ const EventDetailsCard = ({ event, formatDate, formatCurrency }) => {
                 variant={getEventTypeBadgeVariant(event.eventType)}
                 className="capitalize"
               >
-                {event.eventType}
+                {event.eventType === 'fastest_kill' ? 'Fastest Kill' : event.eventType}
               </Badge>
             </div>
           </div>
@@ -183,6 +189,17 @@ const EventDetailsCard = ({ event, formatDate, formatCurrency }) => {
 
           {/* Show Prize Pool for derby events */}
           {event.eventType === 'derby' && event.prize && (
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground">Prize Pool</p>
+              <p className="flex items-center gap-1">
+                <DollarSign className="h-4 w-4 text-green-600" />
+                {formatCurrency(event.prize)}
+              </p>
+            </div>
+          )}
+
+          {/* Show Prize Pool for fastest_kill events */}
+          {event.eventType === 'fastest_kill' && event.prize && (
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">Prize Pool</p>
               <p className="flex items-center gap-1">

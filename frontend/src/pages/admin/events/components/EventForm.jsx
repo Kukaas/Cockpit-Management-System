@@ -20,6 +20,8 @@ const EventForm = ({
 }) => {
   // Check if this is a regular event (simplified form)
   const isRegularEvent = formData.eventType === 'regular'
+  const isDerbyEvent = formData.eventType === 'derby'
+  const isFastestKillEvent = formData.eventType === 'fastest_kill'
 
   return (
     <CustomAlertDialog
@@ -55,6 +57,7 @@ const EventForm = ({
             <option value="">Select event type...</option>
             <option value="regular">Regular</option>
             <option value="derby">Derby</option>
+            <option value="fastest_kill">Fastest Kill</option>
           </NativeSelect>
         </div>
 
@@ -127,7 +130,7 @@ const EventForm = ({
         />
 
         {/* Conditional fields - Only show for derby events */}
-        {!isRegularEvent && (
+        {isDerbyEvent && (
           <>
             {/* Registration Deadline */}
             <InputField
@@ -180,6 +183,25 @@ const EventForm = ({
               onChange={(e) => onInputChange('maxParticipants', e.target.value)}
               placeholder="Enter max participants"
               min="1"
+              required
+            />
+          </>
+        )}
+
+        {/* Conditional fields - Only show for fastest_kill events */}
+        {isFastestKillEvent && (
+          <>
+            {/* Prize Pool */}
+            <InputField
+              id={isEdit ? "editPrize" : "prize"}
+              label="Prize Pool (PHP) *"
+              icon={DollarSign}
+              type="number"
+              value={formData.prize}
+              onChange={(e) => onInputChange('prize', e.target.value)}
+              placeholder="Enter prize amount"
+              min="0"
+              step="0.01"
               required
             />
           </>

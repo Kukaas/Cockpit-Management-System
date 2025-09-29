@@ -737,12 +737,12 @@ export const sendParticipantRegistrationEmail = async (participantData, eventDat
                                 <div class="detail-row">
                                     <span class="detail-label">Date & Time:</span>
                                     <span class="detail-value">${new Date(eventData.date).toLocaleDateString('en-US', {
-                                        year: 'numeric',
-                                        month: 'long',
-                                        day: 'numeric',
-                                        hour: '2-digit',
-                                        minute: '2-digit'
-                                    })}</span>
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            })}</span>
                                 </div>
                                 <div class="detail-row">
                                     <span class="detail-label">Location:</span>
@@ -750,7 +750,7 @@ export const sendParticipantRegistrationEmail = async (participantData, eventDat
                                 </div>
                                 <div class="detail-row">
                                     <span class="detail-label">Event Type:</span>
-                                    <span class="detail-value">${participantData.eventType.charAt(0).toUpperCase() + participantData.eventType.slice(1)}</span>
+                                    <span class="detail-value">${participantData.eventType === 'fastest_kill' ? 'Fastest Kill' : participantData.eventType.charAt(0).toUpperCase() + participantData.eventType.slice(1)}</span>
                                 </div>
                                 <div class="detail-row">
                                     <span class="detail-label">Entry Fee:</span>
@@ -960,10 +960,10 @@ export const sendCageRentalReminderEmail = async (cageRentalData) => {
                                 <div class="detail-row">
                                     <span class="detail-label">Rental Date:</span>
                                     <span class="detail-value">${new Date(cageRentalData.date).toLocaleDateString('en-US', {
-                                        year: 'numeric',
-                                        month: 'long',
-                                        day: 'numeric'
-                                    })}</span>
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            })}</span>
                                 </div>
                                 <div class="detail-row">
                                     <span class="detail-label">Rental Price:</span>
@@ -980,10 +980,10 @@ export const sendCageRentalReminderEmail = async (cageRentalData) => {
                                 <div class="payment-text">
                                     <p style="margin: 0 0 12px 0;"><strong>Amount Due:</strong> ₱${cageRentalData.price.toLocaleString('en-PH')}</p>
                                     <p style="margin: 0 0 12px 0;"><strong>Due Date:</strong> ${new Date(cageRentalData.date).toLocaleDateString('en-US', {
-                                        year: 'numeric',
-                                        month: 'long',
-                                        day: 'numeric'
-                                    })}</p>
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            })}</p>
                                     <p style="margin: 0;"><strong>Contact:</strong> Please contact the arena management for payment instructions</p>
                                 </div>
                             </div>
@@ -1179,10 +1179,10 @@ export const sendCageRentalPaymentConfirmationEmail = async (cageRentalData) => 
                                 <div class="detail-row">
                                     <span class="detail-label">Rental Date:</span>
                                     <span class="detail-value">${new Date(cageRentalData.date).toLocaleDateString('en-US', {
-                                        year: 'numeric',
-                                        month: 'long',
-                                        day: 'numeric'
-                                    })}</span>
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            })}</span>
                                 </div>
                                 <div class="detail-row">
                                     <span class="detail-label">Amount Paid:</span>

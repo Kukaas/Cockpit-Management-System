@@ -41,6 +41,7 @@ export const registerParticipant = async (req, res) => {
       }
     }
 
+
     // Check if participant is already registered for this event
     const existingRegistration = await Participant.findOne({ eventID, participantName });
     if (existingRegistration) {
@@ -148,7 +149,7 @@ export const updateParticipant = async (req, res) => {
 
 
 
-        // Check if participant name is being changed and if it conflicts with existing registration
+    // Check if participant name is being changed and if it conflicts with existing registration
     if (participantName && participantName !== participant.participantName) {
       const existingRegistration = await Participant.findOne({
         eventID: participant.eventID,

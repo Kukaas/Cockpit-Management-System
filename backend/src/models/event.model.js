@@ -19,7 +19,7 @@ const eventSchema = new mongoose.Schema({
     },
     prize: {
         type: Number,
-        required: function() {
+        required: function () {
             return this.eventType === 'derby';
         },
         min: 0
@@ -27,12 +27,12 @@ const eventSchema = new mongoose.Schema({
     eventType: {
         type: String,
         required: true,
-        enum: ['regular', 'derby'],
+        enum: ['regular', 'derby', 'fastest_kill'],
         default: 'regular'
     },
     noCockRequirements: {
         type: Number,
-        required: function() {
+        required: function () {
             return this.eventType === 'derby';
         },
         min: 0,
@@ -82,24 +82,24 @@ eventSchema.index({ status: 1, date: -1 });
 eventSchema.index({ eventType: 1 });
 
 // Virtual for checking if event is upcoming
-eventSchema.virtual('isUpcoming').get(function() {
+eventSchema.virtual('isUpcoming').get(function () {
     return this.date > new Date() && this.status === 'active';
 });
 
 // Virtual for checking if event is past
-eventSchema.virtual('isPast').get(function() {
+eventSchema.virtual('isPast').get(function () {
     return this.date < new Date();
 });
 
 // Virtual for checking if registration is open
-eventSchema.virtual('isRegistrationOpen').get(function() {
+eventSchema.virtual('isRegistrationOpen').get(function () {
     if (this.status !== 'active') return false;
     if (this.registrationDeadline && new Date() > this.registrationDeadline) return false;
     return true;
 });
 
 // Method to get event status based on date
-eventSchema.methods.getEventStatus = function() {
+eventSchema.methods.getEventStatus = function () {
     const now = new Date();
     if (this.status === 'cancelled') return 'cancelled';
     if (this.status === 'completed') return 'completed';
@@ -111,7 +111,7 @@ eventSchema.methods.getEventStatus = function() {
 // Ensure virtual fields are serialized
 eventSchema.set('toJSON', {
     virtuals: true,
-    transform: function(doc, ret) {
+    transform: function (doc, ret) {
         ret.eventStatus = doc.getEventStatus();
         return ret;
     }

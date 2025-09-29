@@ -30,50 +30,6 @@ const MatchResultForm = ({
   const participants = selectedFight?.participantsID || []
   const cockProfiles = selectedFight?.cockProfileID || []
 
-  // Helper function to convert date to local datetime-local format
-  const formatDateTimeLocal = (dateString) => {
-    if (!dateString) return ''
-    const date = new Date(dateString)
-    // Format to YYYY-MM-DDTHH:mm in local timezone (not UTC)
-    const year = date.getFullYear()
-    const month = String(date.getMonth() + 1).padStart(2, '0')
-    const day = String(date.getDate()).padStart(2, '0')
-    const hours = String(date.getHours()).padStart(2, '0')
-    const minutes = String(date.getMinutes()).padStart(2, '0')
-    return `${year}-${month}-${day}T${hours}:${minutes}`
-  }
-
-  // Helper function to get default match end time (event date + current time)
-  const getDefaultMatchEndTime = () => {
-    if (!event?.date) return ''
-
-    const eventDate = new Date(event.date)
-    const now = new Date()
-
-    // Set the time to current time but keep the event date
-    eventDate.setHours(now.getHours())
-    eventDate.setMinutes(now.getMinutes())
-
-    // Format to YYYY-MM-DDTHH:mm
-    const year = eventDate.getFullYear()
-    const month = String(eventDate.getMonth() + 1).padStart(2, '0')
-    const day = String(eventDate.getDate()).padStart(2, '0')
-    const hours = String(eventDate.getHours()).padStart(2, '0')
-    const minutes = String(eventDate.getMinutes()).padStart(2, '0')
-
-    return `${year}-${month}-${day}T${hours}:${minutes}`
-  }
-
-  // Set default match end time when form opens and no time is set
-  React.useEffect(() => {
-    if (open && !formData.matchEndTime && event) {
-      const defaultTime = getDefaultMatchEndTime()
-      if (defaultTime) {
-        onInputChange('matchEndTime', defaultTime)
-      }
-    }
-  }, [open, formData.matchEndTime, event, onInputChange])
-
   // Calculate betting information
   const calculateBettingInfo = () => {
     if (!formData.participantBets || formData.participantBets.length !== 2) return null
@@ -287,30 +243,20 @@ const MatchResultForm = ({
         {/* Match Timing */}
         <div className="space-y-4">
           <h4 className="font-medium">Match Timing</h4>
-          <div className="space-y-4">
-            {/* Only show match start time for fastest kill events */}
-            {event?.eventType === 'fastest_kill' && (
-              <InputField
-                id={isEdit ? "editMatchStartTime" : "matchStartTime"}
-                label="Match Start Time *"
-                type="datetime-local"
-                value={formData.matchStartTime}
-                onChange={(e) => onInputChange('matchStartTime', e.target.value)}
-                required
-              />
-            )}
-            {/* Only show match end time for fastest kill events */}
-            {event?.eventType === 'fastest_kill' && (
-              <InputField
-                id={isEdit ? "editMatchEndTime" : "matchEndTime"}
-                label="Match End Time *"
-                type="datetime-local"
-                value={formData.matchEndTime}
-                onChange={(e) => onInputChange('matchEndTime', e.target.value)}
-                required
-              />
-            )}
-          </div>
+          {/* Only show time in seconds for fastest kill events */}
+          {event?.eventType === 'fastest_kill' && (
+            <InputField
+              id={isEdit ? "editMatchTimeSeconds" : "matchTimeSeconds"}
+              label="Match Time (Seconds) *"
+              type="number"
+              value={formData.matchTimeSeconds}
+              onChange={(e) => onInputChange('matchTimeSeconds', e.target.value)}
+              placeholder="Enter time in seconds (e.g., 3.20)"
+              min="0"
+              step="0.01"
+              required
+            />
+          )}
         </div>
 
         {/* Match Type */}

@@ -238,7 +238,7 @@ export const createMatchResultColumns = (formatCurrency, formatDate, handleDelet
   // Only show match time for fastest kill events
   ...(eventType === 'fastest_kill' ? [
     {
-      key: 'matchStartTime',
+      key: 'matchTimeSeconds',
       label: 'Match Time',
       sortable: true,
       filterable: false,
@@ -246,7 +246,7 @@ export const createMatchResultColumns = (formatCurrency, formatDate, handleDelet
         <div className="space-y-1 text-sm">
           <div className="flex items-center gap-1">
             <Clock className="h-3 w-3" />
-            <span>{formatDate(value)}</span>
+            <span>{value ? `${value}s` : 'N/A'}</span>
           </div>
         </div>
       )

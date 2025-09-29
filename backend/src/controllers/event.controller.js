@@ -41,6 +41,19 @@ export const createEvent = async (req, res) => {
             }
         }
 
+        // Additional required fields for fastest_kill events
+        if (eventType === 'fastest_kill') {
+            const additionalRequiredFields = ['prize'];
+            const missingAdditionalFields = additionalRequiredFields.filter(field => !req.body[field]);
+
+            if (missingAdditionalFields.length > 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: `For fastest kill events, missing required fields: ${missingAdditionalFields.join(', ')}`
+                });
+            }
+        }
+
         // Validate date is in the future
         const eventDate = new Date(date);
         if (eventDate <= new Date()) {
@@ -68,6 +81,11 @@ export const createEvent = async (req, res) => {
         if (eventType === 'derby') {
             eventData.prize = Number(prize);
             eventData.noCockRequirements = Number(noCockRequirements);
+        }
+
+        // Only add prize for fastest_kill events
+        if (eventType === 'fastest_kill') {
+            eventData.prize = Number(prize);
         }
 
         const newEvent = new Event(eventData);
@@ -234,6 +252,19 @@ export const updateEvent = async (req, res) => {
             }
         }
 
+        // Additional required fields for fastest_kill events
+        if (eventType === 'fastest_kill') {
+            const additionalRequiredFields = ['prize'];
+            const missingAdditionalFields = additionalRequiredFields.filter(field => !updateData[field] && !event[field]);
+
+            if (missingAdditionalFields.length > 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: `For fastest kill events, missing required fields: ${missingAdditionalFields.join(', ')}`
+                });
+            }
+        }
+
         // Validate date if it's being updated
         if (updateData.date) {
             const eventDate = new Date(updateData.date);
@@ -255,6 +286,13 @@ export const updateEvent = async (req, res) => {
         // For regular events, remove the fields that are not required
         if (eventType === 'regular') {
             delete updateData.prize;
+            delete updateData.noCockRequirements;
+            delete updateData.maxParticipants;
+            delete updateData.registrationDeadline;
+        }
+
+        // For fastest_kill events, remove derby-specific fields
+        if (eventType === 'fastest_kill') {
             delete updateData.noCockRequirements;
             delete updateData.maxParticipants;
             delete updateData.registrationDeadline;
@@ -423,8 +461,8 @@ export const getUpcomingEvents = async (req, res) => {
             status: 'active',
             isPublic: true
         })
-        .populate('adminID', 'firstName lastName username')
-        .sort({ createdAt: -1 });
+            .populate('adminID', 'firstName lastName username')
+            .sort({ createdAt: -1 });
 
         res.status(200).json({
             success: true,

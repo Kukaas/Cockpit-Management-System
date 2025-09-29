@@ -14,8 +14,7 @@ export const createMatchResult = async (req, res) => {
       loserParticipantID,
       winnerCockProfileID,
       loserCockProfileID,
-      matchStartTime,
-      matchEndTime,
+      matchTimeSeconds,
       matchType
     } = req.body;
     const recordedBy = req.user.id;
@@ -89,8 +88,7 @@ export const createMatchResult = async (req, res) => {
         loserCockProfileID,
         matchType
       },
-      matchStartTime,
-      matchEndTime,
+      matchTimeSeconds,
       recordedBy
     });
 
@@ -244,8 +242,7 @@ export const updateMatchResult = async (req, res) => {
       loserParticipantID,
       winnerCockProfileID,
       loserCockProfileID,
-      matchStartTime,
-      matchEndTime,
+      matchTimeSeconds,
       matchType,
       status
     } = req.body;
@@ -287,8 +284,7 @@ export const updateMatchResult = async (req, res) => {
     if (matchType) matchResult.resultMatch.matchType = matchType;
 
     // Update timing
-    if (matchStartTime) matchResult.matchStartTime = matchStartTime;
-    if (matchEndTime) matchResult.matchEndTime = matchEndTime;
+    if (matchTimeSeconds) matchResult.matchTimeSeconds = matchTimeSeconds;
 
     // Update other fields
     if (status) matchResult.status = status;

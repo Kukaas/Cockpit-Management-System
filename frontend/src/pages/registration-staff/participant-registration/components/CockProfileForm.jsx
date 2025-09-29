@@ -105,9 +105,8 @@ const CockProfileForm = ({
                 {filteredParticipants.map((participant) => (
                   <div
                     key={participant._id}
-                    className={`p-3 border-b cursor-pointer hover:bg-muted/50 ${
-                      selectedParticipantId === participant._id ? 'bg-muted' : ''
-                    }`}
+                    className={`p-3 border-b cursor-pointer hover:bg-muted/50 ${selectedParticipantId === participant._id ? 'bg-muted' : ''
+                      }`}
                     onClick={() => handleParticipantSelection(participant._id)}
                   >
                     <div className="flex items-center justify-between">
@@ -165,8 +164,8 @@ const CockProfileForm = ({
                     <div className="flex items-start gap-2">
                       <div className="w-4 h-4 mt-0.5 text-gray-400">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                          <circle cx="12" cy="10" r="3"/>
+                          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                          <circle cx="12" cy="10" r="3" />
                         </svg>
                       </div>
                       <span className="text-gray-600">
@@ -176,8 +175,8 @@ const CockProfileForm = ({
                     <div className="flex items-center gap-2">
                       <div className="w-4 h-4 text-gray-400">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <circle cx="12" cy="12" r="10"/>
-                          <path d="M12 6v6l4 2"/>
+                          <circle cx="12" cy="12" r="10" />
+                          <path d="M12 6v6l4 2" />
                         </svg>
                       </div>
                       <span className="text-gray-600">
@@ -226,6 +225,7 @@ const CockProfileForm = ({
               />
             </>
           )}
+
 
           {/* {isEdit && (
             <InputField

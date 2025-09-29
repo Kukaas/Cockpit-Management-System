@@ -40,8 +40,8 @@ export const createParticipantColumns = (handleEditClick, handleDeleteClick, han
         <Badge
           variant={
             value === 'confirmed' ? 'default' :
-            value === 'withdrawn' ? 'destructive' :
-            value === 'disqualified' ? 'secondary' : 'outline'
+              value === 'withdrawn' ? 'destructive' :
+                value === 'disqualified' ? 'secondary' : 'outline'
           }
           className="text-xs capitalize"
         >
@@ -181,8 +181,8 @@ export const createCockProfileColumns = (handleEditClick, handleDeleteClick, han
         <Badge
           variant={
             value === 'available' ? 'default' :
-            value === 'scheduled' ? 'secondary' :
-            value === 'fought' ? 'destructive' : 'outline'
+              value === 'scheduled' ? 'secondary' :
+                value === 'fought' ? 'destructive' : 'outline'
           }
           className="text-xs capitalize"
         >

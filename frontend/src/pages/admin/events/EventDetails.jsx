@@ -458,21 +458,9 @@ const EventDetails = () => {
                     {selectedEvent?.eventType === 'fastest_kill' && (
                       <div className="space-y-4">
                         <div>
-                          <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Start Time</label>
-                          <p className="mt-1 text-sm text-gray-900">{formatDate(selectedItem.matchStartTime)}</p>
+                          <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Match Time</label>
+                          <p className="mt-1 text-sm text-gray-900">{selectedItem.matchTimeSeconds ? `${selectedItem.matchTimeSeconds} seconds` : 'N/A'}</p>
                         </div>
-
-                        <div>
-                          <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">End Time</label>
-                          <p className="mt-1 text-sm text-gray-900">{formatDate(selectedItem.matchEndTime)}</p>
-                        </div>
-
-                        {selectedItem.resultMatch?.matchDuration && (
-                          <div>
-                            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Duration</label>
-                            <p className="mt-1 text-sm text-gray-900">{selectedItem.resultMatch.matchDuration} minutes</p>
-                          </div>
-                        )}
                       </div>
                     )}
                   </div>
