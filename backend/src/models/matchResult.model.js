@@ -144,6 +144,14 @@ const matchResultSchema = new mongoose.Schema({
     type: String,
     enum: ['pending', 'final'],
     default: 'pending'
+  },
+
+  // Prize amount for fastest kill events (optional, can be set later)
+  prizeAmount: {
+    type: Number,
+    required: false,
+    min: 0,
+    default: 0
   }
 }, { timestamps: true });
 

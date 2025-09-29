@@ -17,6 +17,7 @@ import MatchResultForm from './components/MatchResultForm'
 import FightTabs from './components/FightTabs'
 import DetailsDialog from './components/DetailsDialog'
 import ChampionshipTab from './components/ChampionshipTab'
+import FastestKillWinnersTab from './components/FastestKillWinnersTab'
 import { createFightColumns, createMatchResultColumns } from './components/TableColumns'
 
 const FightSchedule = () => {
@@ -479,6 +480,15 @@ const FightSchedule = () => {
       {/* Championship Tab Content for Derby Events */}
       {event.eventType === 'derby' && activeTab === 'championship' && (
         <ChampionshipTab
+          eventId={eventId}
+          eventType={event.eventType}
+          formatCurrency={formatCurrency}
+        />
+      )}
+
+      {/* Fastest Kill Winners Tab Content for Fastest Kill Events */}
+      {event.eventType === 'fastest_kill' && activeTab === 'fastest-kill' && (
+        <FastestKillWinnersTab
           eventId={eventId}
           eventType={event.eventType}
           formatCurrency={formatCurrency}

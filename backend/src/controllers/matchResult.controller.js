@@ -687,3 +687,108 @@ export const getDerbyChampionshipStandings = async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch derby championship standings', error: error.message });
   }
 };
+
+// Update prize amount for a specific match result
+export const updateMatchResultPrizeAmount = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { prizeAmount } = req.body;
+
+    // Validate prize amount
+    if (prizeAmount !== undefined && (prizeAmount < 0 || isNaN(prizeAmount))) {
+      return res.status(400).json({
+        success: false,
+        message: 'Prize amount must be a non-negative number'
+      });
+    }
+
+    const matchResult = await MatchResult.findById(id);
+    if (!matchResult) {
+      return res.status(404).json({
+        success: false,
+        message: 'Match result not found'
+      });
+    }
+
+    // Update prize amount
+    matchResult.prizeAmount = prizeAmount || 0;
+    await matchResult.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Prize amount updated successfully',
+      data: {
+        matchResultId: matchResult._id,
+        prizeAmount: matchResult.prizeAmount
+      }
+    });
+  } catch (error) {
+    console.error('Error updating prize amount:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message
+    });
+  }
+};
+
+// Update prize distribution for fastest kill events
+export const updateFastestKillPrizeDistribution = async (req, res) => {
+  try {
+    const { eventID } = req.params;
+    const { prizeDistribution } = req.body;
+
+    // Validate event exists and is fastest kill type
+    const event = await Event.findById(eventID);
+    if (!event) {
+      return res.status(404).json({
+        success: false,
+        message: 'Event not found'
+      });
+    }
+
+    if (event.eventType !== 'fastest_kill') {
+      return res.status(400).json({
+        success: false,
+        message: 'Prize distribution can only be updated for fastest kill events'
+      });
+    }
+
+    // Validate prize distribution doesn't exceed prize pool
+    const totalDistributed = prizeDistribution.reduce((sum, item) => sum + (item.prizeAmount || 0), 0);
+    if (totalDistributed > event.prize) {
+      return res.status(400).json({
+        success: false,
+        message: `Total prize distribution (${totalDistributed}) exceeds prize pool (${event.prize})`
+      });
+    }
+
+    // Update prize amounts for each match result
+    const updatePromises = prizeDistribution.map(async (item) => {
+      return await MatchResult.findByIdAndUpdate(
+        item.resultId,
+        { prizeAmount: item.prizeAmount },
+        { new: true }
+      );
+    });
+
+    await Promise.all(updatePromises);
+
+    res.status(200).json({
+      success: true,
+      message: 'Prize distribution updated successfully',
+      data: {
+        eventId: event._id,
+        totalDistributed,
+        remainingPrize: event.prize - totalDistributed
+      }
+    });
+  } catch (error) {
+    console.error('Error updating prize distribution:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message
+    });
+  }
+};
