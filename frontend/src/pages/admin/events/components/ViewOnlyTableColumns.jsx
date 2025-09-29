@@ -32,8 +32,8 @@ export const createViewOnlyParticipantColumns = (formatCurrency, handleViewDetai
       <Badge
         variant={
           value === 'confirmed' ? 'default' :
-          value === 'withdrawn' ? 'destructive' :
-          value === 'disqualified' ? 'secondary' : 'outline'
+            value === 'withdrawn' ? 'destructive' :
+              value === 'disqualified' ? 'secondary' : 'outline'
         }
         className="text-xs capitalize"
       >
@@ -165,21 +165,14 @@ export const createViewOnlyFightScheduleColumns = (formatCurrency, formatDate, h
       <Badge
         variant={
           value === 'completed' ? 'secondary' :
-          value === 'in_progress' ? 'default' :
-          value === 'cancelled' ? 'destructive' : 'outline'
+            value === 'in_progress' ? 'default' :
+              value === 'cancelled' ? 'destructive' : 'outline'
         }
         className="text-xs capitalize"
       >
         {value.replace('_', ' ')}
       </Badge>
     )
-  },
-  {
-    key: 'scheduledTime',
-    label: 'Scheduled Time',
-    sortable: true,
-    filterable: false,
-    render: (value) => formatDate(value)
   },
   {
     key: 'actions',
@@ -305,8 +298,8 @@ export const createViewOnlyMatchResultColumns = (formatCurrency, formatDate, han
         <Badge
           variant={
             value === 'final' ? 'default' :
-            value === 'confirmed' ? 'secondary' :
-            value === 'disputed' ? 'destructive' : 'outline'
+              value === 'confirmed' ? 'secondary' :
+                value === 'disputed' ? 'destructive' : 'outline'
           }
           className="text-xs capitalize"
         >

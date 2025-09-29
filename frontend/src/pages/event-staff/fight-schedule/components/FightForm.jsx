@@ -20,7 +20,7 @@ const FightForm = ({
   isEdit = false,
   event = null
 }) => {
-    // Get cock profiles for selected participants
+  // Get cock profiles for selected participants
   const getCockProfilesForParticipant = (participantId) => {
     if (!participantId) return []
 
@@ -34,36 +34,6 @@ const FightForm = ({
   const participant1CockProfiles = getCockProfilesForParticipant(formData.participant1)
   const participant2CockProfiles = getCockProfilesForParticipant(formData.participant2)
 
-  // Helper function to get default scheduled time (event date + current time)
-  const getDefaultScheduledTime = () => {
-    if (!event || !event.date) return ''
-
-    const eventDate = new Date(event.date)
-    const now = new Date()
-
-    // Set the time to current time but keep the event date
-    eventDate.setHours(now.getHours())
-    eventDate.setMinutes(now.getMinutes())
-
-    // Format to YYYY-MM-DDTHH:mm
-    const year = eventDate.getFullYear()
-    const month = String(eventDate.getMonth() + 1).padStart(2, '0')
-    const day = String(eventDate.getDate()).padStart(2, '0')
-    const hours = String(eventDate.getHours()).padStart(2, '0')
-    const minutes = String(eventDate.getMinutes()).padStart(2, '0')
-
-    return `${year}-${month}-${day}T${hours}:${minutes}`
-  }
-
-  // Set default scheduled time when form opens and no time is set
-  React.useEffect(() => {
-    if (open && !formData.scheduledTime && event) {
-      const defaultTime = getDefaultScheduledTime()
-      if (defaultTime) {
-        onInputChange('scheduledTime', defaultTime)
-      }
-    }
-  }, [open, formData.scheduledTime, event, onInputChange])
 
   return (
     <CustomAlertDialog
@@ -235,14 +205,6 @@ const FightForm = ({
           </div>
         )}
 
-        {/* Schedule Time */}
-        <InputField
-          id={isEdit ? "editScheduledTime" : "scheduledTime"}
-          label="Scheduled Time"
-          type="datetime-local"
-          value={formData.scheduledTime}
-          onChange={(e) => onInputChange('scheduledTime', e.target.value)}
-        />
       </div>
     </CustomAlertDialog>
   )

@@ -9,8 +9,7 @@ export const createFightSchedule = async (req, res) => {
     const {
       eventID,
       participantsID,
-      cockProfileID,
-      scheduledTime
+      cockProfileID
     } = req.body;
     const scheduledBy = req.user.id;
 
@@ -50,7 +49,6 @@ export const createFightSchedule = async (req, res) => {
       participantsID,
       cockProfileID,
       fightNumber,
-      scheduledTime: scheduledTime || new Date(),
       scheduledBy
     });
 
@@ -141,7 +139,6 @@ export const updateFightSchedule = async (req, res) => {
   try {
     const { id } = req.params;
     const {
-      scheduledTime,
       status
     } = req.body;
 
@@ -156,7 +153,6 @@ export const updateFightSchedule = async (req, res) => {
     }
 
     // Update fields
-    if (scheduledTime) fightSchedule.scheduledTime = scheduledTime;
     if (status) fightSchedule.status = status;
 
     await fightSchedule.save();

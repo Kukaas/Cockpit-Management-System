@@ -47,8 +47,7 @@ const FightSchedule = () => {
     participant1: '',
     participant2: '',
     cockProfile1: '',
-    cockProfile2: '',
-    scheduledTime: ''
+    cockProfile2: ''
   })
 
   const [resultFormData, setResultFormData] = useState({
@@ -210,8 +209,7 @@ const FightSchedule = () => {
       participant1: '',
       participant2: '',
       cockProfile1: '',
-      cockProfile2: '',
-      scheduledTime: ''
+      cockProfile2: ''
     })
   }
 
@@ -252,8 +250,7 @@ const FightSchedule = () => {
     const fightData = {
       eventID: eventId,
       participantsID: [fightFormData.participant1, fightFormData.participant2],
-      cockProfileID: [fightFormData.cockProfile1, fightFormData.cockProfile2],
-      scheduledTime: fightFormData.scheduledTime || new Date().toISOString()
+      cockProfileID: [fightFormData.cockProfile1, fightFormData.cockProfile2]
     }
 
     createFightMutation.mutate(fightData)
@@ -302,8 +299,7 @@ const FightSchedule = () => {
       participant1: fight.participantsID[0]?._id || '',
       participant2: fight.participantsID[1]?._id || '',
       cockProfile1: fight.cockProfileID[0]?._id || '',
-      cockProfile2: fight.cockProfileID[1]?._id || '',
-      scheduledTime: formatDateTimeLocal(fight.scheduledTime)
+      cockProfile2: fight.cockProfileID[1]?._id || ''
     })
     setEditFightDialogOpen(true)
   }
@@ -315,10 +311,9 @@ const FightSchedule = () => {
 
   const handleAddResultClick = (fight) => {
     setSelectedFight(fight)
-    // Pre-populate with default values including scheduled time as match start time
+    // Pre-populate with default values
     setResultFormData(prev => ({
       ...prev,
-      matchStartTime: formatDateTimeLocal(fight.scheduledTime),
       // We'll let user select winner/loser from the fight participants
     }))
     setAddResultDialogOpen(true)
@@ -502,9 +497,7 @@ const FightSchedule = () => {
         onSubmit={() => {
           if (!selectedFight) return
 
-          const fightData = {
-            scheduledTime: fightFormData.scheduledTime
-          }
+          const fightData = {}
 
           updateFightMutation.mutate({ id: selectedFight._id, data: fightData })
         }}

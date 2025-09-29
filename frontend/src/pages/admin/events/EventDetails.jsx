@@ -195,12 +195,11 @@ const EventDetails = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <p className="text-sm font-medium text-gray-600 mb-1">Status</p>
-                      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                        selectedItem.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${selectedItem.status === 'confirmed' ? 'bg-green-100 text-green-800' :
                         selectedItem.status === 'withdrawn' ? 'bg-red-100 text-red-800' :
-                        selectedItem.status === 'disqualified' ? 'bg-gray-100 text-gray-800' :
-                        'bg-blue-100 text-blue-800'
-                      }`}>
+                          selectedItem.status === 'disqualified' ? 'bg-gray-100 text-gray-800' :
+                            'bg-blue-100 text-blue-800'
+                        }`}>
                         {selectedItem.status.charAt(0).toUpperCase() + selectedItem.status.slice(1)}
                       </span>
                     </div>
@@ -264,9 +263,8 @@ const EventDetails = () => {
 
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <h4 className="font-semibold text-lg mb-3 text-gray-900">Status</h4>
-                  <span className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${
-                    selectedItem.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                  }`}>
+                  <span className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${selectedItem.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }`}>
                     {selectedItem.isActive ? 'Active' : 'Inactive'}
                   </span>
                 </div>
@@ -300,21 +298,16 @@ const EventDetails = () => {
                         <div>
                           <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Status</label>
                           <div className="mt-1">
-                            <span className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${
-                              selectedItem.status === 'completed' ? 'bg-green-100 text-green-800' :
+                            <span className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${selectedItem.status === 'completed' ? 'bg-green-100 text-green-800' :
                               selectedItem.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
-                              selectedItem.status === 'cancelled' ? 'bg-red-100 text-red-800' :
-                              'bg-gray-100 text-gray-800'
-                            }`}>
+                                selectedItem.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                                  'bg-gray-100 text-gray-800'
+                              }`}>
                               {selectedItem.status.replace('_', ' ').charAt(0).toUpperCase() + selectedItem.status.replace('_', ' ').slice(1)}
                             </span>
                           </div>
                         </div>
 
-                        <div>
-                          <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Scheduled Time</label>
-                          <p className="mt-1 text-sm text-gray-900">{formatDate(selectedItem.scheduledTime)}</p>
-                        </div>
                       </div>
                     </div>
                   </div>
@@ -412,9 +405,8 @@ const EventDetails = () => {
                           <div>
                             <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Status</label>
                             <div className="mt-1">
-                              <span className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${
-                                cock.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                              }`}>
+                              <span className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${cock.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                }`}>
                                 {cock.isActive ? 'Active' : 'Inactive'}
                               </span>
                             </div>
@@ -446,11 +438,10 @@ const EventDetails = () => {
                       <div>
                         <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Status</label>
                         <div className="mt-1">
-                          <span className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${
-                            selectedItem.status === 'final' ? 'bg-green-100 text-green-800' :
+                          <span className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${selectedItem.status === 'final' ? 'bg-green-100 text-green-800' :
                             selectedItem.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-gray-100 text-gray-800'
-                          }`}>
+                              'bg-gray-100 text-gray-800'
+                            }`}>
                             {selectedItem.status.charAt(0).toUpperCase() + selectedItem.status.slice(1)}
                           </span>
                         </div>
@@ -507,11 +498,10 @@ const EventDetails = () => {
                     <div className="bg-gray-50 rounded-lg p-4 text-center">
                       <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Bet Winner</label>
                       <div className="mt-1">
-                        <span className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${
-                          selectedItem.betWinner === 'Meron' ? 'bg-blue-100 text-blue-800' :
+                        <span className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${selectedItem.betWinner === 'Meron' ? 'bg-blue-100 text-blue-800' :
                           selectedItem.betWinner === 'Wala' ? 'bg-gray-100 text-gray-800' :
-                          'bg-yellow-100 text-yellow-800'
-                        }`}>
+                            'bg-yellow-100 text-yellow-800'
+                          }`}>
                           {selectedItem.betWinner}
                         </span>
                       </div>
@@ -522,9 +512,8 @@ const EventDetails = () => {
                     {selectedItem.participantBets?.map((bet) => (
                       <div key={bet.participantID._id} className="bg-gray-50 rounded-lg p-4">
                         <div className="flex items-center gap-3 mb-4">
-                          <div className={`w-3 h-3 rounded-full ${
-                            bet.position === 'Meron' ? 'bg-blue-500' : 'bg-gray-500'
-                          }`}></div>
+                          <div className={`w-3 h-3 rounded-full ${bet.position === 'Meron' ? 'bg-blue-500' : 'bg-gray-500'
+                            }`}></div>
                           <h4 className="font-medium text-gray-900">{bet.position}</h4>
                         </div>
 

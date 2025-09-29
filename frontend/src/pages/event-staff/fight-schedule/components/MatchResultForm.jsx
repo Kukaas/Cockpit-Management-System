@@ -292,7 +292,7 @@ const MatchResultForm = ({
               id={isEdit ? "editMatchStartTime" : "matchStartTime"}
               label="Match Start Time *"
               type="datetime-local"
-              value={formData.matchStartTime || formatDateTimeLocal(selectedFight?.scheduledTime)}
+              value={formData.matchStartTime}
               onChange={(e) => onInputChange('matchStartTime', e.target.value)}
               required
             />

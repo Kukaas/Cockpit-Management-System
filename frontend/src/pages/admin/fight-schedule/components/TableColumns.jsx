@@ -52,18 +52,6 @@ export const createFightColumns = (formatCurrency, formatDate, handleViewDetails
     )
   },
   {
-    key: 'scheduledTime',
-    label: 'Scheduled Time',
-    sortable: true,
-    filterable: false,
-    render: (value) => (
-      <div className="flex items-center gap-1">
-        <Clock className="h-4 w-4 text-muted-foreground" />
-        <span>{formatDate(value)}</span>
-      </div>
-    )
-  },
-  {
     key: 'status',
     label: 'Status',
     sortable: true,
@@ -82,8 +70,8 @@ export const createFightColumns = (formatCurrency, formatDate, handleViewDetails
           <Badge
             variant={
               value === 'completed' ? 'default' :
-              value === 'in_progress' ? 'secondary' :
-              value === 'cancelled' ? 'destructive' : 'outline'
+                value === 'in_progress' ? 'secondary' :
+                  value === 'cancelled' ? 'destructive' : 'outline'
             }
             className="text-xs capitalize"
           >
@@ -222,8 +210,8 @@ export const createMatchResultColumns = (formatCurrency, formatDate, handleViewD
         <Badge
           variant={
             value === 'final' ? 'default' :
-            value === 'confirmed' ? 'secondary' :
-            value === 'disputed' ? 'destructive' : 'outline'
+              value === 'confirmed' ? 'secondary' :
+                value === 'disputed' ? 'destructive' : 'outline'
           }
           className="text-xs capitalize"
         >
@@ -274,9 +262,8 @@ export const createChampionshipColumns = (formatCurrency) => [
       }
 
       return (
-        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white font-bold text-sm ${
-          positionColors[value] || 'bg-blue-500'
-        }`}>
+        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white font-bold text-sm ${positionColors[value] || 'bg-blue-500'
+          }`}>
           {value}
         </div>
       )
@@ -344,12 +331,12 @@ export const createChampionshipColumns = (formatCurrency) => [
       <Badge
         variant={
           row.isChampion ? 'default' :
-          row.isEliminated ? 'destructive' : 'secondary'
+            row.isEliminated ? 'destructive' : 'secondary'
         }
         className={
           row.isChampion ? 'bg-yellow-100 text-yellow-800' :
-          row.isEliminated ? 'bg-red-100 text-red-800' :
-          'bg-blue-100 text-blue-800'
+            row.isEliminated ? 'bg-red-100 text-red-800' :
+              'bg-blue-100 text-blue-800'
         }
       >
         {value}

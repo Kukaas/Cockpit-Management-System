@@ -28,10 +28,6 @@ const fightScheduleSchema = new mongoose.Schema({
     required: true
   },
 
-  scheduledTime: {
-    type: Date,
-    default: Date.now
-  },
 
   // Status tracking
   status: {
@@ -51,11 +47,10 @@ const fightScheduleSchema = new mongoose.Schema({
 // Indexes for better performance
 fightScheduleSchema.index({ eventID: 1, fightNumber: 1 }, { unique: true });
 fightScheduleSchema.index({ eventID: 1, status: 1 });
-fightScheduleSchema.index({ scheduledTime: 1 });
 fightScheduleSchema.index({ status: 1 });
 
 // Virtual for getting match ID (used by match results)
-fightScheduleSchema.virtual('matchID').get(function() {
+fightScheduleSchema.virtual('matchID').get(function () {
   return this._id;
 });
 

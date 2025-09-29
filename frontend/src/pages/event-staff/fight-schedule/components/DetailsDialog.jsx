@@ -43,11 +43,6 @@ const DetailsDialog = ({
                   </span>
                 </div>
               </div>
-
-              <div>
-                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Scheduled Time</label>
-                <p className="mt-1 text-sm text-gray-900">{formatDate(fight.scheduledTime)}</p>
-              </div>
             </div>
           </div>
         </div>
