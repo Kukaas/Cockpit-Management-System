@@ -31,8 +31,8 @@ const HeaderBar = () => {
 		switch (user.role) {
 			case 'admin':
 				return '/admin'
-			case 'event_staff':
-				return '/event-staff'
+			case 'bet_staff':
+				return '/bet-staff'
 			case 'entrance_staff':
 				return '/entrance-staff'
 			case 'registration_staff':

@@ -156,7 +156,7 @@ export const register = async (req, res) => {
         }
 
         // Validate role
-        const validRoles = ['admin', 'entrance_staff', 'tangkal_staff', 'event_staff', 'registration_staff'];
+        const validRoles = ['admin', 'entrance_staff', 'tangkal_staff', 'bet_staff', 'registration_staff'];
         if (!validRoles.includes(role)) {
             return res.status(400).json({
                 success: false,

@@ -23,9 +23,9 @@ router.get('/stats/:eventID', verifyToken, getEntranceStats);
 router.get('/capacity/:eventID', verifyToken, getCapacityStatus);
 router.get('/:id', verifyToken, getEntranceById);
 
-// Routes requiring admin, event_staff, or entrance_staff role
-router.post('/', verifyToken, requireRole(['admin', 'event_staff', 'entrance_staff']), recordEntrance);
-router.put('/:id', verifyToken, requireRole(['admin', 'event_staff', 'entrance_staff']), updateEntrance);
-router.delete('/:id', verifyToken, requireRole(['admin', 'event_staff', 'entrance_staff']), deleteEntrance);
+// Routes requiring admin, bet_staff, or entrance_staff role
+router.post('/', verifyToken, requireRole(['admin', 'bet_staff', 'entrance_staff']), recordEntrance);
+router.put('/:id', verifyToken, requireRole(['admin', 'bet_staff', 'entrance_staff']), updateEntrance);
+router.delete('/:id', verifyToken, requireRole(['admin', 'bet_staff', 'entrance_staff']), deleteEntrance);
 
 export default router;

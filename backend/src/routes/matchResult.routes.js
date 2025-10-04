@@ -24,14 +24,14 @@ router.get('/statistics', verifyToken, getMatchStatistics);
 // Specific routes that must come before parameterized routes
 router.get('/event/:eventID', verifyToken, getMatchResultsByEvent);
 router.get('/derby-championship/:eventID', verifyToken, getDerbyChampionshipStandings);
-router.put('/fastest-kill/:eventID/prize-distribution', verifyToken, requireRole(['admin', 'event_staff']), updateFastestKillPrizeDistribution);
+router.put('/fastest-kill/:eventID/prize-distribution', verifyToken, requireRole(['admin', 'bet_staff']), updateFastestKillPrizeDistribution);
 
-// Routes requiring admin, event_staff role
-router.post('/', verifyToken, requireRole(['admin', 'event_staff']), createMatchResult);
-router.put('/:id', verifyToken, requireRole(['admin', 'event_staff']), updateMatchResult);
-router.patch('/:id/status', verifyToken, requireRole(['admin', 'event_staff']), updateMatchResultStatus);
-router.patch('/:id/prize-amount', verifyToken, requireRole(['admin', 'event_staff']), updateMatchResultPrizeAmount);
-router.delete('/:id', verifyToken, requireRole(['admin', 'event_staff']), deleteMatchResult);
+// Routes requiring admin, bet_staff role
+router.post('/', verifyToken, requireRole(['admin', 'bet_staff']), createMatchResult);
+router.put('/:id', verifyToken, requireRole(['admin', 'bet_staff']), updateMatchResult);
+router.patch('/:id/status', verifyToken, requireRole(['admin', 'bet_staff']), updateMatchResultStatus);
+router.patch('/:id/prize-amount', verifyToken, requireRole(['admin', 'bet_staff']), updateMatchResultPrizeAmount);
+router.delete('/:id', verifyToken, requireRole(['admin', 'bet_staff']), deleteMatchResult);
 
 // Routes requiring admin role for verification
 router.patch('/:id/verify', verifyToken, requireRole(['admin']), verifyMatchResult);

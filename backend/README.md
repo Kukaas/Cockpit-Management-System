@@ -1,9 +1,11 @@
 # Cockpit Management System - Backend API
 
 ## Overview
+
 This is the backend API for the Cockpit Management System, built with Node.js, Express.js, and MongoDB. It provides authentication, role-based access control, and staff management functionality.
 
 ## Features
+
 - **Authentication & Authorization**: JWT-based authentication with HTTP-only cookies
 - **Role-Based Access Control**: Admin, Entrance Staff, Tangkal Staff, Event Staff, Registration Staff
 - **Staff Management**: Create, update, enable/disable staff accounts with auto-generated passwords
@@ -11,6 +13,7 @@ This is the backend API for the Cockpit Management System, built with Node.js, E
 - **Email Notifications**: Account status changes and verification emails
 
 ## Tech Stack
+
 - **Runtime**: Node.js
 - **Framework**: Express.js
 - **Database**: MongoDB with Mongoose ODM
@@ -22,11 +25,13 @@ This is the backend API for the Cockpit Management System, built with Node.js, E
 ## Setup Instructions
 
 ### 1. Install Dependencies
+
 ```bash
 npm install
 ```
 
 ### 2. Environment Variables
+
 Create a `.env` file in the root directory with the following variables:
 
 ```env
@@ -55,19 +60,23 @@ SMTP_FROM=sabongnation00@gmail.com
 ```
 
 ### 3. Database Setup
+
 Make sure MongoDB is running and accessible.
 
 ### 4. Seed Admin Account
+
 ```bash
 npm run seed:admin
 ```
 
 This creates a default admin account:
+
 - **Username**: admin
 - **Password**: Password2025@@
 - **Email**: sabongnation00@gmail.com
 
 ### 5. Start Development Server
+
 ```bash
 npm run dev
 ```
@@ -79,9 +88,11 @@ The server will start on `http://localhost:3000`
 ### Authentication Endpoints
 
 #### POST `/api/auth/login`
+
 Login with username/email and password.
 
 **Request Body:**
+
 ```json
 {
   "username": "admin",
@@ -90,6 +101,7 @@ Login with username/email and password.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -107,12 +119,15 @@ Login with username/email and password.
 ```
 
 #### POST `/api/auth/logout`
+
 Logout and clear authentication cookies.
 
 #### POST `/api/auth/register` (Admin only)
+
 Register a new user (admin or staff).
 
 **Request Body:**
+
 ```json
 {
   "username": "newuser",
@@ -120,22 +135,26 @@ Register a new user (admin or staff).
   "password": "securepassword",
   "firstName": "John",
   "lastName": "Doe",
-  "role": "event_staff"
+  "role": "bet_staff"
 }
 ```
 
 #### POST `/api/auth/refresh`
+
 Refresh access token using refresh token.
 
 #### GET `/api/auth/me`
+
 Get current user information.
 
 ### Staff Management Endpoints
 
 #### POST `/api/staff` (Admin only)
+
 Create a new staff account with auto-generated password.
 
 **Request Body:**
+
 ```json
 {
   "email": "staff@example.com",
@@ -146,6 +165,7 @@ Create a new staff account with auto-generated password.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -165,44 +185,54 @@ Create a new staff account with auto-generated password.
 ```
 
 #### GET `/api/staff` (Admin only)
+
 Get all staff members with pagination and search.
 
 **Query Parameters:**
+
 - `page`: Page number (default: 1)
 - `limit`: Items per page (default: 10)
 - `search`: Search term for username, email, or name
 - `role`: Filter by role
 
 #### GET `/api/staff/:id` (Admin only)
+
 Get staff member by ID.
 
 #### PATCH `/api/staff/:id/status` (Admin only)
+
 Toggle staff account status (enable/disable).
 
 #### PUT `/api/staff/:id` (Admin only)
+
 Update staff account information.
 
 **Request Body:**
+
 ```json
 {
   "firstName": "Updated",
   "lastName": "Name",
-  "role": "event_staff"
+  "role": "bet_staff"
 }
 ```
 
 #### DELETE `/api/staff/:id` (Admin only)
+
 Delete staff account.
 
 ### Email Verification Endpoints
 
 #### GET `/api/staff/verify/:token`
+
 Verify email address using verification token.
 
 #### POST `/api/staff/resend-verification`
+
 Resend verification email.
 
 **Request Body:**
+
 ```json
 {
   "email": "staff@example.com"
@@ -214,7 +244,7 @@ Resend verification email.
 1. **admin**: Full system access, can manage all users and settings
 2. **entrance_staff**: Manage entrance fees and tracking
 3. **tangkal_staff**: Manage cock profiles and related data
-4. **event_staff**: Manage events and schedules
+4. **bet_staff**: Manage events and schedules
 5. **registration_staff**: Handle participant registration
 
 ## Security Features
@@ -238,6 +268,7 @@ All endpoints return consistent error responses:
 ```
 
 Common HTTP status codes:
+
 - `200`: Success
 - `201`: Created
 - `400`: Bad Request
@@ -249,10 +280,12 @@ Common HTTP status codes:
 ## Development
 
 ### Scripts
+
 - `npm run dev`: Start development server with nodemon
 - `npm run seed:admin`: Create default admin account
 
 ### File Structure
+
 ```
 src/
 ├── config/

@@ -452,7 +452,7 @@ const FightSchedule = () => {
       title={`Fight Schedule - ${event.eventName}`}
       description="Manage fight schedules and record match results for this event"
       headerButton={
-        <Button variant="outline" onClick={() => navigate('/event-staff/fight-schedule')}>
+        <Button variant="outline" onClick={() => navigate('/bet-staff/fight-schedule')}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Events
         </Button>

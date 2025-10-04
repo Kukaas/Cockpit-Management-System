@@ -23,11 +23,11 @@ export const createStaffAccount = async (req, res) => {
         }
 
         // Validate role
-        const validRoles = ['entrance_staff', 'tangkal_staff', 'event_staff', 'registration_staff'];
+        const validRoles = ['entrance_staff', 'tangkal_staff', 'bet_staff', 'registration_staff'];
         if (!validRoles.includes(role)) {
             return res.status(400).json({
                 success: false,
-                message: 'Invalid role. Must be one of: entrance_staff, tangkal_staff, event_staff, registration_staff'
+                message: 'Invalid role. Must be one of: entrance_staff, tangkal_staff, bet_staff, registration_staff'
             });
         }
 
@@ -392,7 +392,7 @@ export const updateStaffAccount = async (req, res) => {
         if (firstName) staff.firstName = firstName;
         if (lastName) staff.lastName = lastName;
         if (role) {
-            const validRoles = ['entrance_staff', 'tangkal_staff', 'event_staff', 'registration_staff'];
+            const validRoles = ['entrance_staff', 'tangkal_staff', 'bet_staff', 'registration_staff'];
             if (!validRoles.includes(role)) {
                 return res.status(400).json({
                     success: false,

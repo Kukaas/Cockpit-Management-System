@@ -13,9 +13,9 @@ router.get('/event/:eventID', verifyToken, getCockProfilesByEvent);
 router.get('/:id', verifyToken, getCockProfileById);
 router.get('/participant/:participantID', verifyToken, getCockProfilesByParticipant);
 
-// Routes requiring admin or registration_staff role for modification, event_staff can view
+// Routes requiring admin or registration_staff role for modification, bet_staff can view
 router.post('/', verifyToken, requireRole(['admin', 'registration_staff']), createCockProfile);
-router.put('/:id', verifyToken, requireRole(['admin', 'event_staff', 'registration_staff']), updateCockProfile);
+router.put('/:id', verifyToken, requireRole(['admin', 'bet_staff', 'registration_staff']), updateCockProfile);
 router.delete('/:id', verifyToken, requireRole(['admin', 'registration_staff']), deleteCockProfile);
 
 export default router;

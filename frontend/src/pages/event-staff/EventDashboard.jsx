@@ -89,7 +89,7 @@ const EventDashboard = () => {
 
   return (
     <PageLayout
-      title="Event Staff Dashboard"
+      title="Bet Staff Dashboard"
       description="Manage fight schedules, match results, and track plazada earnings"
     >
       <div className="space-y-6">

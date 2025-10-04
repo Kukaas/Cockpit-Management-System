@@ -41,8 +41,8 @@ const Login = () => {
 			case 'tangkal_staff':
 				navigate('/tangkal-staff', { replace: true })
 				break
-			case 'event_staff':
-				navigate('/event-staff', { replace: true })
+			case 'bet_staff':
+				navigate('/bet-staff', { replace: true })
 				break
 			case 'registration_staff':
 				navigate('/registration-staff', { replace: true })
@@ -59,7 +59,7 @@ const Login = () => {
 		try {
 			const userData = await login(form.username.trim(), form.password)
 			// Redirect based on role after successful login
-			redirectBasedOnRole(userData.role)
+			redirectBasedOnRole(userData)
 		} catch (err) {
 			console.error('Login error details:', err)
 

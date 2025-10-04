@@ -137,18 +137,18 @@ function App() {
 						</PrivateRoute>
 					} />
 
-					{/* Event Staff Routes */}
-					<Route path="/event-staff" element={
+					{/* Bet Staff Routes */}
+					<Route path="/bet-staff" element={
 						<PrivateRoute>
 							<EventDashboard />
 						</PrivateRoute>
 					} />
-					<Route path="/event-staff/fight-schedule" element={
+					<Route path="/bet-staff/fight-schedule" element={
 						<PrivateRoute>
 							<StaffEventSelection />
 						</PrivateRoute>
 					} />
-					<Route path="/event-staff/fight-schedule/:eventId" element={
+					<Route path="/bet-staff/fight-schedule/:eventId" element={
 						<PrivateRoute>
 							<FightSchedule />
 						</PrivateRoute>

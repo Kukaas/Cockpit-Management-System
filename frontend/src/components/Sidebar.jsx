@@ -104,13 +104,13 @@ const SidebarComponent = () => {
 					],
 					categories: []
 				}
-			case 'event_staff':
+			case 'bet_staff':
 				return {
 					base: [
 						...baseItems,
 						{
 							label: 'Fight Schedule',
-							path: '/event-staff/fight-schedule',
+							path: '/bet-staff/fight-schedule',
 							icon: <Swords className="size-4" />
 						}
 					],

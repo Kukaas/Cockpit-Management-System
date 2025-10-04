@@ -9,10 +9,10 @@ router.get('/', verifyToken, getAllParticipants);
 router.get('/:id', verifyToken, getParticipantById);
 router.get('/event/:eventID', verifyToken, getParticipantsByEvent);
 
-// Routes requiring admin, event_staff, or registration_staff role
+// Routes requiring admin, bet_staff, or registration_staff role
 router.post('/', verifyToken, requireRole(['admin', 'registration_staff']), registerParticipant);
-router.put('/:id', verifyToken, requireRole(['admin', 'event_staff', 'registration_staff']), updateParticipant);
-router.patch('/:id/status', verifyToken, requireRole(['admin', 'event_staff', 'registration_staff']), updateParticipantStatus);
+router.put('/:id', verifyToken, requireRole(['admin', 'bet_staff', 'registration_staff']), updateParticipant);
+router.patch('/:id/status', verifyToken, requireRole(['admin', 'bet_staff', 'registration_staff']), updateParticipantStatus);
 router.delete('/:id', verifyToken, requireRole(['admin', 'registration_staff']), deleteParticipant);
 
 export default router;

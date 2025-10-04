@@ -178,11 +178,11 @@ const UserManagement = () => {
       label: 'Role',
       sortable: true,
       filterable: true,
-      filterOptions: ['Entrance Staff', 'Tangkal Staff', 'Event Staff', 'Registration Staff'],
+      filterOptions: ['Entrance Staff', 'Tangkal Staff', 'Bet Staff', 'Registration Staff'],
       filterValueMap: {
         'Entrance Staff': 'entrance_staff',
         'Tangkal Staff': 'tangkal_staff',
-        'Event Staff': 'event_staff',
+        'Bet Staff': 'bet_staff',
         'Registration Staff': 'registration_staff'
       },
       render: (value) => (
@@ -377,7 +377,7 @@ const UserManagement = () => {
             >
               <option value="entrance_staff">Entrance Staff</option>
               <option value="tangkal_staff">Tangkal Staff</option>
-              <option value="event_staff">Event Staff</option>
+              <option value="bet_staff">Bet Staff</option>
               <option value="registration_staff">Registration Staff</option>
             </NativeSelect>
           </div>
@@ -447,7 +447,7 @@ const UserManagement = () => {
             >
               <option value="entrance_staff">Entrance Staff</option>
               <option value="tangkal_staff">Tangkal Staff</option>
-              <option value="event_staff">Event Staff</option>
+              <option value="bet_staff">Bet Staff</option>
               <option value="registration_staff">Registration Staff</option>
             </NativeSelect>
           </div>

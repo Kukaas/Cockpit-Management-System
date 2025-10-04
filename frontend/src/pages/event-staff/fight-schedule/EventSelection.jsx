@@ -162,7 +162,7 @@ const StaffEventSelection = () => {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => navigate(`/event-staff/fight-schedule/${row._id}`)}
+          onClick={() => navigate(`/bet-staff/fight-schedule/${row._id}`)}
           className="flex items-center gap-2"
           disabled={row.status === 'completed' || row.status === 'cancelled'}
         >
@@ -174,7 +174,7 @@ const StaffEventSelection = () => {
   ]
 
   const handleRowClick = (event) => {
-    navigate(`/event-staff/fight-schedule/${event._id}`)
+    navigate(`/bet-staff/fight-schedule/${event._id}`)
   }
 
   return (
@@ -182,7 +182,7 @@ const StaffEventSelection = () => {
       title="Fight Schedule Management"
       description="Select an event to manage fight schedules and match results"
       headerButton={
-        <Button variant="outline" onClick={() => navigate('/event-staff')}>
+        <Button variant="outline" onClick={() => navigate('/bet-staff')}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Dashboard
         </Button>
