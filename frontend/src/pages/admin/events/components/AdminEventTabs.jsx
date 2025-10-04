@@ -1,6 +1,7 @@
 import React from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { UserPlus, Feather, Swords, Trophy } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { UserPlus, Feather, Swords, Trophy, Printer } from 'lucide-react'
 import DataTable from '@/components/custom/DataTable'
 import ChampionshipTab from '../../fight-schedule/components/ChampionshipTab'
 
@@ -18,6 +19,127 @@ const AdminEventTabs = ({
   event = null,
   formatCurrency
 }) => {
+  // Print functionality for participants
+  const handlePrintParticipants = () => {
+    const printWindow = window.open('', '_blank')
+
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Participants List - ${event?.eventName || 'Event'}</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              margin: 20px;
+              color: #333;
+            }
+            .header {
+              text-align: center;
+              margin-bottom: 30px;
+              border-bottom: 2px solid #333;
+              padding-bottom: 20px;
+            }
+            .event-title {
+              font-size: 24px;
+              font-weight: bold;
+              margin-bottom: 10px;
+            }
+            .event-details {
+              font-size: 14px;
+              color: #666;
+              margin-bottom: 5px;
+            }
+            .table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-top: 20px;
+            }
+            .table th,
+            .table td {
+              border: 1px solid #333;
+              padding: 8px;
+              text-align: left;
+            }
+            .table th {
+              background-color: #f5f5f5;
+              font-weight: bold;
+            }
+            .table tr:nth-child(even) {
+              background-color: #f9f9f9;
+            }
+            .no-column {
+              width: 60px;
+              text-align: center;
+            }
+            .name-column {
+              width: 200px;
+            }
+            .wt-column,
+            .vs-column {
+              width: 100px;
+              text-align: center;
+            }
+            @media print {
+              body { margin: 0; }
+              .no-print { display: none; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div class="event-title">${event?.eventName || 'Event Name'}</div>
+            <div class="event-details">Date: ${event?.date ? new Date(event.date).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            }) : 'N/A'}</div>
+            <div class="event-details">Time: ${event?.date ? new Date(event.date).toLocaleTimeString('en-US', {
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: true
+            }) : 'N/A'}</div>
+            <div class="event-details">Location: ${event?.location || 'N/A'}</div>
+            <div class="event-details">Type: ${event?.eventType || 'N/A'}</div>
+            <div class="event-details">Entrance Fee: ${event?.entranceFee ? formatCurrency(event.entranceFee) : 'N/A'}</div>
+            <div class="event-details">Max Participants: ${event?.maxParticipants || 'N/A'}</div>
+            <div class="event-details">Registration Deadline: ${event?.registrationDeadline ? new Date(event.registrationDeadline).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            }) : 'N/A'}</div>
+          </div>
+
+          <table class="table">
+            <thead>
+              <tr>
+                <th class="no-column">No.</th>
+                <th class="name-column">Entry Name / Participant Name</th>
+                <th class="wt-column">WT</th>
+                <th class="vs-column">VS</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${participants.map((participant, index) => `
+                <tr>
+                  <td class="no-column">${index + 1}</td>
+                  <td class="name-column">${participant.participantName}</td>
+                  <td class="wt-column"></td>
+                  <td class="vs-column"></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `
+
+    printWindow.document.write(printContent)
+    printWindow.document.close()
+    printWindow.focus()
+    printWindow.print()
+    printWindow.close()
+  }
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
       <TabsList className={`grid w-full ${event?.eventType === 'derby' ? 'grid-cols-5' : 'grid-cols-4'}`}>
@@ -48,6 +170,14 @@ const AdminEventTabs = ({
       <TabsContent value="participants" className="space-y-4">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold">Registered Participants</h3>
+          <Button
+            onClick={handlePrintParticipants}
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            <Printer className="h-4 w-4" />
+            Print Participants
+          </Button>
         </div>
         <DataTable
           data={participants}
