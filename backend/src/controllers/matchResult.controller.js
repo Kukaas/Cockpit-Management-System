@@ -22,10 +22,30 @@ export const createMatchResult = async (req, res) => {
     // Validate fight schedule exists
     const fightSchedule = await FightSchedule.findById(matchID)
       .populate('participantsID', 'participantName')
-      .populate('cockProfileID', 'legband weight entryNo ownerName');
+      .populate('cockProfileID', 'legband weight entryNo ownerName')
+      .populate('eventID', 'eventType');
 
     if (!fightSchedule) {
       return res.status(404).json({ message: 'Fight schedule not found' });
+    }
+
+    // Get event type for validation
+    const event = await Event.findById(fightSchedule.eventID);
+    const eventType = event?.eventType;
+
+    // Validate matchTimeSeconds for fastest kill events
+    // Note: Frontend sends total seconds (converted from minutes + seconds)
+    if (eventType === 'fastest_kill') {
+      if (matchTimeSeconds === undefined || matchTimeSeconds === null) {
+        return res.status(400).json({ message: 'Match time (in seconds) is required for fastest kill events' });
+      }
+      if (typeof matchTimeSeconds !== 'number' || matchTimeSeconds < 0) {
+        return res.status(400).json({ message: 'Match time must be a non-negative number' });
+      }
+      // Validate reasonable time range (0 to 10 minutes = 600 seconds)
+      if (matchTimeSeconds > 600) {
+        return res.status(400).json({ message: 'Match time cannot exceed 600 seconds (10 minutes)' });
+      }
     }
 
     // Check if fight is in correct status for result recording
@@ -71,8 +91,8 @@ export const createMatchResult = async (req, res) => {
     const gap = Math.max(0, meronBet.betAmount - walaBet.betAmount) // Gap filled by outside bets (only positive)
     const totalBetPool = meronBet.betAmount + walaBet.betAmount + gap // Total: Meron + Wala + Outside bets
 
-    // Calculate plazada (will be calculated in the model based on winner)
-    // NEW: Plazada is now only collected from the winner (10% of winner's bet)
+    // Calculate plazada (will be calculated in the model based on loser)
+    // NEW: Plazada is now only collected from the loser (10% of loser's bet)
     const totalPlazada = 0 // This will be calculated in the model after betWinner is determined
 
     // Create match result
@@ -247,9 +267,32 @@ export const updateMatchResult = async (req, res) => {
       status
     } = req.body;
 
-    const matchResult = await MatchResult.findById(id);
+    const matchResult = await MatchResult.findById(id)
+      .populate({
+        path: 'matchID',
+        populate: { path: 'eventID', select: 'eventType' }
+      });
+
     if (!matchResult) {
       return res.status(404).json({ message: 'Match result not found' });
+    }
+
+    // Get event type for validation
+    const eventType = matchResult.matchID?.eventID?.eventType;
+
+    // Validate matchTimeSeconds for fastest kill events
+    // Note: Frontend sends total seconds (converted from minutes + seconds)
+    if (matchTimeSeconds !== undefined && eventType === 'fastest_kill') {
+      if (matchTimeSeconds === null) {
+        return res.status(400).json({ message: 'Match time (in seconds) is required for fastest kill events' });
+      }
+      if (typeof matchTimeSeconds !== 'number' || matchTimeSeconds < 0) {
+        return res.status(400).json({ message: 'Match time must be a non-negative number' });
+      }
+      // Validate reasonable time range (0 to 10 minutes = 600 seconds)
+      if (matchTimeSeconds > 600) {
+        return res.status(400).json({ message: 'Match time cannot exceed 600 seconds (10 minutes)' });
+      }
     }
 
     // Check if result is already verified and final
@@ -270,8 +313,8 @@ export const updateMatchResult = async (req, res) => {
       const gap = Math.max(0, meronBet.betAmount - walaBet.betAmount); // Gap filled by outside bets (only positive)
       const totalBetPool = meronBet.betAmount + walaBet.betAmount + gap; // Total: Meron + Wala + Outside bets
 
-      // Plazada will be calculated in the model based on winner
-      // NEW: Plazada is now only collected from the winner (10% of winner's bet)
+      // Plazada will be calculated in the model based on loser
+      // NEW: Plazada is now only collected from the loser (10% of loser's bet)
       matchResult.totalBetPool = totalBetPool;
       // totalPlazada will be calculated in the model after betWinner is determined
     }

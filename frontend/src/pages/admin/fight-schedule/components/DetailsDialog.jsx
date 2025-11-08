@@ -193,7 +193,13 @@ const DetailsDialog = ({
             <div className="space-y-4">
               <div>
                 <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Match Time</label>
-                <p className="mt-1 text-sm text-gray-900">{result.matchTimeSeconds ? `${result.matchTimeSeconds} seconds` : 'N/A'}</p>
+                <p className="mt-1 text-sm text-gray-900">
+                  {result.matchTimeSeconds ? (() => {
+                    const minutes = Math.floor(result.matchTimeSeconds / 60)
+                    const seconds = (result.matchTimeSeconds % 60).toFixed(2)
+                    return minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`
+                  })() : 'N/A'}
+                </p>
               </div>
             </div>
           )}
@@ -359,25 +365,27 @@ const DetailsDialog = ({
           const wala = bets.find(b => b.position === 'Wala')
           const meronAmt = meron?.betAmount || 0
           const walaAmt = wala?.betAmount || 0
-          const opponentContribution = Math.min(meronAmt, walaAmt)
           const winnerIsMeron = result.betWinner === 'Meron'
           const outsideBets = Math.max(0, meronAmt - walaAmt)
-          const winnerBetAmt = winnerIsMeron ? meronAmt : result.betWinner === 'Wala' ? walaAmt : 0
-          const winnerPlazada = winnerBetAmt * 0.10
 
-          const meronNet = winnerIsMeron ? Math.max(0, opponentContribution + outsideBets - winnerPlazada) : 0
-          const walaNet = !winnerIsMeron && result.betWinner === 'Wala' ? Math.max(0, opponentContribution - winnerPlazada) : 0
+          // Plazada is collected from the loser (10% of loser's bet)
+          const loserBetAmt = winnerIsMeron ? walaAmt : result.betWinner === 'Wala' ? meronAmt : 0
+          const totalPlazada = loserBetAmt * 0.10
+
+          // Winner gets their bet amount back (no plazada deduction)
+          const meronPayout = winnerIsMeron ? meronAmt : 0
+          const walaPayout = !winnerIsMeron && result.betWinner === 'Wala' ? walaAmt : 0
 
           return (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="bg-gray-50 rounded-lg p-6 text-center">
-                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Meron Net Winnings</label>
-                <p className="mt-2 text-xl font-semibold text-purple-700">{formatCurrency(meronNet)}</p>
+                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Meron Payout</label>
+                <p className="mt-2 text-xl font-semibold text-purple-700">{formatCurrency(meronPayout)}</p>
               </div>
 
               <div className="bg-gray-50 rounded-lg p-6 text-center">
-                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Wala Net Winnings</label>
-                <p className="mt-2 text-xl font-semibold text-purple-700">{formatCurrency(walaNet)}</p>
+                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Wala Payout</label>
+                <p className="mt-2 text-xl font-semibold text-purple-700">{formatCurrency(walaPayout)}</p>
               </div>
 
               <div className="bg-gray-50 rounded-lg p-6 text-center">
@@ -386,8 +394,8 @@ const DetailsDialog = ({
               </div>
 
               <div className="bg-gray-50 rounded-lg p-6 text-center">
-                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Plazada</label>
-                <p className="mt-2 text-xl font-semibold text-emerald-700">{formatCurrency(winnerPlazada)}</p>
+                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Plazada (from Loser)</label>
+                <p className="mt-2 text-xl font-semibold text-emerald-700">{formatCurrency(totalPlazada)}</p>
               </div>
             </div>
           )

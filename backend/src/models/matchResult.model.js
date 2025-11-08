@@ -111,10 +111,13 @@ const matchResultSchema = new mongoose.Schema({
   },
 
   // Match time in seconds (for fastest kill events)
+  // Note: Frontend converts minutes + seconds to total seconds before sending
+  // Format: Total seconds as a number (e.g., 83.45 for 1 minute 23.45 seconds)
   matchTimeSeconds: {
     type: Number,
     required: false,
-    min: 0
+    min: 0,
+    max: 600 // Maximum 10 minutes (reasonable limit for fastest kill)
   },
 
   // Who recorded the result
@@ -163,11 +166,12 @@ matchResultSchema.index({ status: 1 });
 matchResultSchema.index({ verified: 1 });
 
 // Pre-save middleware to calculate payouts
-// NEW PLAZADA CALCULATION: Only the winner pays plazada (10% of their bet amount)
-// Example: Player 1 bets 5000, Player 2 bets 4000
-// - Total bet pool: 10000 (5000 + 4000 + 1000 outside bets)
-// - If Player 1 wins: Plazada = 500 (10% of 5000), Winner gets 9500 (5000 + 4000 + 1000 - 500)
-// - If Player 2 wins: Plazada = 400 (10% of 4000), Winner gets 7600 (4000 + 4000 - 400)
+// NEW PLAZADA CALCULATION: Only the loser pays plazada (10% of their bet amount)
+// Example: Meron bets 5000, Wala bets 3000
+// - If Meron loses: Plazada = 500 (10% of 5000), Meron pays 5500 total (5000 + 500)
+// - If Meron wins: Meron gets 5000 (their bet back, no plazada deduction)
+// - If Wala loses: Plazada = 300 (10% of 3000), Wala pays 3300 total (3000 + 300)
+// - If Wala wins: Wala gets 3000 (their bet back, no plazada deduction)
 matchResultSchema.pre('save', function (next) {
   if (this.participantBets && this.participantBets.length === 2) {
     // Find Meron and Wala bets
@@ -180,16 +184,18 @@ matchResultSchema.pre('save', function (next) {
       // Calculate total bet pool: Meron + Wala + Outside bets (gap)
       this.totalBetPool = meronBet.betAmount + walaBet.betAmount + gap
 
-      // Calculate plazada only for the winner (10% of winner's bet)
-      let winnerBet = null
+      // Calculate plazada only from the loser (10% of loser's bet)
+      let loserBet = null
       let totalPlazada = 0
 
       if (this.betWinner === 'Meron') {
-        winnerBet = meronBet
-        totalPlazada = meronBet.betAmount * 0.10
-      } else if (this.betWinner === 'Wala') {
-        winnerBet = walaBet
+        // Meron wins, Wala loses - plazada from Wala
+        loserBet = walaBet
         totalPlazada = walaBet.betAmount * 0.10
+      } else if (this.betWinner === 'Wala') {
+        // Wala wins, Meron loses - plazada from Meron
+        loserBet = meronBet
+        totalPlazada = meronBet.betAmount * 0.10
       } else if (this.betWinner === 'Draw') {
         // Draw: no plazada collected
         totalPlazada = 0
@@ -199,12 +205,12 @@ matchResultSchema.pre('save', function (next) {
 
       // Calculate payouts based on bet winner
       if (this.betWinner === 'Meron') {
-        // When Meron wins, they get their bet + opponent's bet + outside bets - plazada
-        this.payouts.meronPayout = meronBet.betAmount + walaBet.betAmount + gap - totalPlazada
+        // When Meron wins: Meron gets their bet amount (5000), no plazada deduction
+        this.payouts.meronPayout = meronBet.betAmount
         this.payouts.walaPayout = 0
       } else if (this.betWinner === 'Wala') {
-        // When Wala wins, they get their bet + the smaller bet amount - plazada
-        this.payouts.walaPayout = walaBet.betAmount + walaBet.betAmount - totalPlazada
+        // When Wala wins: Wala gets their bet amount (3000), no plazada deduction
+        this.payouts.walaPayout = walaBet.betAmount
         this.payouts.meronPayout = 0
       } else if (this.betWinner === 'Draw') {
         // Draw: each participant gets their bet amount back

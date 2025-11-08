@@ -249,12 +249,20 @@ const FastestKillWinnersTab = ({ eventId, eventType, formatCurrency }) => {
             label: 'Time',
             sortable: true,
             filterable: false,
-            render: (value) => (
-                <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-blue-600" />
-                    <span className="font-mono font-semibold">{value}s</span>
-                </div>
-            )
+            render: (value) => {
+                // Convert seconds to minutes and seconds
+                const minutes = Math.floor(value / 60)
+                const seconds = (value % 60).toFixed(2)
+                const displayTime = minutes > 0
+                    ? `${minutes}m ${seconds}s`
+                    : `${seconds}s`
+                return (
+                    <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-blue-600" />
+                        <span className="font-mono font-semibold">{displayTime}</span>
+                    </div>
+                )
+            }
         },
         {
             key: 'prizeAmount',
@@ -439,7 +447,13 @@ const FastestKillWinnersTab = ({ eventId, eventType, formatCurrency }) => {
                                     <div className="space-y-2">
                                         <div className="flex justify-between items-center">
                                             <span className="text-sm text-muted-foreground">Time:</span>
-                                            <span className="font-mono font-semibold">{winner.matchTime}s</span>
+                                            <span className="font-mono font-semibold">
+                                                {(() => {
+                                                    const minutes = Math.floor(winner.matchTime / 60)
+                                                    const seconds = (winner.matchTime % 60).toFixed(2)
+                                                    return minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`
+                                                })()}
+                                            </span>
                                         </div>
                                         <div className="flex justify-between items-center">
                                             <span className="text-sm text-muted-foreground">Prize:</span>

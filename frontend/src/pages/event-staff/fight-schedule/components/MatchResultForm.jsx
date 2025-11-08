@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import CustomAlertDialog from '@/components/custom/CustomAlertDialog'
@@ -39,29 +39,29 @@ const MatchResultForm = ({
     const walaBet = bet1.betAmount > bet2.betAmount ? bet2 : bet1
 
     const gap = Math.max(0, meronBet.betAmount - walaBet.betAmount) // Outside bets only exist when Meron > Wala
-    const opponentContribution = Math.min(bet1.betAmount, bet2.betAmount)
 
-    // Calculate net winnings (excluding winner's own stake)
-    let winnerPlazada = 0
-    let meronNetWinnings = 0
-    let walaNetWinnings = 0
+    // Calculate plazada from the loser (10% of loser's bet)
+    let loserPlazada = 0
+    let meronPayout = 0
+    let walaPayout = 0
+    let loserBet = null
 
     if (formData.winnerParticipantID) {
       const winnerBet = formData.participantBets.find(bet => bet.participantID === formData.winnerParticipantID)
-      if (winnerBet) {
-        winnerPlazada = winnerBet.betAmount * 0.10
+      loserBet = formData.participantBets.find(bet => bet.participantID !== formData.winnerParticipantID)
 
+      if (winnerBet && loserBet) {
+        // Plazada is collected from the loser (10% of loser's bet)
+        loserPlazada = loserBet.betAmount * 0.10
+
+        // Winner gets their bet amount back (no plazada deduction)
         const winnerIsMeron = meronBet.participantID === formData.winnerParticipantID
-        const outsideForWinner = winnerIsMeron ? gap : 0
-
-        const netWinnings = opponentContribution + outsideForWinner - winnerPlazada
-
         if (winnerIsMeron) {
-          meronNetWinnings = Math.max(0, netWinnings)
-          walaNetWinnings = 0
+          meronPayout = meronBet.betAmount
+          walaPayout = 0
         } else {
-          walaNetWinnings = Math.max(0, netWinnings)
-          meronNetWinnings = 0
+          walaPayout = walaBet.betAmount
+          meronPayout = 0
         }
       }
     }
@@ -69,16 +69,55 @@ const MatchResultForm = ({
     return {
       meronBet,
       walaBet,
-      opponentContribution,
-      meronNetWinnings,
-      walaNetWinnings,
+      meronPayout,
+      walaPayout,
       outsideBets: gap,
-      winnerPlazada,
-      totalPlazada: winnerPlazada
+      loserPlazada,
+      totalPlazada: loserPlazada,
+      loserBet
     }
   }
 
   const bettingInfo = calculateBettingInfo()
+
+  // Helper functions to convert between seconds and minutes/seconds
+  const secondsToMinutesAndSeconds = (totalSeconds) => {
+    if (!totalSeconds || totalSeconds === 0) return { minutes: 0, seconds: 0 }
+    const minutes = Math.floor(totalSeconds / 60)
+    const seconds = Math.round((totalSeconds % 60) * 100) / 100 // Round to 2 decimal places
+    return { minutes, seconds }
+  }
+
+  const minutesAndSecondsToSeconds = (minutes, seconds) => {
+    const mins = parseFloat(minutes) || 0
+    const secs = parseFloat(seconds) || 0
+    return mins * 60 + secs
+  }
+
+  // Get current minutes and seconds from formData.matchTimeSeconds
+  const timeDisplay = secondsToMinutesAndSeconds(formData.matchTimeSeconds || 0)
+  const [matchMinutes, setMatchMinutes] = useState(timeDisplay.minutes.toString())
+  const [matchSeconds, setMatchSeconds] = useState(timeDisplay.seconds.toString())
+
+  // Update local state when formData.matchTimeSeconds changes (for edit mode)
+  useEffect(() => {
+    const timeDisplay = secondsToMinutesAndSeconds(formData.matchTimeSeconds || 0)
+    setMatchMinutes(timeDisplay.minutes.toString())
+    setMatchSeconds(timeDisplay.seconds.toString())
+  }, [formData.matchTimeSeconds])
+
+  // Handle time input changes
+  const handleMinutesChange = (value) => {
+    setMatchMinutes(value)
+    const totalSeconds = minutesAndSecondsToSeconds(value, matchSeconds)
+    onInputChange('matchTimeSeconds', totalSeconds)
+  }
+
+  const handleSecondsChange = (value) => {
+    setMatchSeconds(value)
+    const totalSeconds = minutesAndSecondsToSeconds(matchMinutes, value)
+    onInputChange('matchTimeSeconds', totalSeconds)
+  }
 
   return (
     <CustomAlertDialog
@@ -243,19 +282,33 @@ const MatchResultForm = ({
         {/* Match Timing */}
         <div className="space-y-4">
           <h4 className="font-medium">Match Timing</h4>
-          {/* Only show time in seconds for fastest kill events */}
+          {/* Only show time inputs for fastest kill events */}
           {event?.eventType === 'fastest_kill' && (
-            <InputField
-              id={isEdit ? "editMatchTimeSeconds" : "matchTimeSeconds"}
-              label="Match Time (Seconds) *"
-              type="number"
-              value={formData.matchTimeSeconds}
-              onChange={(e) => onInputChange('matchTimeSeconds', e.target.value)}
-              placeholder="Enter time in seconds (e.g., 3.20)"
-              min="0"
-              step="0.01"
-              required
-            />
+            <div className="grid grid-cols-2 gap-4">
+              <InputField
+                id={isEdit ? "editMatchMinutes" : "matchMinutes"}
+                label="Minutes *"
+                type="number"
+                value={matchMinutes}
+                onChange={(e) => handleMinutesChange(e.target.value)}
+                placeholder="0"
+                min="0"
+                step="1"
+                required
+              />
+              <InputField
+                id={isEdit ? "editMatchSeconds" : "matchSeconds"}
+                label="Seconds *"
+                type="number"
+                value={matchSeconds}
+                onChange={(e) => handleSecondsChange(e.target.value)}
+                placeholder="0.00"
+                min="0"
+                max="59.99"
+                step="0.01"
+                required
+              />
+            </div>
           )}
         </div>
 
@@ -305,8 +358,17 @@ const MatchResultForm = ({
                       <span className="font-semibold text-gray-900">₱{bettingInfo.meronBet.betAmount?.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-xs text-gray-500">Plazada (if wins):</span>
-                      <span className="font-semibold text-emerald-600">₱{(bettingInfo.meronBet.betAmount * 0.10)?.toLocaleString()}</span>
+                      <span className="text-xs text-gray-500">
+                        {bettingInfo.loserBet?.participantID === bettingInfo.meronBet.participantID
+                          ? 'Plazada (if loses):'
+                          : 'Payout (if wins):'}
+                      </span>
+                      <span className={`font-semibold ${bettingInfo.loserBet?.participantID === bettingInfo.meronBet.participantID ? 'text-red-600' : 'text-emerald-600'}`}>
+                        {bettingInfo.loserBet?.participantID === bettingInfo.meronBet.participantID
+                          ? `₱${(bettingInfo.meronBet.betAmount * 0.10)?.toLocaleString()}`
+                          : `₱${bettingInfo.meronBet.betAmount?.toLocaleString()}`
+                        }
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -328,8 +390,17 @@ const MatchResultForm = ({
                       <span className="font-semibold text-gray-900">₱{bettingInfo.walaBet.betAmount?.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-xs text-gray-500">Plazada (if wins):</span>
-                      <span className="font-semibold text-emerald-600">₱{(bettingInfo.walaBet.betAmount * 0.10)?.toLocaleString()}</span>
+                      <span className="text-xs text-gray-500">
+                        {bettingInfo.loserBet?.participantID === bettingInfo.walaBet.participantID
+                          ? 'Plazada (if loses):'
+                          : 'Payout (if wins):'}
+                      </span>
+                      <span className={`font-semibold ${bettingInfo.loserBet?.participantID === bettingInfo.walaBet.participantID ? 'text-red-600' : 'text-emerald-600'}`}>
+                        {bettingInfo.loserBet?.participantID === bettingInfo.walaBet.participantID
+                          ? `₱${(bettingInfo.walaBet.betAmount * 0.10)?.toLocaleString()}`
+                          : `₱${bettingInfo.walaBet.betAmount?.toLocaleString()}`
+                        }
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -368,14 +439,19 @@ const MatchResultForm = ({
                     if (winnerBet) {
                       const isMeron = bettingInfo.meronBet.participantID === formData.winnerParticipantID
                       if (isMeron) {
-                        return `Meron wins! ₱${bettingInfo.meronNetWinnings?.toLocaleString()} (Opponent: ₱${bettingInfo.opponentContribution?.toLocaleString()} + Outside: ₱${bettingInfo.outsideBets?.toLocaleString()} - Plazada: ₱${bettingInfo.winnerPlazada?.toLocaleString()})`
+                        return `Meron wins! Gets ₱${bettingInfo.meronPayout?.toLocaleString()}`
                       } else {
-                        return `Wala wins! ₱${bettingInfo.walaNetWinnings?.toLocaleString()} (Opponent: ₱${bettingInfo.opponentContribution?.toLocaleString()} - Plazada: ₱${bettingInfo.winnerPlazada?.toLocaleString()})`
+                        return `Wala wins! Gets ₱${bettingInfo.walaPayout?.toLocaleString()}`
                       }
                     }
                     return 'Select winner to see payout'
                   })()}
                 </div>
+                {bettingInfo.loserBet && (
+                  <div className="text-sm text-red-600 mt-2">
+                    Loser pays: ₱{bettingInfo.loserBet.betAmount?.toLocaleString()} + ₱{bettingInfo.loserPlazada?.toLocaleString()} plazada = ₱{(bettingInfo.loserBet.betAmount + bettingInfo.loserPlazada)?.toLocaleString()} total
+                  </div>
+                )}
               </div>
             </div>
           </div>

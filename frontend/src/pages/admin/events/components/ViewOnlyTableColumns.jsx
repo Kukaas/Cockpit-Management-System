@@ -274,14 +274,20 @@ export const createViewOnlyMatchResultColumns = (formatCurrency, formatDate, han
       label: 'Match Time',
       sortable: true,
       filterable: false,
-      render: (value) => (
-        <div className="space-y-1 text-sm">
-          <div className="flex items-center gap-1">
-            <Clock className="h-3 w-3" />
-            <span>{value ? `${value}s` : 'N/A'}</span>
+      render: (value) => {
+        if (!value) return <span>N/A</span>
+        const minutes = Math.floor(value / 60)
+        const seconds = (value % 60).toFixed(2)
+        const displayTime = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`
+        return (
+          <div className="space-y-1 text-sm">
+            <div className="flex items-center gap-1">
+              <Clock className="h-3 w-3" />
+              <span>{displayTime}</span>
+            </div>
           </div>
-        </div>
-      )
+        )
+      }
     }
   ] : []),
   {

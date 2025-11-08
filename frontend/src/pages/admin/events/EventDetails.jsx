@@ -459,7 +459,13 @@ const EventDetails = () => {
                       <div className="space-y-4">
                         <div>
                           <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Match Time</label>
-                          <p className="mt-1 text-sm text-gray-900">{selectedItem.matchTimeSeconds ? `${selectedItem.matchTimeSeconds} seconds` : 'N/A'}</p>
+                          <p className="mt-1 text-sm text-gray-900">
+                            {selectedItem.matchTimeSeconds ? (() => {
+                              const minutes = Math.floor(selectedItem.matchTimeSeconds / 60)
+                              const seconds = (selectedItem.matchTimeSeconds % 60).toFixed(2)
+                              return minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`
+                            })() : 'N/A'}
+                          </p>
                         </div>
                       </div>
                     )}
@@ -521,8 +527,12 @@ const EventDetails = () => {
                           </div>
 
                           <div>
-                            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Plazada (10%)</label>
-                            <p className="mt-1 text-sm font-semibold text-emerald-600">{formatCurrency(bet.betAmount * 0.10)}</p>
+                            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                              {selectedItem.betWinner === bet.position ? 'Plazada (Winner - No Plazada)' : 'Plazada (10% - Loser)'}
+                            </label>
+                            <p className="mt-1 text-sm font-semibold text-emerald-600">
+                              {selectedItem.betWinner === bet.position ? '₱0' : formatCurrency(bet.betAmount * 0.10)}
+                            </p>
                           </div>
                         </div>
                       </div>
