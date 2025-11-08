@@ -33,6 +33,8 @@ import RentalEventSelection from './pages/tangkal-staff/rentals/EventSelection'
 import AdminTangkalEventSelection from './pages/admin/tangkal/EventSelection'
 import AdminEventRentals from './pages/admin/tangkal/EventRentals'
 import AdminCageAvailability from './pages/admin/cage-availability/AdminCageAvailability'
+import Reports from './pages/admin/reports/Reports'
+import ReportDetails from './pages/admin/reports/ReportDetails'
 
 function PrivateRoute({ children }) {
 	const { user, loading } = useAuth()
@@ -134,6 +136,18 @@ function App() {
 					<Route path="/admin/cage-availability" element={
 						<PrivateRoute>
 							<AdminCageAvailability />
+						</PrivateRoute>
+					} />
+
+					{/* Admin Reports Routes */}
+					<Route path="/admin/reports" element={
+						<PrivateRoute>
+							<Reports />
+						</PrivateRoute>
+					} />
+					<Route path="/admin/reports/:eventId" element={
+						<PrivateRoute>
+							<ReportDetails />
 						</PrivateRoute>
 					} />
 

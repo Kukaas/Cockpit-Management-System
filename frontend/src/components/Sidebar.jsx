@@ -4,7 +4,7 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupConte
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { LogOut, User, Settings, BarChart3, Users, Settings as SettingsIcon, TrendingUp, CheckSquare, ClipboardList, Shield, AlertTriangle, Calendar, PartyPopper, FileText, ClipboardCheck, UserPlus, Swords, File, Ticket } from 'lucide-react'
+import { LogOut, User, Settings, BarChart3, Users, Settings as SettingsIcon, TrendingUp, CheckSquare, ClipboardList, Shield, AlertTriangle, Calendar, PartyPopper, FileText, ClipboardCheck, UserPlus, Swords, File, Ticket, FileBarChart } from 'lucide-react'
 import useAuth from '@/hooks/useAuth'
 import logo from '@/assets/logo.png'
 
@@ -60,6 +60,16 @@ const SidebarComponent = () => {
 									label: 'Cage Availability',
 									path: '/admin/cage-availability',
 									icon: <File className="size-4" />
+								}
+							]
+						},
+						{
+							label: 'Reports',
+							items: [
+								{
+									label: 'Reports',
+									path: '/admin/reports',
+									icon: <FileBarChart className="size-4" />
 								}
 							]
 						},
