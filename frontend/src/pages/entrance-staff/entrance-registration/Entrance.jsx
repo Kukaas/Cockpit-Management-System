@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Plus } from 'lucide-react'
+import { ArrowLeft, Plus, Printer } from 'lucide-react'
 import PageLayout from '@/layouts/PageLayout'
 import { toast } from 'sonner'
 import { useGetAll, useGetById } from '@/hooks/useApiQueries'
@@ -9,6 +9,7 @@ import { useCreateMutation, usePutMutation, useCustomMutation } from '@/hooks/us
 import api from '@/services/api'
 import ConfirmationDialog from '@/components/custom/ConfirmationDialog'
 import DataTable from '@/components/custom/DataTable'
+import { printEntranceReport } from '@/lib/printEntranceReport'
 
 // Import custom components
 import EventDetailsCard from './components/EventDetailsCard'
@@ -195,6 +196,18 @@ const Entrance = () => {
     isEventCompleted
   )
 
+  // Print functionality
+  const handlePrint = () => {
+    printEntranceReport({
+      event: selectedEvent,
+      entrances,
+      formatDate,
+      formatCurrency,
+      totalEntrances,
+      totalRevenue
+    })
+  }
+
   if (eventLoading) {
     return (
       <PageLayout title="Loading..." description="Loading event details...">
@@ -262,10 +275,16 @@ const Entrance = () => {
       <div className="space-y-4">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold">Entrance Tally Records ({entrances.length})</h3>
-          <Button onClick={() => setAddEntranceDialogOpen(true)} disabled={isEventCompleted || isAtCapacity}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Tally
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handlePrint}>
+              <Printer className="h-4 w-4 mr-2" />
+              Print Report
+            </Button>
+            <Button onClick={() => setAddEntranceDialogOpen(true)} disabled={isEventCompleted || isAtCapacity}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Tally
+            </Button>
+          </div>
         </div>
         <DataTable
           data={entrances}

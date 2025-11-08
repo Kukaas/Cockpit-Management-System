@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Printer } from 'lucide-react'
 import PageLayout from '@/layouts/PageLayout'
 import { useGetAll, useGetById } from '@/hooks/useApiQueries'
+import { printEntranceReport } from '@/lib/printEntranceReport'
 
 // Import custom components
 import EventDetailsCard from './components/EventDetailsCard'
@@ -59,6 +60,18 @@ const Entrance = () => {
   // Create table columns (view-only)
   const entranceColumns = createAdminEntranceColumns(formatDate, formatCurrency)
 
+  // Print functionality
+  const handlePrint = () => {
+    printEntranceReport({
+      event: selectedEvent,
+      entrances,
+      formatDate,
+      formatCurrency,
+      totalEntrances,
+      totalRevenue
+    })
+  }
+
   if (eventLoading) {
     return (
       <PageLayout title="Loading..." description="Loading event details...">
@@ -108,6 +121,13 @@ const Entrance = () => {
 
       {/* Entrance Records Section */}
       <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-semibold">Entrance Tally Records ({entrances.length})</h3>
+          <Button variant="outline" onClick={handlePrint}>
+            <Printer className="h-4 w-4 mr-2" />
+            Print Report
+          </Button>
+        </div>
         <DataTable
           data={entrances}
           columns={entranceColumns}
