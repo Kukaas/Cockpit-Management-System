@@ -48,9 +48,15 @@ const VerifyEmail = () => {
       }
     } catch (error) {
       // Check if it's an expired token error
-      if (error.response?.data?.message && error.response.data.message.includes("expired")) {
+      if (error.response?.data?.message &&
+        (error.response.data.message.toLowerCase().includes("expired") ||
+          error.response.data.message.toLowerCase().includes("expire"))) {
         setStatus("expired");
-        setMessage("Verification link has expired. Please request a new verification email.");
+        setMessage("Verification link has expired. Please enter your email below to request a new verification email.");
+        // Try to extract email from error response if available
+        if (error.response?.data?.email) {
+          setEmail(error.response.data.email);
+        }
       } else {
         setStatus("error");
         setMessage(error.response?.data?.message || "Verification failed. Please try again.");
@@ -70,9 +76,9 @@ const VerifyEmail = () => {
 
       if (response.data.success) {
         toast.success("Verification email sent successfully! Please check your inbox.");
-        setStatus("verifying");
-        setMessage("");
-        navigate('/login');
+        setMessage("A new verification email has been sent. Please check your inbox and click the verification link. You can resend again if needed.");
+        // Keep status as "expired" so user can resend again if needed
+        // Don't redirect to login - let them stay on the page
       } else {
         toast.error(response.data.message || "Failed to send verification email");
       }
@@ -207,7 +213,7 @@ const VerifyEmail = () => {
               </div>
               <Button
                 onClick={handleResendVerification}
-                disabled={isResending}
+                disabled={isResending || !email.trim()}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition-colors disabled:opacity-50"
               >
                 {isResending ? "Sending..." : "Resend Verification Email"}
@@ -231,12 +237,12 @@ const VerifyEmail = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
-      <CardHeader className="text-center">
-					<div className="mx-auto mb-2 size-16 rounded-full bg-black grid place-items-center">
-						<img src={logo} alt="Cockpit" className="size-12 object-contain invert" />
-					</div>
-					<CardTitle>Cockpit Management System</CardTitle>
-				</CardHeader>
+        <CardHeader className="text-center">
+          <div className="mx-auto mb-2 size-16 rounded-full bg-black grid place-items-center">
+            <img src={logo} alt="Cockpit" className="size-12 object-contain invert" />
+          </div>
+          <CardTitle>Cockpit Management System</CardTitle>
+        </CardHeader>
         <CardContent>
           {renderContent()}
         </CardContent>
