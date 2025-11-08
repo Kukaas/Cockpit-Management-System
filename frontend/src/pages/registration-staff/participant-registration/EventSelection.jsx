@@ -96,8 +96,8 @@ const EventSelection = () => {
             <Badge
               variant={
                 value === 'championship' ? 'destructive' :
-                value === 'special' ? 'default' :
-                value === 'exhibition' ? 'secondary' : 'outline'
+                  value === 'special' ? 'default' :
+                    value === 'exhibition' ? 'secondary' : 'outline'
               }
               className="text-xs capitalize"
             >
@@ -115,8 +115,8 @@ const EventSelection = () => {
         <Badge
           variant={
             value === 'active' ? 'default' :
-            value === 'completed' ? 'secondary' :
-            value === 'cancelled' ? 'destructive' : 'outline'
+              value === 'completed' ? 'secondary' :
+                value === 'cancelled' ? 'destructive' : 'outline'
           }
           className="text-xs capitalize"
         >
@@ -195,18 +195,24 @@ const EventSelection = () => {
       title="Select Event for Registration"
       description="Choose an event to register participants and manage cock profiles"
     >
-          <DataTable
-            data={events}
-            columns={columns}
-            pageSize={10}
-            searchable={true}
-            filterable={true}
-            title="Events"
-            onRowClick={handleRowClick}
-            loading={isLoading}
-            emptyMessage="No events available for registration"
-            className="shadow-sm"
-          />
+      <DataTable
+        data={events}
+        columns={columns}
+        pageSize={10}
+        searchable={true}
+        filterable={true}
+        title="Events"
+        onRowClick={handleRowClick}
+        loading={isLoading}
+        emptyMessage="No events available for registration"
+        className="shadow-sm"
+        filterOnlyColumns={[
+          {
+            key: 'location',
+            label: 'Venue'
+          }
+        ]}
+      />
 
     </PageLayout>
   )

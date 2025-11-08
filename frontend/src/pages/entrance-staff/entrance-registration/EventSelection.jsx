@@ -144,6 +144,12 @@ const EventSelection = () => {
         loading={isLoading}
         emptyMessage="No events available for entrance tally"
         className="shadow-sm"
+        filterOnlyColumns={[
+          {
+            key: 'location',
+            label: 'Venue'
+          }
+        ]}
       />
     </PageLayout>
   )

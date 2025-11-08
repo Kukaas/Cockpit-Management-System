@@ -199,6 +199,12 @@ const StaffEventSelection = () => {
         loading={isLoading}
         emptyMessage="No events available for fight scheduling"
         className="shadow-sm"
+        filterOnlyColumns={[
+          {
+            key: 'location',
+            label: 'Venue'
+          }
+        ]}
       />
     </PageLayout>
   )

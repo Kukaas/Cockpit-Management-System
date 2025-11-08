@@ -199,6 +199,12 @@ const EventSelection = () => {
         loading={isLoading}
         emptyMessage="No events available for cage rental management"
         className="shadow-sm"
+        filterOnlyColumns={[
+          {
+            key: 'location',
+            label: 'Venue'
+          }
+        ]}
       />
     </PageLayout>
   )

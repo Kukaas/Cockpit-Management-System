@@ -179,11 +179,10 @@ const EventSelection = () => {
         'Cancelled': 'cancelled'
       },
       render: (value) => (
-        <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-          value === 'active' ? 'bg-green-100 text-green-800' :
-          value === 'completed' ? 'bg-blue-100 text-blue-800' :
-          'bg-red-100 text-red-800'
-        }`}>
+        <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${value === 'active' ? 'bg-green-100 text-green-800' :
+            value === 'completed' ? 'bg-blue-100 text-blue-800' :
+              'bg-red-100 text-red-800'
+          }`}>
           {value.charAt(0).toUpperCase() + value.slice(1)}
         </span>
       )
@@ -240,78 +239,78 @@ const EventSelection = () => {
             <Filter className="h-4 w-4" />
             <CardTitle className="text-lg">Filters</CardTitle>
           </div>
-                     <CardDescription>
-             Filter events and rentals by month, year, event type, status, and venue
-           </CardDescription>
+          <CardDescription>
+            Filter events and rentals by month, year, event type, status, and venue
+          </CardDescription>
         </CardHeader>
-                 <CardContent>
-           <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Month</label>
-                <NativeSelect
-                  value={selectedMonth}
-                  onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-                >
-                  {months.map((month) => (
-                    <option key={month.value} value={month.value}>
-                      {month.label}
-                    </option>
-                  ))}
-                </NativeSelect>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Year</label>
-                <NativeSelect
-                  value={selectedYear}
-                  onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                >
-                  {[2024, 2025, 2026].map((year) => (
-                    <option key={year} value={year}>
-                      {year}
-                    </option>
-                  ))}
-                </NativeSelect>
-              </div>
-                          <div className="space-y-2">
-                <label className="text-sm font-medium">Event Type</label>
-                <NativeSelect
-                  value={selectedEventType}
-                  onChange={(e) => setSelectedEventType(e.target.value)}
-                >
-                  <option value="">All Types</option>
-                  <option value="regular">Regular</option>
-                  <option value="derby">Derby</option>
-                </NativeSelect>
-              </div>
-                             <div className="space-y-2">
-                 <label className="text-sm font-medium">Status</label>
-                 <NativeSelect
-                   value={selectedStatus}
-                   onChange={(e) => setSelectedStatus(e.target.value)}
-                 >
-                   <option value="">All Status</option>
-                   <option value="active">Active</option>
-                   <option value="completed">Completed</option>
-                   <option value="cancelled">Cancelled</option>
-                 </NativeSelect>
-               </div>
-               <div className="space-y-2">
-                 <label className="text-sm font-medium">Venue</label>
-                 <NativeSelect
-                   value={selectedVenue}
-                   onChange={(e) => setSelectedVenue(e.target.value)}
-                 >
-                   <option value="">All Venues</option>
-                   <option value="Buenavista Cockpit Arena">Buenavista Cockpit Arena</option>
-                   <option value="Mogpog Cockpit Arena">Mogpog Cockpit Arena</option>
-                   <option value="Boac Cockpit Arena">Boac Cockpit Arena</option>
-                 </NativeSelect>
-               </div>
-             <div className="flex items-end">
-               <Button variant="outline" onClick={resetFilters} className="w-full">
-                 Reset Filters
-               </Button>
-             </div>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Month</label>
+              <NativeSelect
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+              >
+                {months.map((month) => (
+                  <option key={month.value} value={month.value}>
+                    {month.label}
+                  </option>
+                ))}
+              </NativeSelect>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Year</label>
+              <NativeSelect
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+              >
+                {[2024, 2025, 2026].map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </NativeSelect>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Event Type</label>
+              <NativeSelect
+                value={selectedEventType}
+                onChange={(e) => setSelectedEventType(e.target.value)}
+              >
+                <option value="">All Types</option>
+                <option value="regular">Regular</option>
+                <option value="derby">Derby</option>
+              </NativeSelect>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Status</label>
+              <NativeSelect
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value)}
+              >
+                <option value="">All Status</option>
+                <option value="active">Active</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+              </NativeSelect>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Venue</label>
+              <NativeSelect
+                value={selectedVenue}
+                onChange={(e) => setSelectedVenue(e.target.value)}
+              >
+                <option value="">All Venues</option>
+                <option value="Buenavista Cockpit Arena">Buenavista Cockpit Arena</option>
+                <option value="Mogpog Cockpit Arena">Mogpog Cockpit Arena</option>
+                <option value="Boac Cockpit Arena">Boac Cockpit Arena</option>
+              </NativeSelect>
+            </div>
+            <div className="flex items-end">
+              <Button variant="outline" onClick={resetFilters} className="w-full">
+                Reset Filters
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -390,6 +389,12 @@ const EventSelection = () => {
         loading={isLoading}
         emptyMessage="No events found"
         className="shadow-sm"
+        filterOnlyColumns={[
+          {
+            key: 'location',
+            label: 'Venue'
+          }
+        ]}
       />
     </PageLayout>
   )

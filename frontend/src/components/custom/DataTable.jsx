@@ -24,7 +24,8 @@ const DataTable = ({
   title = 'Data Table',
   onRowClick,
   loading = false,
-  emptyMessage = 'No data available'
+  emptyMessage = 'No data available',
+  filterOnlyColumns = [] // Additional filter columns that don't appear in the table
 }) => {
   const [currentPage, setCurrentPage] = useState(1)
   const [searchTerm, setSearchTerm] = useState('')
@@ -213,8 +214,9 @@ const DataTable = ({
           )}
 
           {/* Filters */}
-          {filterable && columns.length > 0 && (
+          {filterable && (columns.length > 0 || filterOnlyColumns.length > 0) && (
             <div className="flex flex-wrap gap-2">
+              {/* Filter columns from visible table columns */}
               {columns
                 .filter(col => col.filterable === true)
                 .map((col) => (
@@ -237,6 +239,27 @@ const DataTable = ({
                     </Select>
                   </div>
                 ))}
+              {/* Filter-only columns (not visible in table) */}
+              {filterOnlyColumns.map((col) => (
+                <div key={col.key} className="flex items-center space-x-2">
+                  <Select
+                    value={filters[col.key] || 'all'}
+                    onValueChange={(value) => handleFilterChange(col.key, value)}
+                  >
+                    <SelectTrigger className="w-[140px]">
+                      <SelectValue placeholder={col.label} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All {col.label}</SelectItem>
+                      {getFilterOptions(col.key).map((value) => (
+                        <SelectItem key={value} value={value}>
+                          {String(value)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -251,9 +274,8 @@ const DataTable = ({
                 {columns.map((col) => (
                   <TableHead
                     key={col.key}
-                    className={`cursor-pointer hover:bg-muted/50 transition-colors ${
-                      col.sortable !== false ? 'hover:bg-muted/50' : ''
-                    }`}
+                    className={`cursor-pointer hover:bg-muted/50 transition-colors ${col.sortable !== false ? 'hover:bg-muted/50' : ''
+                      }`}
                     onClick={() => col.sortable !== false && handleSort(col.key)}
                   >
                     <div className="flex items-center space-x-2">

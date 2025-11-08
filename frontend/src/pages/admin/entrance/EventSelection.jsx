@@ -144,8 +144,8 @@ const EventSelection = () => {
         <Badge
           variant={
             value === 'active' ? 'default' :
-            value === 'completed' ? 'secondary' :
-            value === 'cancelled' ? 'destructive' : 'outline'
+              value === 'completed' ? 'secondary' :
+                value === 'cancelled' ? 'destructive' : 'outline'
           }
           className="text-xs capitalize"
         >
@@ -358,6 +358,12 @@ const EventSelection = () => {
               loading={isLoading}
               emptyMessage="No events available for entrance tally"
               className="shadow-sm"
+              filterOnlyColumns={[
+                {
+                  key: 'location',
+                  label: 'Venue'
+                }
+              ]}
             />
           </CardContent>
         </Card>
