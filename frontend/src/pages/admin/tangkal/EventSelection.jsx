@@ -180,8 +180,8 @@ const EventSelection = () => {
       },
       render: (value) => (
         <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${value === 'active' ? 'bg-green-100 text-green-800' :
-            value === 'completed' ? 'bg-blue-100 text-blue-800' :
-              'bg-red-100 text-red-800'
+          value === 'completed' ? 'bg-blue-100 text-blue-800' :
+            'bg-red-100 text-red-800'
           }`}>
           {value.charAt(0).toUpperCase() + value.slice(1)}
         </span>
