@@ -180,6 +180,13 @@ const Entrance = () => {
   // Check if event is completed or cancelled
   const isEventCompleted = selectedEvent?.status === 'completed' || selectedEvent?.status === 'cancelled'
 
+  // Check if event date has passed
+  const eventDate = selectedEvent?.date ? new Date(selectedEvent.date) : null
+  const isEventDatePassed = eventDate ? eventDate < new Date() : false
+
+  // Combined check for disabling actions
+  const isEventDisabled = isEventCompleted || isEventDatePassed
+
   // Calculate total entrances and revenue
   const totalEntrances = entrances.reduce((sum, entrance) => sum + entrance.count, 0)
   const totalRevenue = totalEntrances * (selectedEvent?.entranceFee || 0) // Use dynamic entrance fee
@@ -193,7 +200,7 @@ const Entrance = () => {
     formatCurrency,
     handleEditEntranceClick,
     handleDeleteEntranceClick,
-    isEventCompleted
+    isEventDisabled
   )
 
   // Print functionality
@@ -280,7 +287,7 @@ const Entrance = () => {
               <Printer className="h-4 w-4 mr-2" />
               Print Report
             </Button>
-            <Button onClick={() => setAddEntranceDialogOpen(true)} disabled={isEventCompleted || isAtCapacity}>
+            <Button onClick={() => setAddEntranceDialogOpen(true)} disabled={isEventDisabled || isAtCapacity}>
               <Plus className="h-4 w-4 mr-2" />
               Add Tally
             </Button>

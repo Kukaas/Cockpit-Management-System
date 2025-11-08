@@ -186,6 +186,7 @@ const EventSelection = () => {
   ]
 
   const handleRowClick = (event) => {
+    // Allow navigation even if event date has passed - only button is disabled
     navigate(`/admin/entrance/${event._id}`)
   }
 

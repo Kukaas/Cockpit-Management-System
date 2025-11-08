@@ -109,22 +109,29 @@ const EventSelection = () => {
       label: 'Actions',
       sortable: false,
       filterable: false,
-      render: (_, row) => (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => navigate(`/entrance-staff/entrance-registration/${row._id}`)}
-          className="flex items-center gap-2"
-          disabled={row.status === 'completed' || row.status === 'cancelled'}
-        >
-          <UserPlus className="h-4 w-4" />
-          Record Entrances
-        </Button>
-      )
+      render: (_, row) => {
+        const eventDate = new Date(row.date)
+        const isEventDatePassed = eventDate < new Date()
+        const isDisabled = row.status === 'completed' || row.status === 'cancelled' || isEventDatePassed
+
+        return (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate(`/entrance-staff/entrance-registration/${row._id}`)}
+            className="flex items-center gap-2"
+            disabled={isDisabled}
+          >
+            <UserPlus className="h-4 w-4" />
+            Record Entrances
+          </Button>
+        )
+      }
     }
   ]
 
   const handleRowClick = (event) => {
+    // Allow navigation even if event date has passed - only button is disabled
     navigate(`/entrance-staff/entrance-registration/${event._id}`)
   }
 

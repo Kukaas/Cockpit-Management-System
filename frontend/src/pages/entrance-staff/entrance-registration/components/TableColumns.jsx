@@ -2,7 +2,7 @@ import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Edit, Trash2 } from 'lucide-react'
 
-export const createEntranceColumns = (formatDate, formatCurrency, handleEditClick, handleDeleteClick, isEventCompleted = false) => [
+export const createEntranceColumns = (formatDate, formatCurrency, handleEditClick, handleDeleteClick, isEventDisabled = false) => [
   {
     key: 'count',
     label: 'Number of Entrances',
@@ -39,7 +39,7 @@ export const createEntranceColumns = (formatDate, formatCurrency, handleEditClic
             handleEditClick(row)
           }}
           className="h-8 w-8 p-0"
-          disabled={isEventCompleted}
+          disabled={isEventDisabled}
         >
           <Edit className="h-4 w-4" />
         </Button>
@@ -51,7 +51,7 @@ export const createEntranceColumns = (formatDate, formatCurrency, handleEditClic
             handleDeleteClick(row)
           }}
           className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-          disabled={isEventCompleted}
+          disabled={isEventDisabled}
         >
           <Trash2 className="h-4 w-4" />
         </Button>
