@@ -53,10 +53,11 @@ export const createRentalColumns = (formatCurrency, formatDate, handleEditClick,
     label: 'Payment Status',
     sortable: true,
     filterable: true,
-    filterOptions: ['Paid', 'Unpaid'],
+    filterOptions: ['Paid', 'Unpaid', 'Cancelled'],
     filterValueMap: {
       'Paid': 'paid',
-      'Unpaid': 'unpaid'
+      'Unpaid': 'unpaid',
+      'Cancelled': 'cancelled'
     },
     render: (value, row) => {
       // Show badge for paid status (not editable)
@@ -71,7 +72,19 @@ export const createRentalColumns = (formatCurrency, formatDate, handleEditClick,
         )
       }
 
-      // Show button to mark as paid for unpaid status
+      // Show badge for cancelled status
+      if (value === 'cancelled') {
+        return (
+          <Badge
+            variant="destructive"
+            className="text-xs capitalize"
+          >
+            {value}
+          </Badge>
+        )
+      }
+
+      // Show button to mark as paid for unpaid/pending status
       return (
         <div className="space-y-1">
           <Button
@@ -90,103 +103,113 @@ export const createRentalColumns = (formatCurrency, formatDate, handleEditClick,
       )
     }
   },
-  {
-    key: 'rentalStatus',
-    label: 'Rental Status',
-    sortable: true,
-    filterable: true,
-    filterOptions: ['Active', 'Returned'],
-    filterValueMap: {
-      'Active': 'active',
-      'Returned': 'returned'
-    },
-    render: (value) => {
-      // Show badge for returned status
-      if (value === 'returned') {
-        return (
-          <Badge
-            variant="secondary"
-            className="text-xs capitalize"
-          >
-            {value}
-          </Badge>
-        )
-      }
+  // {
+  //   key: 'rentalStatus',
+  //   label: 'Rental Status',
+  //   sortable: true,
+  //   filterable: true,
+  //   filterOptions: ['Active', 'Returned'],
+  //   filterValueMap: {
+  //     'Active': 'active',
+  //     'Returned': 'returned'
+  //   },
+  //   render: (value) => {
+  //     // Show badge for returned status
+  //     if (value === 'returned') {
+  //       return (
+  //         <Badge
+  //           variant="secondary"
+  //           className="text-xs capitalize"
+  //         >
+  //           {value}
+  //         </Badge>
+  //       )
+  //     }
 
-      // Show badge for active status
-      return (
-        <Badge
-          variant="default"
-          className="text-xs capitalize"
-        >
-          {value}
-        </Badge>
-      )
-    }
-  },
+  //     // Show badge for active status
+  //     return (
+  //       <Badge
+  //         variant="default"
+  //         className="text-xs capitalize"
+  //       >
+  //         {value}
+  //       </Badge>
+  //     )
+  //   }
+  // },
   {
     key: 'actions',
     label: 'Actions',
     sortable: false,
     filterable: false,
-    render: (_, row) => (
-      <div className="flex items-center space-x-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={(e) => {
-            e.stopPropagation()
-            handleViewDetails(row)
-          }}
-          className="h-8 w-8 p-0"
-        >
-          <Eye className="h-4 w-4" />
-        </Button>
-        {row.rentalStatus === 'active' && (
+    render: (_, row) => {
+      // Disable all buttons if payment status is cancelled
+      const isCancelled = row.paymentStatus === 'cancelled'
+      const isReturned = row.rentalStatus === 'returned'
+
+      return (
+        <div className="flex items-center space-x-2">
           <Button
             variant="ghost"
             size="sm"
             onClick={(e) => {
               e.stopPropagation()
-              handleRentalStatusChange(row._id, 'returned', row.rentalStatus)
+              handleViewDetails(row)
             }}
-            disabled={rentalStatusMutation.isPending || row.paymentStatus === 'unpaid'}
-            className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700"
-            title="Mark as Returned"
+            className="h-8 w-8 p-0"
+            title="View details"
           >
-            <RotateCcw className="h-4 w-4" />
+            <Eye className="h-4 w-4" />
           </Button>
-        )}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={(e) => {
-            e.stopPropagation()
-            handleEditClick(row)
-          }}
-          disabled={row.rentalStatus === 'returned'}
-          className="h-8 w-8 p-0"
-        >
-          <Edit className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={(e) => {
-            e.stopPropagation()
-            handleDeleteClick(row)
-          }}
-          disabled={row.rentalStatus === 'returned'}
-          className={`h-8 w-8 p-0 ${
-            row.rentalStatus === 'returned'
+          {row.rentalStatus === 'active' && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation()
+                handleRentalStatusChange(row._id, 'returned', row.rentalStatus)
+              }}
+              disabled={isCancelled || rentalStatusMutation.isPending || row.paymentStatus === 'unpaid'}
+              className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700"
+              title={isCancelled ? 'Cannot return cancelled rental' : 'Mark as Returned'}
+            >
+              <RotateCcw className="h-4 w-4" />
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation()
+              handleEditClick(row)
+            }}
+            disabled={isCancelled || isReturned}
+            className={`h-8 w-8 p-0 ${isCancelled || isReturned
+              ? 'text-gray-400 cursor-not-allowed'
+              : ''
+              }`}
+            title={isCancelled ? 'Cannot edit cancelled rental' : isReturned ? 'Cannot edit returned rental' : 'Edit rental'}
+          >
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation()
+              handleDeleteClick(row)
+            }}
+            disabled={isCancelled || isReturned}
+            className={`h-8 w-8 p-0 ${isCancelled || isReturned
               ? 'text-gray-400 cursor-not-allowed'
               : 'text-red-600 hover:text-red-700'
-          }`}
-          title={row.rentalStatus === 'returned' ? 'Cannot delete returned rentals' : 'Delete rental'}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </div>
-    )
+              }`}
+            title={isCancelled ? 'Cannot delete cancelled rental' : isReturned ? 'Cannot delete returned rentals' : 'Delete rental'}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      )
+    }
   }
 ]

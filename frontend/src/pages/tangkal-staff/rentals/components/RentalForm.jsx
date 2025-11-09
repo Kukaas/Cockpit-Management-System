@@ -68,23 +68,38 @@ const RentalForm = ({
   useEffect(() => {
     if (open) {
       if (isEdit) {
-        // For edit mode, we'll need to handle selected cages differently
-        // since we don't have the cage data in the form
+        // For edit mode, don't reset - keep the data that was set in handleEditRentalClick
+        setSearchQuery('')
+        // Don't reset selectedCages in edit mode - we'll use quantity from formData
       } else {
-        // For add mode, reset everything
+        // For add mode, reset everything to ensure clean form
         setSearchQuery('')
         setSelectedCages([])
-        // Set default date to today
+        // Clear all form fields - parent component should handle this via resetRentalForm
+        // But we ensure local state is also cleared
+        onInputChange('quantity', '0')
+        onInputChange('nameOfRenter', '')
+        onInputChange('contactNumber', '')
+        onInputChange('selectedCageIds', [])
+        // Set defaults
         const today = new Date().toISOString().split('T')[0]
         onInputChange('date', today)
-        onInputChange('quantity', '0')
         onInputChange('paymentStatus', 'paid')
       }
+    } else {
+      // When dialog closes, reset local state
+      if (!isEdit) {
+        setSearchQuery('')
+        setSelectedCages([])
+      }
     }
-  }, [open, isEdit, formData.arena])
+  }, [open, isEdit])
 
   // Calculate total price
-  const totalPrice = selectedCages.length * 20
+  // In edit mode, use formData.quantity; in add mode, use selectedCages.length
+  const totalPrice = isEdit
+    ? (parseInt(formData.quantity) || 0) * 20
+    : selectedCages.length * 20
 
   return (
     <CustomAlertDialog
@@ -98,7 +113,16 @@ const RentalForm = ({
           <Button variant="outline" onClick={onCancel}>
             Cancel
           </Button>
-          <Button onClick={onSubmit} disabled={isPending || selectedCages.length === 0}>
+          <Button
+            onClick={onSubmit}
+            disabled={
+              isPending ||
+              (isEdit
+                ? !formData.quantity || parseInt(formData.quantity) < 1
+                : selectedCages.length === 0
+              )
+            }
+          >
             {isPending ? (isEdit ? 'Updating...' : 'Creating...') : (isEdit ? 'Update Rental' : 'Create Rental')}
           </Button>
         </>
@@ -241,11 +265,17 @@ const RentalForm = ({
               label="Quantity of Cages"
               type="number"
               value={formData.quantity}
-              onChange={() => {}} // Read-only, controlled by cage selection
-              placeholder="Auto-calculated from cage selection"
-              min="0"
-              disabled
-              readOnly
+              onChange={(e) => {
+                if (isEdit) {
+                  // In edit mode, allow manual quantity change
+                  onInputChange('quantity', e.target.value)
+                }
+                // In add mode, it's read-only and controlled by cage selection
+              }}
+              placeholder={isEdit ? "Enter quantity" : "Auto-calculated from cage selection"}
+              min="1"
+              disabled={!isEdit}
+              readOnly={!isEdit}
             />
             <InputField
               id={isEdit ? "editDate" : "date"}

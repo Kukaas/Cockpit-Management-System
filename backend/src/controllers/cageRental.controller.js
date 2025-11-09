@@ -121,17 +121,21 @@ export const createCageRental = async (req, res) => {
             nameOfRenter,
             contactNumber,
             eventID,
-            paymentStatus: 'paid', // Default to paid
+            paymentStatus: req.body.paymentStatus || 'paid', // Use paymentStatus from request body, default to 'paid'
             recordedBy: req.user._id
         });
 
         const savedCageRental = await newCageRental.save();
 
-        // Update cage availability status to rented for all selected cages
-        await CageAvailability.updateMany(
-            { _id: { $in: selectedCages.map(cage => cage._id) } },
-            { status: 'rented' }
-        );
+        // Update cage availability status based on payment status
+        // Only set to 'rented' if payment status is NOT 'cancelled'
+        if (savedCageRental.paymentStatus !== 'cancelled') {
+            await CageAvailability.updateMany(
+                { _id: { $in: selectedCages.map(cage => cage._id) } },
+                { status: 'rented' }
+            );
+        }
+        // If cancelled, cages remain 'active' (available)
 
         // Populate references for response
         await savedCageRental.populate([
@@ -357,11 +361,37 @@ export const updateCageRental = async (req, res) => {
                 { status: 'active' }
             );
 
-            // Mark new cages as rented
-            await CageAvailability.updateMany(
-                { _id: { $in: selectedCages.map(cage => cage._id) } },
-                { status: 'rented' }
-            );
+            // Mark new cages as rented only if payment status is NOT cancelled
+            const newPaymentStatus = updateData.paymentStatus || cageRental.paymentStatus;
+            if (newPaymentStatus !== 'cancelled') {
+                await CageAvailability.updateMany(
+                    { _id: { $in: selectedCages.map(cage => cage._id) } },
+                    { status: 'rented' }
+                );
+            }
+        }
+
+        // Handle payment status changes for cage availability
+        const oldPaymentStatus = cageRental.paymentStatus;
+        const newPaymentStatus = updateData.paymentStatus || oldPaymentStatus;
+
+        // If payment status is being changed to/from cancelled, update cage availability
+        if (updateData.paymentStatus && updateData.paymentStatus !== oldPaymentStatus) {
+            const cageIds = cageRental.cages.map(cage => cage.cageNo);
+
+            if (updateData.paymentStatus === 'cancelled') {
+                // Restore cages to active status when cancelled
+                await CageAvailability.updateMany(
+                    { _id: { $in: cageIds } },
+                    { status: 'active' }
+                );
+            } else if (oldPaymentStatus === 'cancelled' && updateData.paymentStatus !== 'cancelled') {
+                // Set cages back to rented if reactivating from cancelled
+                await CageAvailability.updateMany(
+                    { _id: { $in: cageIds } },
+                    { status: 'rented' }
+                );
+            }
         }
 
         // Update the cage rental

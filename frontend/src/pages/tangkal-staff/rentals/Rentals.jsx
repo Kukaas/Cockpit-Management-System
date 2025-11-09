@@ -205,9 +205,13 @@ const Rentals = () => {
       return
     }
 
+    // Calculate total price based on quantity (20 PHP per cage)
+    const totalPrice = parseInt(rentalFormData.quantity) * 20
+
     const rentalData = {
       ...rentalFormData,
-      quantity: parseInt(rentalFormData.quantity)
+      quantity: parseInt(rentalFormData.quantity),
+      totalPrice: totalPrice
     }
 
     updateRentalMutation.mutate({
@@ -231,7 +235,8 @@ const Rentals = () => {
       nameOfRenter: rental.nameOfRenter,
       contactNumber: rental.contactNumber || '',
       eventID: rental.eventID?._id || selectedEvent?._id || '',
-      paymentStatus: rental.paymentStatus
+      paymentStatus: rental.paymentStatus || 'paid',
+      selectedCageIds: rental.cages?.map(cage => cage.cageNo?._id || cage.cageNo) || []
     })
     setEditRentalDialogOpen(true)
   }
@@ -378,7 +383,10 @@ const Rentals = () => {
       <div className="space-y-4">
         <div className="flex justify-end items-center">
           <Button
-            onClick={() => setAddRentalDialogOpen(true)}
+            onClick={() => {
+              resetRentalForm() // Clear all form data before opening
+              setAddRentalDialogOpen(true)
+            }}
             disabled={selectedEvent?.status === 'completed'}
             title={selectedEvent?.status === 'completed' ? 'Cannot add rentals to completed events' : 'Add new cage rental'}
           >
