@@ -192,7 +192,7 @@ const EventSelection = () => {
 
   return (
     <PageLayout
-      title="Select Event for Entrance Tally"
+      title="Select Event for Entrance Fee"
       description="Choose an event to view and manage entrance tally records"
     >
       <div className="space-y-6">

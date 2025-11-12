@@ -1,7 +1,7 @@
 import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Printer, DollarSign, Trophy, Target } from 'lucide-react'
+import { Printer, DollarSign } from 'lucide-react'
 import { useGetAll } from '@/hooks/useApiQueries'
 import DataTable from '@/components/custom/DataTable'
 import { createViewOnlyMatchResultColumns } from '../../events/components/ViewOnlyTableColumns'
@@ -25,7 +25,7 @@ const PlazadaReportTab = ({ event, formatCurrency, formatDate }) => {
   const draws = matchResults.filter(r => r.betWinner === 'Draw').length
 
   // Handle view details (no-op for reports)
-  const handleViewDetails = () => {}
+  const handleViewDetails = () => { }
 
   // Create table columns
   const matchResultColumns = createViewOnlyMatchResultColumns(
@@ -112,15 +112,15 @@ const PlazadaReportTab = ({ event, formatCurrency, formatDate }) => {
             <div class="event-title">Plazada Report</div>
             <div class="event-title">${event?.eventName || 'Event Name'}</div>
             <div class="event-details">Date: ${event?.date ? new Date(event.date).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric'
-            }) : 'N/A'}</div>
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    }) : 'N/A'}</div>
             <div class="event-details">Time: ${event?.date ? new Date(event.date).toLocaleTimeString('en-US', {
-              hour: '2-digit',
-              minute: '2-digit',
-              hour12: true
-            }) : 'N/A'}</div>
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    }) : 'N/A'}</div>
             <div class="event-details">Location: ${event?.location || 'N/A'}</div>
             <div class="event-details">Report Generated: ${new Date().toLocaleString('en-US')}</div>
           </div>
@@ -167,9 +167,9 @@ const PlazadaReportTab = ({ event, formatCurrency, formatDate }) => {
             </thead>
             <tbody>
               ${matchResults.map((result, index) => {
-                const winnerName = result.resultMatch?.winnerParticipantID?.participantName || 'N/A'
-                const loserName = result.resultMatch?.loserParticipantID?.participantName || 'N/A'
-                return `
+      const winnerName = result.resultMatch?.winnerParticipantID?.participantName || 'N/A'
+      const loserName = result.resultMatch?.loserParticipantID?.participantName || 'N/A'
+      return `
                 <tr>
                   <td>${index + 1}</td>
                   <td>#${result.matchID?.fightNumber || 'N/A'}</td>
@@ -181,7 +181,7 @@ const PlazadaReportTab = ({ event, formatCurrency, formatDate }) => {
                   <td>${result.status ? result.status.charAt(0).toUpperCase() + result.status.slice(1) : 'N/A'}</td>
                 </tr>
               `
-              }).join('')}
+    }).join('')}
             </tbody>
             <tfoot>
               <tr>
@@ -214,7 +214,7 @@ const PlazadaReportTab = ({ event, formatCurrency, formatDate }) => {
   return (
     <div className="space-y-6">
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Matches</CardTitle>
@@ -233,21 +233,28 @@ const PlazadaReportTab = ({ event, formatCurrency, formatDate }) => {
         </Card>
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Bet Pool</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{formatCurrency(totalBetPool)}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">Meron / Wala / Draw</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-sm">
-              <div>Meron: <span className="font-bold text-blue-600">${meronWins}</span></div>
-              <div>Wala: <span className="font-bold text-gray-600">${walaWins}</span></div>
-              <div>Draw: <span className="font-bold text-yellow-600">${draws}</span></div>
+              <div>
+                Meron:{' '}
+                <span className="font-bold text-blue-600">
+                  PHP {meronWins}
+                </span>
+              </div>
+              <div>
+                Wala:{' '}
+                <span className="font-bold text-gray-600">
+                  PHP {walaWins}
+                </span>
+              </div>
+              <div>
+                Draw:{' '}
+                <span className="font-bold text-yellow-600">
+                  PHP {draws}
+                </span>
+              </div>
             </div>
           </CardContent>
         </Card>

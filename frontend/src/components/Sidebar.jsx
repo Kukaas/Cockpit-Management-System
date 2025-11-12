@@ -47,7 +47,7 @@ const SidebarComponent = () => {
 							label: 'Operations',
 							items: [
 								{
-									label: 'Entrance Records',
+									label: 'Entrance Fee Records',
 									path: '/admin/entrance',
 									icon: <Ticket className="size-4" />
 								},
@@ -90,7 +90,7 @@ const SidebarComponent = () => {
 					base: [
 						...baseItems,
 						{
-							label: 'Entrance Registration',
+							label: 'Entrance Fee Registration',
 							path: '/entrance-staff/entrance-registration',
 							icon: <CheckSquare className="size-4" />
 						}

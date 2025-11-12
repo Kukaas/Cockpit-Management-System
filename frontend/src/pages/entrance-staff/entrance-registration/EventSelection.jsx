@@ -83,8 +83,8 @@ const EventSelection = () => {
         <Badge
           variant={
             value === 'active' ? 'default' :
-            value === 'completed' ? 'secondary' :
-            value === 'cancelled' ? 'destructive' : 'outline'
+              value === 'completed' ? 'secondary' :
+                value === 'cancelled' ? 'destructive' : 'outline'
           }
           className="text-xs capitalize"
         >
@@ -137,7 +137,7 @@ const EventSelection = () => {
 
   return (
     <PageLayout
-      title="Select Event for Entrance Tally"
+      title="Select Event for Entrance Fee"
       description="Choose an event to record entrance tallies and manage entrance records"
     >
       <DataTable
