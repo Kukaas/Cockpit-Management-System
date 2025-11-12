@@ -77,8 +77,8 @@ const StaffEventSelection = () => {
         <Badge
           variant={
             value === 'championship' ? 'destructive' :
-            value === 'special' ? 'default' :
-            value === 'exhibition' ? 'secondary' : 'outline'
+              value === 'special' ? 'default' :
+                value === 'exhibition' ? 'secondary' : 'outline'
           }
           className="text-xs capitalize"
         >
@@ -102,8 +102,8 @@ const StaffEventSelection = () => {
         <Badge
           variant={
             value === 'active' ? 'default' :
-            value === 'completed' ? 'secondary' :
-            value === 'cancelled' ? 'destructive' : 'outline'
+              value === 'completed' ? 'secondary' :
+                value === 'cancelled' ? 'destructive' : 'outline'
           }
           className="text-xs capitalize"
         >

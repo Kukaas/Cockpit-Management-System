@@ -148,8 +148,8 @@ const AdminEventSelection = () => {
         <Badge
           variant={
             value === 'championship' ? 'destructive' :
-            value === 'special' ? 'default' :
-            value === 'exhibition' ? 'secondary' : 'outline'
+              value === 'special' ? 'default' :
+                value === 'exhibition' ? 'secondary' : 'outline'
           }
           className="text-xs capitalize"
         >
@@ -173,8 +173,8 @@ const AdminEventSelection = () => {
         <Badge
           variant={
             value === 'active' ? 'default' :
-            value === 'completed' ? 'secondary' :
-            value === 'cancelled' ? 'destructive' : 'outline'
+              value === 'completed' ? 'secondary' :
+                value === 'cancelled' ? 'destructive' : 'outline'
           }
           className="text-xs capitalize"
         >
@@ -324,33 +324,7 @@ const AdminEventSelection = () => {
         </Card>
 
         {/* Quick Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Fights</CardTitle>
-              <Target className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalFights}</div>
-              <p className="text-xs text-muted-foreground">
-                {stats.scheduledFights} scheduled
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Completed Fights</CardTitle>
-              <Trophy className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">{stats.completedFights}</div>
-              <p className="text-xs text-muted-foreground">
-
-              </p>
-            </CardContent>
-          </Card>
-
+        <div className="grid grid-cols-1 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Plazada</CardTitle>
@@ -362,63 +336,6 @@ const AdminEventSelection = () => {
               </div>
               <p className="text-xs text-muted-foreground">
                 From {filteredMatchResults.length} matches
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Bet Pool</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-600">
-                {formatCurrency(stats.totalBetPool)}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Total betting volume
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Match Results Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Meron Wins</CardTitle>
-              <Award className="h-4 w-4 text-blue-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-600">{stats.meronWins}</div>
-              <p className="text-xs text-muted-foreground">
-                {stats.meronWins > 0 ? Math.round((stats.meronWins / (stats.meronWins + stats.walaWins + stats.draws)) * 100) : 0}% of matches
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Wala Wins</CardTitle>
-              <Award className="h-4 w-4 text-gray-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-gray-600">{stats.walaWins}</div>
-              <p className="text-xs text-muted-foreground">
-                {stats.walaWins > 0 ? Math.round((stats.walaWins / (stats.meronWins + stats.walaWins + stats.draws)) * 100) : 0}% of matches
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Draws</CardTitle>
-              <Clock className="h-4 w-4 text-yellow-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-yellow-600">{stats.draws}</div>
-              <p className="text-xs text-muted-foreground">
-                {stats.draws > 0 ? Math.round((stats.draws / (stats.meronWins + stats.walaWins + stats.draws)) * 100) : 0}% of matches
               </p>
             </CardContent>
           </Card>
