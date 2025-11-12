@@ -2,10 +2,22 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle
+} from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
 import useAuth from '@/hooks/useAuth'
 import InputField from '@/components/custom/InputField'
 import { User, Lock } from 'lucide-react'
 import logo from '@/assets/logo.png'
+import { toast } from 'sonner'
+import api from '@/services/api'
 
 const Login = () => {
 	const { user, login, loading } = useAuth()
@@ -13,6 +25,10 @@ const Login = () => {
 	const [form, setForm] = useState({ username: '', password: '' })
 	const [submitting, setSubmitting] = useState(false)
 	const [error, setError] = useState('')
+	const [isResetDialogOpen, setIsResetDialogOpen] = useState(false)
+	const [resetEmail, setResetEmail] = useState('')
+	const [resetSubmitting, setResetSubmitting] = useState(false)
+	const [resetError, setResetError] = useState('')
 
 	// Redirect if already authenticated
 	useEffect(() => {
@@ -86,6 +102,46 @@ const Login = () => {
 		}
 	}
 
+	const handleResetDialogChange = (open) => {
+		setIsResetDialogOpen(open)
+		if (!open) {
+			setResetEmail('')
+			setResetError('')
+			setResetSubmitting(false)
+		}
+	}
+
+	const handleForgotPasswordSubmit = async (e) => {
+		e.preventDefault()
+		setResetError('')
+
+		const email = resetEmail.trim()
+		if (!email) {
+			setResetError('Email is required')
+			return
+		}
+
+		setResetSubmitting(true)
+		try {
+			const response = await api.post('/auth/forgot-password', { email })
+
+			if (response.data?.success) {
+				toast.success('Password reset link sent. Please check your email.')
+				handleResetDialogChange(false)
+			} else {
+				const message = response.data?.message || 'Failed to send password reset email.'
+				setResetError(message)
+				toast.error(message)
+			}
+		} catch (err) {
+			const message = err?.response?.data?.message || 'Failed to send password reset email.'
+			setResetError(message)
+			toast.error(message)
+		} finally {
+			setResetSubmitting(false)
+		}
+	}
+
 	// Show loading while checking authentication
 	if (loading) {
 		return (
@@ -136,12 +192,61 @@ const Login = () => {
 								<p className="text-red-600 text-sm">{error}</p>
 							</div>
 						) : null}
+						<div className="flex items-center justify-end">
+							<button
+								type="button"
+								onClick={() => handleResetDialogChange(true)}
+								className="text-sm font-medium hover:text-blue-700 focus:outline-none focus:underline"
+								disabled={submitting}
+							>
+								Forgot password?
+							</button>
+						</div>
 						<Button type="submit" className="w-full" disabled={submitting}>
 							{submitting ? 'Signing in...' : 'Sign in'}
 						</Button>
 					</form>
 				</CardContent>
 			</Card>
+
+			<Dialog open={isResetDialogOpen} onOpenChange={handleResetDialogChange}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Reset your password</DialogTitle>
+						<DialogDescription>
+							Enter the email associated with your account and we&apos;ll send you a link to reset your password.
+						</DialogDescription>
+					</DialogHeader>
+					<form onSubmit={handleForgotPasswordSubmit} className="space-y-4">
+						<div className="space-y-2">
+							<Label htmlFor="reset-email">Email address</Label>
+							<Input
+								id="reset-email"
+								type="email"
+								value={resetEmail}
+								onChange={(e) => setResetEmail(e.target.value)}
+								placeholder="you@example.com"
+								autoComplete="email"
+								required
+							/>
+						</div>
+						{resetError ? <p className="text-sm text-red-600">{resetError}</p> : null}
+						<DialogFooter>
+							<Button
+								type="button"
+								variant="outline"
+								onClick={() => handleResetDialogChange(false)}
+								disabled={resetSubmitting}
+							>
+								Cancel
+							</Button>
+							<Button type="submit" disabled={resetSubmitting}>
+								{resetSubmitting ? 'Sending...' : 'Send reset link'}
+							</Button>
+						</DialogFooter>
+					</form>
+				</DialogContent>
+			</Dialog>
 		</div>
 	)
 }

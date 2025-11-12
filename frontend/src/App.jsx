@@ -8,6 +8,7 @@ import useAuth from './hooks/useAuth'
 import Login from './pages/Login'
 import VerifyEmail from './pages/VerifyEmail'
 import ChangePassword from './pages/ChangePassword'
+import ResetPassword from './pages/ResetPassword'
 import Settings from './pages/Settings'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import UserManagement from './pages/admin/user-management/UserManagement'
@@ -65,6 +66,7 @@ function App() {
 				<Routes>
 					<Route path="/login" element={<Login />} />
 					<Route path="/verify" element={<VerifyEmail />} />
+					<Route path="/reset-password" element={<ResetPassword />} />
 					<Route path="/change-password" element={<ChangePassword />} />
 					<Route path="/settings" element={
 						<PrivateRoute>

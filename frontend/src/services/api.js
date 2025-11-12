@@ -40,10 +40,15 @@ api.interceptors.response.use(
 
 		// Only retry if it's a 401 error, not already retried, and not a refresh request
 		// Also exclude login attempts to prevent refresh token errors from overriding login failures
+		const isPublicAuthEndpoint =
+			originalRequest.url?.includes('/auth/forgot-password') ||
+			originalRequest.url?.includes('/auth/reset-password')
+
 		if (error.response?.status === 401 &&
 			!originalRequest._retry &&
 			!originalRequest.url?.includes('/auth/refresh') &&
-			!originalRequest.url?.includes('/auth/login')) {
+			!originalRequest.url?.includes('/auth/login') &&
+			!isPublicAuthEndpoint) {
 			originalRequest._retry = true
 
 			try {
@@ -52,9 +57,10 @@ api.interceptors.response.use(
 				// Retry the original request
 				return api(originalRequest)
 			} catch (refreshError) {
-				// If refresh fails, clear any existing auth state and redirect
-				// Use window.location to force a full page reload and clear any cached state
-				if (window.location.pathname !== '/login') {
+				// If refresh fails, avoid redirect loops on public auth routes
+				const publicRoutes = ['/login', '/reset-password', '/verify', '/change-password']
+				if (!publicRoutes.includes(window.location.pathname)) {
+					// Use window.location to force a full page reload and clear any cached state
 					window.location.href = '/login'
 				}
 				return Promise.reject(refreshError)

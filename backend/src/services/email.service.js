@@ -25,6 +25,176 @@ const generateSecurePassword = () => {
     return password;
 };
 
+// Send password reset email
+export const sendPasswordResetEmail = async (userData, resetToken) => {
+    try {
+        const transporter = createTransporter();
+
+        const resetUrl = `${ENV.FRONTEND_URL}/reset-password?token=${resetToken}`;
+
+        const mailOptions = {
+            from: ENV.SMTP_FROM,
+            to: userData.email,
+            subject: 'Password Reset Instructions - Cockpit Management System',
+            html: `
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Password Reset</title>
+                    <style>
+                        body {
+                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                            line-height: 1.6;
+                            color: #1f2937;
+                            background-color: #f8fafc;
+                            margin: 0;
+                            padding: 20px;
+                        }
+                        .container {
+                            max-width: 650px;
+                            margin: 0 auto;
+                            background-color: #ffffff;
+                            border-radius: 12px;
+                            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+                            overflow: hidden;
+                        }
+                        .header {
+                            background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%);
+                            color: white;
+                            padding: 40px 32px;
+                            text-align: center;
+                        }
+                        .header h1 {
+                            margin: 0;
+                            font-size: 28px;
+                            font-weight: 700;
+                            letter-spacing: -0.025em;
+                        }
+                        .content {
+                            padding: 40px 32px;
+                        }
+                        .intro-text {
+                            font-size: 18px;
+                            margin-bottom: 24px;
+                            color: #475569;
+                            line-height: 1.7;
+                        }
+                        .reset-section {
+                            background: linear-gradient(135deg, #eff6ff 0%, #bfdbfe 100%);
+                            border: 2px solid #3b82f6;
+                            border-radius: 10px;
+                            padding: 28px;
+                            margin: 32px 0;
+                            text-align: center;
+                        }
+                        .reset-title {
+                            color: #1d4ed8;
+                            font-weight: 700;
+                            font-size: 20px;
+                            margin: 0 0 16px 0;
+                        }
+                        .reset-button {
+                            display: inline-block;
+                            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+                            color: white !important;
+                            text-decoration: none;
+                            padding: 16px 32px;
+                            border-radius: 8px;
+                            font-weight: 600;
+                            font-size: 16px;
+                            margin-top: 20px;
+                            transition: all 0.3s ease;
+                            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
+                        }
+                        .reset-button:hover {
+                            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+                            transform: translateY(-2px);
+                            box-shadow: 0 8px 15px -3px rgba(37, 99, 235, 0.4);
+                        }
+                        .token-info {
+                            font-size: 14px;
+                            color: #1e40af;
+                            margin-top: 20px;
+                        }
+                        .warning {
+                            background-color: #fef2f2;
+                            border: 2px solid #fecaca;
+                            border-radius: 8px;
+                            padding: 20px;
+                            margin: 24px 0;
+                            color: #b91c1c;
+                            font-weight: 600;
+                            text-align: center;
+                        }
+                        .footer {
+                            background-color: #f8fafc;
+                            padding: 32px;
+                            text-align: center;
+                            border-top: 2px solid #e2e8f0;
+                        }
+                        .footer-text {
+                            color: #64748b;
+                            font-size: 14px;
+                            margin: 0;
+                            line-height: 1.6;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="header">
+                            <h1>Cockpit Management System</h1>
+                        </div>
+
+                        <div class="content">
+                            <p class="intro-text">
+                                Hello <strong>${userData.firstName} ${userData.lastName}</strong>,
+                            </p>
+
+                            <p class="intro-text">
+                                We received a request to reset the password for your account. If you made this request, please click the button below to choose a new password.
+                            </p>
+
+                            <div class="reset-section">
+                                <p class="reset-title">Reset Your Password</p>
+                                <a href="${resetUrl}" class="reset-button">Create a New Password</a>
+                                <p class="token-info">
+                                    This link will expire in 1 hour. If it expires, you can request a new password reset from the login page.
+                                </p>
+                            </div>
+
+                            <div class="warning">
+                                ⚠️ If you did not request a password reset, please ignore this email. Your password will remain unchanged.
+                            </div>
+
+                            <p class="intro-text" style="margin-top: 32px;">
+                                For your security, do not share this email or the password reset link with anyone.
+                            </p>
+                        </div>
+
+                        <div class="footer">
+                            <p class="footer-text">
+                                This is an automated message from the Cockpit Management System.<br>
+                                Please do not reply to this email.
+                            </p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `
+        };
+
+        const info = await transporter.sendMail(mailOptions);
+        console.log('Password reset email sent:', info.messageId);
+        return true;
+    } catch (error) {
+        console.error('Error sending password reset email:', error);
+        return false;
+    }
+};
+
 // Send staff account creation email
 export const sendStaffAccountEmail = async (userData, verificationToken) => {
     try {

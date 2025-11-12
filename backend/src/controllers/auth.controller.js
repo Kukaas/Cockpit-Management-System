@@ -1,6 +1,8 @@
+import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import User from '../models/user.model.js';
 import { ENV } from '../config/env.js';
+import { sendPasswordResetEmail } from '../services/email.service.js';
 
 // Generate JWT tokens
 const generateTokens = (userId) => {
@@ -45,6 +47,8 @@ const clearAuthCookies = (res) => {
     res.clearCookie('accessToken');
     res.clearCookie('refreshToken');
 };
+
+const generatePasswordResetToken = () => crypto.randomBytes(32).toString('hex');
 
 // Login
 export const login = async (req, res) => {
@@ -264,6 +268,116 @@ export const getCurrentUser = async (req, res) => {
 
     } catch (error) {
         console.error('Get current user error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error.'
+        });
+    }
+};
+
+// Forgot password - request reset link
+export const requestPasswordReset = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email is required.'
+            });
+        }
+
+        const normalizedEmail = email.toLowerCase();
+        const user = await User.findOne({ email: normalizedEmail });
+
+        // Return success even if user not found to avoid email enumeration
+        if (!user) {
+            return res.status(200).json({
+                success: true,
+                message: 'If that email is registered, a reset link has been sent.'
+            });
+        }
+
+        if (!user.isActive) {
+            return res.status(403).json({
+                success: false,
+                message: 'Account is disabled. Please contact administrator.'
+            });
+        }
+
+        const resetToken = generatePasswordResetToken();
+        const resetTokenExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+        user.passwordResetToken = resetToken;
+        user.passwordResetExpires = resetTokenExpires;
+        await user.save();
+
+        const emailSent = await sendPasswordResetEmail(user, resetToken);
+
+        if (!emailSent) {
+            return res.status(500).json({
+                success: false,
+                message: 'Failed to send reset email. Please try again.'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Password reset instructions have been sent to your email.'
+        });
+    } catch (error) {
+        console.error('Request password reset error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error.'
+        });
+    }
+};
+
+// Reset password with token
+export const resetPassword = async (req, res) => {
+    try {
+        const { token, newPassword } = req.body;
+
+        if (!token || !newPassword) {
+            return res.status(400).json({
+                success: false,
+                message: 'Token and new password are required.'
+            });
+        }
+
+        if (newPassword.length < 6) {
+            return res.status(400).json({
+                success: false,
+                message: 'New password must be at least 6 characters long.'
+            });
+        }
+
+        const user = await User.findOne({
+            passwordResetToken: token,
+            passwordResetExpires: { $gt: Date.now() }
+        });
+
+        if (!user) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid or expired reset token.'
+            });
+        }
+
+        user.password = newPassword;
+        user.passwordChanged = true;
+        user.passwordChangedAt = new Date();
+        user.passwordResetToken = null;
+        user.passwordResetExpires = null;
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Password has been reset successfully.'
+        });
+    } catch (error) {
+        console.error('Reset password error:', error);
         res.status(500).json({
             success: false,
             message: 'Internal server error.'

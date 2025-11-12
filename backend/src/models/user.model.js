@@ -56,6 +56,14 @@ const userSchema = new mongoose.Schema({
         type: Date,
         default: null
     },
+    passwordResetToken: {
+        type: String,
+        default: null
+    },
+    passwordResetExpires: {
+        type: Date,
+        default: null
+    },
     loginHistory: [{
         ipAddress: String,
         device: String,
@@ -81,7 +89,7 @@ const userSchema = new mongoose.Schema({
 });
 
 // Hash password before saving
-userSchema.pre('save', async function(next) {
+userSchema.pre('save', async function (next) {
     if (!this.isModified('password')) return next();
 
     try {
@@ -103,27 +111,29 @@ userSchema.pre('save', async function(next) {
 });
 
 // Method to compare password
-userSchema.methods.comparePassword = async function(candidatePassword) {
+userSchema.methods.comparePassword = async function (candidatePassword) {
     return await bcrypt.compare(candidatePassword, this.password);
 };
 
 // Method to get full name
-userSchema.methods.getFullName = function() {
+userSchema.methods.getFullName = function () {
     return `${this.firstName} ${this.lastName}`;
 };
 
 // Virtual for full name
-userSchema.virtual('fullName').get(function() {
+userSchema.virtual('fullName').get(function () {
     return this.getFullName();
 });
 
 // Ensure virtual fields are serialized
 userSchema.set('toJSON', {
     virtuals: true,
-    transform: function(doc, ret) {
+    transform: function (doc, ret) {
         delete ret.password;
         delete ret.verificationToken;
         delete ret.verificationTokenExpires;
+        delete ret.passwordResetToken;
+        delete ret.passwordResetExpires;
         return ret;
     }
 });
