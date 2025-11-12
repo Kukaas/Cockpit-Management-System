@@ -401,7 +401,7 @@ const AdminDashboard = () => {
         </div>
 
         {/* Key Performance Indicators */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
@@ -416,123 +416,8 @@ const AdminDashboard = () => {
               </p>
             </CardContent>
           </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Fights</CardTitle>
-              <Swords className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalFights}</div>
-              <p className="text-xs text-muted-foreground">
-                {stats.completedFights} completed, {stats.scheduledFights} scheduled
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Entrances</CardTitle>
-              <Ticket className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-600">{stats.totalEntrances}</div>
-              <p className="text-xs text-muted-foreground">
-                From {stats.entranceRecords} records
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Rentals</CardTitle>
-              <Building className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-orange-600">{stats.activeRentals}</div>
-              <p className="text-xs text-muted-foreground">
-                {stats.paidRentals} paid, {stats.unpaidRentals} unpaid
-              </p>
-            </CardContent>
-          </Card>
         </div>
 
-        {/* Detailed Statistics */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Events and Fights */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
-                Events & Fights Overview
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-3 bg-blue-50 rounded-lg">
-                  <div className="text-2xl font-bold text-blue-600">{stats.totalEvents}</div>
-                  <div className="text-xs text-gray-600">Total Events</div>
-                </div>
-                <div className="text-center p-3 bg-green-50 rounded-lg">
-                  <div className="text-2xl font-bold text-green-600">{stats.activeEvents}</div>
-                  <div className="text-xs text-gray-600">Active Events</div>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Completed Fights</span>
-                  <span className="font-semibold text-green-600">{stats.completedFights}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">In Progress</span>
-                  <span className="font-semibold text-orange-600">{stats.inProgressFights}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Scheduled</span>
-                  <span className="font-semibold text-blue-600">{stats.scheduledFights}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Match Results */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Trophy className="h-5 w-5" />
-                Match Results
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-3 gap-2">
-                <div className="text-center p-2 bg-blue-50 rounded">
-                  <div className="text-lg font-bold text-blue-600">{stats.meronWins}</div>
-                  <div className="text-xs text-gray-600">Meron</div>
-                </div>
-                <div className="text-center p-2 bg-gray-50 rounded">
-                  <div className="text-lg font-bold text-gray-600">{stats.walaWins}</div>
-                  <div className="text-xs text-gray-600">Wala</div>
-                </div>
-                <div className="text-center p-2 bg-yellow-50 rounded">
-                  <div className="text-lg font-bold text-yellow-600">{stats.draws}</div>
-                  <div className="text-xs text-gray-600">Draws</div>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Verified Results</span>
-                  <span className="font-semibold text-green-600">{stats.verifiedResults}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Pending Results</span>
-                  <span className="font-semibold text-orange-600">{stats.pendingResults}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
 
         {/* Revenue Chart */}
         <Card className="pt-0">
