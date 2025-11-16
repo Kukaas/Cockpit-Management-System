@@ -41,8 +41,7 @@ const AdminCageAvailability = () => {
 
       {/* Cage Availability Section */}
       <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold">Cage Availability ({cages.length})</h3>
+        <div className="flex justify-end items-center">
           <div className="text-sm text-muted-foreground">
             View-only mode - No editing capabilities
           </div>

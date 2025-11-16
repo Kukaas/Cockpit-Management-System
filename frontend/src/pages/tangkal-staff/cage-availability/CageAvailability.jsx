@@ -220,8 +220,7 @@ const CageAvailability = () => {
 
       {/* Cage Availability Section */}
       <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold">Cage Availability ({cages.length})</h3>
+        <div className="flex justify-end items-center">
           <Button onClick={() => setAddCageDialogOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Add Cages

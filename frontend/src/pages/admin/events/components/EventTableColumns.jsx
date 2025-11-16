@@ -83,13 +83,7 @@ export const createEventColumns = (
       key: 'status',
       label: 'Status',
       sortable: true,
-      filterable: true,
-      filterOptions: ['Active', 'Completed', 'Cancelled'],
-      filterValueMap: {
-        'Active': 'active',
-        'Completed': 'completed',
-        'Cancelled': 'cancelled'
-      },
+      filterable: false,
       render: (value, row) => {
         // Show badge for completed/cancelled status (not editable)
         if (value === 'completed' || value === 'cancelled') {
