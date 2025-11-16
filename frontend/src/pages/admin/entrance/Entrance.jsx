@@ -134,7 +134,7 @@ const Entrance = () => {
           pageSize={10}
           searchable={true}
           filterable={true}
-          title="Entrance Tally Records"
+
           loading={false}
           emptyMessage="No entrance tally records yet"
           className="shadow-sm"

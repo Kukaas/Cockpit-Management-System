@@ -288,8 +288,7 @@ const Entrance = () => {
 
       {/* Entrance Records Section */}
       <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold">Entrance Tally Records ({entrances.length})</h3>
+        <div className="flex justify-end items-center">
           <div className="flex gap-2">
             <Button variant="outline" onClick={handlePrint}>
               <Printer className="h-4 w-4 mr-2" />
