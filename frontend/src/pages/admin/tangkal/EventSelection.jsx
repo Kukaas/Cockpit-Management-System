@@ -148,43 +148,32 @@ const EventSelection = () => {
         'Regular': 'regular',
         'Derby': 'derby'
       },
-      render: (value) => {
-        const getEventTypeIcon = (eventType) => {
-          switch (eventType) {
-            case 'derby':
-              return <Award className="h-3 w-3" />
-            case 'regular':
-            default:
-              return <Calendar className="h-3 w-3" />
+      render: (value) => (
+        <Badge
+          variant={
+            value === 'derby' ? 'default' : 'outline'
           }
-        }
-
-        return (
-          <div className="flex items-center gap-2">
-            {getEventTypeIcon(value)}
-            <span className="text-xs capitalize">{value}</span>
-          </div>
-        )
-      }
+          className="text-xs capitalize"
+        >
+          {value}
+        </Badge>
+      )
     },
     {
       key: 'status',
       label: 'Status',
       sortable: true,
-      filterable: true,
-      filterOptions: ['Active', 'Completed', 'Cancelled'],
-      filterValueMap: {
-        'Active': 'active',
-        'Completed': 'completed',
-        'Cancelled': 'cancelled'
-      },
       render: (value) => (
-        <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${value === 'active' ? 'bg-green-100 text-green-800' :
-          value === 'completed' ? 'bg-blue-100 text-blue-800' :
-            'bg-red-100 text-red-800'
-          }`}>
-          {value.charAt(0).toUpperCase() + value.slice(1)}
-        </span>
+        <Badge
+          variant={
+            value === 'active' ? 'default' :
+              value === 'completed' ? 'secondary' :
+                value === 'cancelled' ? 'destructive' : 'outline'
+          }
+          className="text-xs capitalize"
+        >
+          {value}
+        </Badge>
       )
     },
     {
