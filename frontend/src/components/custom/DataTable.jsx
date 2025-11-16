@@ -21,7 +21,7 @@ const DataTable = ({
   searchable = true,
   filterable = true,
   className = '',
-  title = 'Data Table',
+  title = '',
   onRowClick,
   loading = false,
   emptyMessage = 'No data available',

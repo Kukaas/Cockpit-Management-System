@@ -349,33 +349,26 @@ const AdminEventSelection = () => {
         />
 
         {/* Events Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Events</CardTitle>
-            <CardDescription>
-              Select an event to view fight schedules and match results
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <DataTable
-              data={events}
-              columns={columns}
-              pageSize={10}
-              searchable={true}
-              filterable={true}
-              onRowClick={handleRowClick}
-              loading={isLoading}
-              emptyMessage="No events available"
-              className="shadow-sm"
-              filterOnlyColumns={[
-                {
-                  key: 'location',
-                  label: 'Venue'
-                }
-              ]}
-            />
-          </CardContent>
-        </Card>
+
+        <DataTable
+          data={events}
+          columns={columns}
+          pageSize={10}
+          searchable={true}
+          filterable={true}
+          title="Events"
+          onRowClick={handleRowClick}
+          loading={isLoading}
+          emptyMessage="No events available"
+          className="shadow-sm"
+          filterOnlyColumns={[
+            {
+              key: 'location',
+              label: 'Venue'
+            }
+          ]}
+        />
+
       </div>
     </PageLayout>
   )
