@@ -66,19 +66,18 @@ const StaffEventSelection = () => {
       label: 'Type',
       sortable: true,
       filterable: true,
-      filterOptions: ['Regular', 'Special', 'Championship', 'Exhibition'],
+      filterOptions: ['Derby', 'Fastest Kill', 'Regular'],
       filterValueMap: {
-        'Regular': 'regular',
-        'Special': 'special',
-        'Championship': 'championship',
-        'Exhibition': 'exhibition'
+        'Derby': 'derby',
+        'Fastest Kill': 'fastest_kill',
+        'Regular': 'regular'
       },
       render: (value) => (
         <Badge
           variant={
-            value === 'championship' ? 'destructive' :
-              value === 'special' ? 'default' :
-                value === 'exhibition' ? 'secondary' : 'outline'
+            value === 'derby' ? 'default' :
+              value === 'fastest_kill' ? 'secondary' :
+                value === 'regular' ? 'outline' : 'outline'
           }
           className="text-xs capitalize"
         >
@@ -91,19 +90,17 @@ const StaffEventSelection = () => {
       label: 'Status',
       sortable: true,
       filterable: true,
-      filterOptions: ['Active', 'Completed', 'Cancelled', 'Planned'],
+      filterOptions: ['Active', 'Completed'],
       filterValueMap: {
         'Active': 'active',
         'Completed': 'completed',
-        'Cancelled': 'cancelled',
-        'Planned': 'planned'
       },
       render: (value) => (
         <Badge
           variant={
             value === 'active' ? 'default' :
               value === 'completed' ? 'secondary' :
-                value === 'cancelled' ? 'destructive' : 'outline'
+                  'outline'
           }
           className="text-xs capitalize"
         >

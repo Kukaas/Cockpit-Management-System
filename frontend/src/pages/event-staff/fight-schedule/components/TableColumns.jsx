@@ -42,12 +42,11 @@ export const createFightColumns = (formatCurrency, formatDate, handleEditClick, 
     label: 'Status',
     sortable: true,
     filterable: true,
-    filterOptions: ['Scheduled', 'In Progress', 'Completed', 'Cancelled'],
+    filterOptions: ['Scheduled', 'In Progress', 'Completed'],
     filterValueMap: {
       'Scheduled': 'scheduled',
       'In Progress': 'in_progress',
       'Completed': 'completed',
-      'Cancelled': 'cancelled'
     },
     render: (value) => {
       return (
@@ -56,7 +55,7 @@ export const createFightColumns = (formatCurrency, formatDate, handleEditClick, 
             variant={
               value === 'completed' ? 'default' :
                 value === 'in_progress' ? 'secondary' :
-                  value === 'cancelled' ? 'destructive' : 'outline'
+                  'outline'
             }
             className="text-xs capitalize"
           >
