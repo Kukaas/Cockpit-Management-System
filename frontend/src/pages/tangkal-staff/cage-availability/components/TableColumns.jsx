@@ -34,11 +34,9 @@ export const createCageAvailabilityColumns = (handleEditClick, handleDeleteClick
     label: 'Status',
     sortable: true,
     filterable: true,
-    filterOptions: ['Active', 'Inactive', 'Maintenance', 'Rented'],
+    filterOptions: ['Active', 'Rented'],
     filterValueMap: {
       'Active': 'active',
-      'Inactive': 'inactive',
-      'Maintenance': 'maintenance',
       'Rented': 'rented'
     },
     render: (value) => {

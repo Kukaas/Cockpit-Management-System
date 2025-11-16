@@ -11,19 +11,12 @@ const CageAvailabilitySummary = ({ summaryData }) => {
     <Card className="mb-6">
       <CardContent>
         {/* Overall Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
           <div className="space-y-1">
             <p className="text-sm font-medium text-muted-foreground">Total Cages</p>
             <p className="flex items-center gap-1 text-2xl font-bold">
               <Shield className="h-5 w-5" />
               {summaryData.totalCages}
-            </p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-sm font-medium text-muted-foreground">Active Cages</p>
-            <p className="flex items-center gap-1 text-2xl font-bold text-green-600">
-              <CheckCircle className="h-5 w-5" />
-              {summaryData.activeCages}
             </p>
           </div>
           <div className="space-y-1">
