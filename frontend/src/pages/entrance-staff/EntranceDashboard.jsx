@@ -145,8 +145,8 @@ const EntranceDashboard = () => {
         </Card>
 
         {/* Quick Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+          {/* <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Tally Records</CardTitle>
               <Ticket className="h-4 w-4 text-muted-foreground" />
@@ -157,7 +157,7 @@ const EntranceDashboard = () => {
                 Entrance tally records
               </p>
             </CardContent>
-          </Card>
+          </Card> */}
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -187,7 +187,7 @@ const EntranceDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          {/* <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Avg. Per Record</CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
@@ -198,7 +198,7 @@ const EntranceDashboard = () => {
                 Average entrances per tally
               </p>
             </CardContent>
-          </Card>
+          </Card> */}
         </div>
 
         {/* Entrance Chart */}

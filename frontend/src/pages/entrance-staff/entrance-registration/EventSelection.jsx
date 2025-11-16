@@ -14,6 +14,9 @@ const EventSelection = () => {
   // Fetch events
   const { data: events = [], isLoading } = useGetAll('/events')
 
+  // Filter to only show active events
+  const activeEvents = events.filter(event => event.status === 'active')
+
   // Format date for display
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -137,26 +140,20 @@ const EventSelection = () => {
 
   return (
     <PageLayout
-      title="Select Event for Entrance Fee"
+      title="Select Event for Entrance Records"
       description="Choose an event to record entrance tallies and manage entrance records"
     >
       <DataTable
-        data={events}
+        data={activeEvents}
         columns={columns}
         pageSize={10}
         searchable={true}
-        filterable={true}
+        filterable={false}
         title="Events"
         onRowClick={handleRowClick}
         loading={isLoading}
         emptyMessage="No events available for entrance tally"
         className="shadow-sm"
-        filterOnlyColumns={[
-          {
-            key: 'location',
-            label: 'Venue'
-          }
-        ]}
       />
     </PageLayout>
   )

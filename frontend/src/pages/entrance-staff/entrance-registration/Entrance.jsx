@@ -93,6 +93,14 @@ const Entrance = () => {
     }
   }, [event, selectedEvent])
 
+  // Redirect if event is not active
+  useEffect(() => {
+    if (event && event.status !== 'active') {
+      toast.error('This event is not active')
+      navigate('/entrance-staff/entrance-registration')
+    }
+  }, [event, navigate])
+
   // Use the API data directly instead of local state
   const entrances = entrancesData || []
 

@@ -90,7 +90,7 @@ const SidebarComponent = () => {
 					base: [
 						...baseItems,
 						{
-							label: 'Entrance Fee Registration',
+							label: 'Entrance Fee Records',
 							path: '/entrance-staff/entrance-registration',
 							icon: <CheckSquare className="size-4" />
 						}
