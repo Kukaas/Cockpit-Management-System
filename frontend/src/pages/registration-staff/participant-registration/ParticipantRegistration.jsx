@@ -16,6 +16,8 @@ import ParticipantForm from './components/ParticipantForm'
 import CockProfileForm from './components/CockProfileForm'
 import DataTabs from './components/DataTabs'
 import { createParticipantColumns, createCockProfileColumns } from './components/TableColumns'
+import FightForm from '@/pages/event-staff/fight-schedule/components/FightForm'
+import { createFightColumns } from '@/pages/event-staff/fight-schedule/components/TableColumns'
 
 const ParticipantRegistration = () => {
   const { eventId } = useParams()
@@ -32,10 +34,14 @@ const ParticipantRegistration = () => {
   const [editCockProfileDialogOpen, setEditCockProfileDialogOpen] = useState(false)
   const [deleteParticipantDialogOpen, setDeleteParticipantDialogOpen] = useState(false)
   const [deleteCockProfileDialogOpen, setDeleteCockProfileDialogOpen] = useState(false)
+  const [addFightDialogOpen, setAddFightDialogOpen] = useState(false)
+  const [editFightDialogOpen, setEditFightDialogOpen] = useState(false)
+  const [deleteFightDialogOpen, setDeleteFightDialogOpen] = useState(false)
 
   // Selected items for editing/deleting
   const [selectedParticipant, setSelectedParticipant] = useState(null)
   const [selectedCockProfile, setSelectedCockProfile] = useState(null)
+  const [selectedFight, setSelectedFight] = useState(null)
   const [selectedItem, setSelectedItem] = useState(null)
   const [detailDialogOpen, setDetailDialogOpen] = useState(false)
 
@@ -52,6 +58,13 @@ const ParticipantRegistration = () => {
     weight: ''
   })
 
+  const [fightFormData, setFightFormData] = useState({
+    participant1: '',
+    participant2: '',
+    cockProfile1: '',
+    cockProfile2: ''
+  })
+
   // Fetch event details
   const { data: event, isLoading: eventLoading } = useGetById('/events', eventId)
 
@@ -60,6 +73,14 @@ const ParticipantRegistration = () => {
 
   // Fetch cock profiles for this specific event
   const { data: cockProfilesData = [], refetch: refetchCockProfiles } = useGetAll(`/cock-profiles?eventID=${eventId}`)
+
+  // Fetch fight schedules for this event
+  const { data: fightsData = [], refetch: refetchFights } = useGetAll(`/fight-schedules/event/${eventId}`)
+
+  // Fetch available participants and their active cock profiles for this event
+  const { data: availableData = {} } = useGetAll(`/fight-schedules/event/${eventId}/available-participants`)
+  const participantsDataForFights = availableData.participants || []
+  const cockProfilesDataForFights = availableData.cockProfiles || []
 
   // Mutations
   const createParticipantMutation = useCreateMutation('/participants', {
@@ -159,6 +180,50 @@ const ParticipantRegistration = () => {
     }
   )
 
+  // Mutations for fights
+  const createFightMutation = useCreateMutation('/fight-schedules', {
+    successMessage: 'Fight scheduled successfully',
+    errorMessage: (error) => {
+      return error?.response?.data?.message || 'Failed to schedule fight'
+    },
+    onSuccess: () => {
+      setAddFightDialogOpen(false)
+      resetFightForm()
+      refetchFights()
+    }
+  })
+
+  const updateFightMutation = usePutMutation('/fight-schedules', {
+    successMessage: 'Fight updated successfully',
+    errorMessage: (error) => {
+      return error?.response?.data?.message || 'Failed to update fight'
+    },
+    onSuccess: () => {
+      setEditFightDialogOpen(false)
+      setSelectedFight(null)
+      resetFightForm()
+      refetchFights()
+    }
+  })
+
+  const deleteFightMutation = useCustomMutation(
+    async ({ id }) => {
+      const response = await api.delete(`/fight-schedules/${id}`)
+      return response.data
+    },
+    {
+      successMessage: 'Fight deleted successfully',
+      errorMessage: (error) => {
+        return error?.response?.data?.message || 'Failed to delete fight'
+      },
+      onSuccess: () => {
+        setDeleteFightDialogOpen(false)
+        setSelectedFight(null)
+        refetchFights()
+      }
+    }
+  )
+
   // Update state when data changes
   useEffect(() => {
     if (event && event._id && (!selectedEvent || selectedEvent._id !== event._id)) {
@@ -195,6 +260,19 @@ const ParticipantRegistration = () => {
       legband: '',
       weight: ''
     })
+  }
+
+  const resetFightForm = () => {
+    setFightFormData({
+      participant1: '',
+      participant2: '',
+      cockProfile1: '',
+      cockProfile2: ''
+    })
+  }
+
+  const handleFightInputChange = (field, value) => {
+    setFightFormData(prev => ({ ...prev, [field]: value }))
   }
 
   // Submit handlers
@@ -337,6 +415,56 @@ const ParticipantRegistration = () => {
     setDeleteCockProfileDialogOpen(true)
   }
 
+  // Fight handlers
+  const handleAddFight = async () => {
+    const requiredFields = ['participant1', 'participant2', 'cockProfile1', 'cockProfile2']
+    const missingFields = requiredFields.filter(field => !fightFormData[field])
+
+    if (missingFields.length > 0) {
+      toast.error(`Please fill in all required fields`)
+      return
+    }
+
+    if (fightFormData.participant1 === fightFormData.participant2) {
+      toast.error('Please select different participants for the fight')
+      return
+    }
+
+    if (fightFormData.cockProfile1 === fightFormData.cockProfile2) {
+      toast.error('Please select different cock profiles for the fight')
+      return
+    }
+
+    const fightData = {
+      eventID: eventId,
+      participantsID: [fightFormData.participant1, fightFormData.participant2],
+      cockProfileID: [fightFormData.cockProfile1, fightFormData.cockProfile2]
+    }
+
+    createFightMutation.mutate(fightData)
+  }
+
+  const handleEditFightClick = (fight) => {
+    setSelectedFight(fight)
+    setFightFormData({
+      participant1: fight.participantsID[0]?._id || '',
+      participant2: fight.participantsID[1]?._id || '',
+      cockProfile1: fight.cockProfileID[0]?._id || '',
+      cockProfile2: fight.cockProfileID[1]?._id || ''
+    })
+    setEditFightDialogOpen(true)
+  }
+
+  const handleDeleteFightClick = (fight) => {
+    setSelectedFight(fight)
+    setDeleteFightDialogOpen(true)
+  }
+
+  const handleDeleteFight = () => {
+    if (!selectedFight) return
+    deleteFightMutation.mutate({ id: selectedFight._id })
+  }
+
   // Handle view details
   const handleViewDetails = (item, type) => {
     setSelectedItem({ ...item, type })
@@ -407,6 +535,17 @@ const ParticipantRegistration = () => {
     handleViewDetails,
     isEventCompleted,
     selectedEvent?.eventType
+  )
+
+  // Create fight columns (without add result button for registration staff)
+  const fightColumns = createFightColumns(
+    formatCurrency,
+    formatDate,
+    handleEditFightClick,
+    handleDeleteFightClick,
+    () => { }, // No add result handler for registration staff
+    handleViewDetails,
+    false // Hide "Add Result" button for registration staff
   )
 
   if (eventLoading) {
@@ -500,6 +639,10 @@ const ParticipantRegistration = () => {
         onAddCockProfile={() => setAddCockProfileDialogOpen(true)}
         isEventCompleted={isEventCompleted}
         registrationDeadlinePassed={registrationDeadlinePassed}
+        fights={fightsData}
+        fightColumns={fightColumns}
+        onAddFight={() => setAddFightDialogOpen(true)}
+        eventStatus={selectedEvent?.status}
       />
 
       {/* Add Participant Dialog */}
@@ -516,20 +659,20 @@ const ParticipantRegistration = () => {
         isEdit={false}
       />
 
-                           {/* Add Cock Profile Dialog */}
-        <CockProfileForm
-          open={addCockProfileDialogOpen}
-          onOpenChange={setAddCockProfileDialogOpen}
-          title="Create New Cock Profile"
-          description="Add a new cock profile with details"
-          formData={cockProfileFormData}
-          onInputChange={handleCockProfileInputChange}
-          onSubmit={handleAddCockProfile}
-          onCancel={() => setAddCockProfileDialogOpen(false)}
-          isPending={createCockProfileMutation.isPending}
-          isEdit={false}
-          eventId={eventId}
-        />
+      {/* Add Cock Profile Dialog */}
+      <CockProfileForm
+        open={addCockProfileDialogOpen}
+        onOpenChange={setAddCockProfileDialogOpen}
+        title="Create New Cock Profile"
+        description="Add a new cock profile with details"
+        formData={cockProfileFormData}
+        onInputChange={handleCockProfileInputChange}
+        onSubmit={handleAddCockProfile}
+        onCancel={() => setAddCockProfileDialogOpen(false)}
+        isPending={createCockProfileMutation.isPending}
+        isEdit={false}
+        eventId={eventId}
+      />
 
       {/* Edit Participant Dialog */}
       <ParticipantForm
@@ -545,20 +688,20 @@ const ParticipantRegistration = () => {
         isEdit={true}
       />
 
-                                                       {/* Edit Cock Profile Dialog */}
-        <CockProfileForm
-          open={editCockProfileDialogOpen}
-          onOpenChange={setEditCockProfileDialogOpen}
-          title="Edit Cock Profile"
-          description="Update cock profile information"
-          formData={cockProfileFormData}
-          onInputChange={handleCockProfileInputChange}
-          onSubmit={handleEditCockProfile}
-          onCancel={() => setEditCockProfileDialogOpen(false)}
-          isPending={updateCockProfileMutation.isPending}
-          isEdit={true}
-          eventId={eventId}
-        />
+      {/* Edit Cock Profile Dialog */}
+      <CockProfileForm
+        open={editCockProfileDialogOpen}
+        onOpenChange={setEditCockProfileDialogOpen}
+        title="Edit Cock Profile"
+        description="Update cock profile information"
+        formData={cockProfileFormData}
+        onInputChange={handleCockProfileInputChange}
+        onSubmit={handleEditCockProfile}
+        onCancel={() => setEditCockProfileDialogOpen(false)}
+        isPending={updateCockProfileMutation.isPending}
+        isEdit={true}
+        eventId={eventId}
+      />
 
       {/* Delete Participant Confirmation Dialog */}
       <ConfirmationDialog
@@ -574,135 +717,326 @@ const ParticipantRegistration = () => {
         loading={deleteParticipantMutation.isPending}
       />
 
-             {/* Delete Cock Profile Confirmation Dialog */}
-       <ConfirmationDialog
-         open={deleteCockProfileDialogOpen}
-         onOpenChange={setDeleteCockProfileDialogOpen}
-         title="Delete Cock Profile"
-         description={`Are you sure you want to delete the cock profile with entry number "${selectedCockProfile?.entryNo}"? This action cannot be undone.`}
-         confirmText="Delete Profile"
-         cancelText="Cancel"
-         onConfirm={handleDeleteCockProfile}
-         onCancel={() => setDeleteCockProfileDialogOpen(false)}
-         variant="destructive"
-                  loading={deleteCockProfileMutation.isPending}
-       />
+      {/* Delete Cock Profile Confirmation Dialog */}
+      <ConfirmationDialog
+        open={deleteCockProfileDialogOpen}
+        onOpenChange={setDeleteCockProfileDialogOpen}
+        title="Delete Cock Profile"
+        description={`Are you sure you want to delete the cock profile with entry number "${selectedCockProfile?.entryNo}"? This action cannot be undone.`}
+        confirmText="Delete Profile"
+        cancelText="Cancel"
+        onConfirm={handleDeleteCockProfile}
+        onCancel={() => setDeleteCockProfileDialogOpen(false)}
+        variant="destructive"
+        loading={deleteCockProfileMutation.isPending}
+      />
 
-       {/* Detail View Dialog */}
-       <CustomAlertDialog
-         open={detailDialogOpen}
-         onOpenChange={setDetailDialogOpen}
-         title={`${selectedItem?.type === 'participant' ? 'Participant' : 'Cock Profile'} Details`}
-         description={`Detailed information for ${selectedItem?.type === 'participant' ? 'this participant' : 'this cock profile'}`}
-         maxHeight="max-h-[85vh]"
-         actions={
-           <Button onClick={handleCloseDetails} className="w-full sm:w-auto">
-             Close
-           </Button>
-         }
-       >
-         {selectedItem && (
-           <div className="space-y-6 overflow-y-auto pr-2">
-             {selectedItem.type === 'participant' && (
-               <div className="space-y-4">
-                 <div className="bg-gray-50 p-4 rounded-lg">
-                   <h4 className="font-semibold text-lg mb-3 text-gray-900">Personal Information</h4>
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                     <div>
-                       <p className="text-sm font-medium text-gray-600 mb-1">Name</p>
-                       <p className="font-medium text-gray-900">{selectedItem.participantName}</p>
-                     </div>
-                     <div>
-                       <p className="text-sm font-medium text-gray-600 mb-1">Contact Number</p>
-                       <p className="text-gray-900">{selectedItem.contactNumber}</p>
-                     </div>
-                   </div>
-                   <div className="mt-4">
-                     <p className="text-sm font-medium text-gray-600 mb-1">Address</p>
-                     <p className="text-gray-900">{selectedItem.address}</p>
-                   </div>
-                 </div>
+      {/* Add Fight Dialog */}
+      <FightForm
+        open={addFightDialogOpen}
+        onOpenChange={setAddFightDialogOpen}
+        title="Schedule New Fight"
+        description="Create a new fight schedule"
+        formData={fightFormData}
+        onInputChange={handleFightInputChange}
+        onSubmit={handleAddFight}
+        onCancel={() => setAddFightDialogOpen(false)}
+        isPending={createFightMutation.isPending}
+        availableParticipants={participantsDataForFights}
+        availableCockProfiles={cockProfilesDataForFights}
+        isEdit={false}
+        event={selectedEvent}
+      />
 
-                 <div className="bg-gray-50 p-4 rounded-lg">
-                   <h4 className="font-semibold text-lg mb-3 text-gray-900">Registration Details</h4>
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                     <div>
-                       <p className="text-sm font-medium text-gray-600 mb-1">Status</p>
-                       <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                         selectedItem.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                         selectedItem.status === 'withdrawn' ? 'bg-red-100 text-red-800' :
-                         selectedItem.status === 'disqualified' ? 'bg-gray-100 text-gray-800' :
-                         'bg-blue-100 text-blue-800'
-                       }`}>
-                         {selectedItem.status.charAt(0).toUpperCase() + selectedItem.status.slice(1)}
-                       </span>
-                     </div>
-                     <div>
-                       <p className="text-sm font-medium text-gray-600 mb-1">Registration Date</p>
-                       <p className="text-gray-900">{formatDate(selectedItem.registrationDate)}</p>
-                     </div>
-                   </div>
-                 </div>
-               </div>
-             )}
+      {/* Edit Fight Dialog */}
+      <FightForm
+        open={editFightDialogOpen}
+        onOpenChange={setEditFightDialogOpen}
+        title="Edit Fight Schedule"
+        description="Update fight schedule details"
+        formData={fightFormData}
+        onInputChange={handleFightInputChange}
+        onSubmit={() => {
+          if (!selectedFight) return
+          const fightData = {}
+          updateFightMutation.mutate({ id: selectedFight._id, data: fightData })
+        }}
+        onCancel={() => setEditFightDialogOpen(false)}
+        isPending={updateFightMutation.isPending}
+        availableParticipants={participantsDataForFights}
+        availableCockProfiles={cockProfilesDataForFights}
+        isEdit={true}
+        event={selectedEvent}
+        selectedFight={selectedFight}
+      />
 
-             {selectedItem.type === 'cockProfile' && (
-               <div className="space-y-4">
-                 <div className="bg-gray-50 p-4 rounded-lg">
-                   <h4 className="font-semibold text-lg mb-3 text-gray-900">Cock Information</h4>
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                     <div>
-                       <p className="text-sm font-medium text-gray-600 mb-1">Entry No.</p>
-                       <p className="font-medium text-gray-900">#{selectedItem.entryNo}</p>
-                     </div>
-                     {selectedEvent?.eventType === 'derby' && (
-                       <>
-                         <div>
-                           <p className="text-sm font-medium text-gray-600 mb-1">Legband</p>
-                           <p className="font-medium text-gray-900">{selectedItem.legband || 'N/A'}</p>
-                         </div>
-                         <div>
-                           <p className="text-sm font-medium text-gray-600 mb-1">Weight</p>
-                           <p className="font-medium text-gray-900">{selectedItem.weight ? `${selectedItem.weight} kg` : 'N/A'}</p>
-                         </div>
-                       </>
-                     )}
-                   </div>
-                 </div>
+      {/* Delete Fight Confirmation Dialog */}
+      <ConfirmationDialog
+        open={deleteFightDialogOpen}
+        onOpenChange={setDeleteFightDialogOpen}
+        title="Delete Fight"
+        description={`Are you sure you want to delete Fight #${selectedFight?.fightNumber}? This action cannot be undone.`}
+        confirmText="Delete Fight"
+        cancelText="Cancel"
+        onConfirm={handleDeleteFight}
+        onCancel={() => setDeleteFightDialogOpen(false)}
+        variant="destructive"
+        loading={deleteFightMutation.isPending}
+      />
 
-                 <div className="bg-gray-50 p-4 rounded-lg">
-                   <h4 className="font-semibold text-lg mb-3 text-gray-900">Owner Information</h4>
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                     <div>
-                       <p className="text-sm font-medium text-gray-600 mb-1">Owner Name</p>
-                       <p className="font-medium text-gray-900">{selectedItem.participantID?.participantName || 'N/A'}</p>
-                     </div>
-                     <div>
-                       <p className="text-sm font-medium text-gray-600 mb-1">Contact Number</p>
-                       <p className="font-medium text-gray-900">{selectedItem.participantID?.contactNumber || 'N/A'}</p>
-                     </div>
-                   </div>
-                   <div className="mt-4">
-                     <p className="text-sm font-medium text-gray-600 mb-1">Address</p>
-                     <p className="text-gray-900">{selectedItem.participantID?.address || 'N/A'}</p>
-                   </div>
-                 </div>
+      {/* Detail View Dialog */}
+      <CustomAlertDialog
+        open={detailDialogOpen}
+        onOpenChange={setDetailDialogOpen}
+        title={`${selectedItem?.type === 'participant' ? 'Participant' : selectedItem?.type === 'cockProfile' ? 'Cock Profile' : 'Fight'} Details`}
+        description={`Detailed information for ${selectedItem?.type === 'participant' ? 'this participant' : selectedItem?.type === 'cockProfile' ? 'this cock profile' : 'this fight'}`}
+        maxHeight="max-h-[85vh]"
+        actions={
+          <Button onClick={handleCloseDetails} className="w-full sm:w-auto">
+            Close
+          </Button>
+        }
+      >
+        {selectedItem && (
+          <div className="space-y-6 overflow-y-auto pr-2">
+            {selectedItem.type === 'participant' && (
+              <div className="space-y-4">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-lg mb-3 text-gray-900">Personal Information</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600 mb-1">Name</p>
+                      <p className="font-medium text-gray-900">{selectedItem.participantName}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-600 mb-1">Contact Number</p>
+                      <p className="text-gray-900">{selectedItem.contactNumber}</p>
+                    </div>
+                  </div>
+                  <div className="mt-4">
+                    <p className="text-sm font-medium text-gray-600 mb-1">Address</p>
+                    <p className="text-gray-900">{selectedItem.address}</p>
+                  </div>
+                </div>
 
-                 <div className="bg-gray-50 p-4 rounded-lg">
-                   <h4 className="font-semibold text-lg mb-3 text-gray-900">Status</h4>
-                   <span className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${
-                     selectedItem.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                   }`}>
-                     {selectedItem.isActive ? 'Active' : 'Inactive'}
-                   </span>
-                 </div>
-               </div>
-             )}
-           </div>
-         )}
-       </CustomAlertDialog>
-     </PageLayout>
-   )
- }
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-lg mb-3 text-gray-900">Registration Details</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600 mb-1">Status</p>
+                      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${selectedItem.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                        selectedItem.status === 'withdrawn' ? 'bg-red-100 text-red-800' :
+                          selectedItem.status === 'disqualified' ? 'bg-gray-100 text-gray-800' :
+                            'bg-blue-100 text-blue-800'
+                        }`}>
+                        {selectedItem.status.charAt(0).toUpperCase() + selectedItem.status.slice(1)}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-600 mb-1">Registration Date</p>
+                      <p className="text-gray-900">{formatDate(selectedItem.registrationDate)}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {selectedItem.type === 'cockProfile' && (
+              <div className="space-y-4">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-lg mb-3 text-gray-900">Cock Information</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600 mb-1">Entry No.</p>
+                      <p className="font-medium text-gray-900">#{selectedItem.entryNo}</p>
+                    </div>
+                    {selectedEvent?.eventType === 'derby' && (
+                      <>
+                        <div>
+                          <p className="text-sm font-medium text-gray-600 mb-1">Legband</p>
+                          <p className="font-medium text-gray-900">{selectedItem.legband || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-600 mb-1">Weight</p>
+                          <p className="font-medium text-gray-900">{selectedItem.weight ? `${selectedItem.weight} kg` : 'N/A'}</p>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-lg mb-3 text-gray-900">Owner Information</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600 mb-1">Owner Name</p>
+                      <p className="font-medium text-gray-900">{selectedItem.participantID?.participantName || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-600 mb-1">Contact Number</p>
+                      <p className="font-medium text-gray-900">{selectedItem.participantID?.contactNumber || 'N/A'}</p>
+                    </div>
+                  </div>
+                  <div className="mt-4">
+                    <p className="text-sm font-medium text-gray-600 mb-1">Address</p>
+                    <p className="text-gray-900">{selectedItem.participantID?.address || 'N/A'}</p>
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-lg mb-3 text-gray-900">Status</h4>
+                  <span className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${selectedItem.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }`}>
+                    {selectedItem.isActive ? 'Active' : 'Inactive'}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {selectedItem.type === 'fight' && (
+              <div className="space-y-6">
+                {/* Fight Information */}
+                <div className="bg-white rounded-lg border border-gray-200 p-6">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <span className="text-blue-600 font-semibold text-lg">#</span>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-lg text-gray-900">Fight Information</h3>
+                      <p className="text-sm text-gray-500">Fight #{selectedItem.fightNumber}</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Status</label>
+                          <div className="mt-1">
+                            <span className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${selectedItem.status === 'completed' ? 'bg-green-100 text-green-800' :
+                              selectedItem.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
+                                selectedItem.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                                  'bg-gray-100 text-gray-800'
+                              }`}>
+                              {selectedItem.status.replace('_', ' ').charAt(0).toUpperCase() + selectedItem.status.replace('_', ' ').slice(1)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Participants */}
+                <div className="bg-white rounded-lg border border-gray-200 p-6">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                      <span className="text-green-600 font-semibold text-lg">👥</span>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-lg text-gray-900">Participants</h3>
+                      <p className="text-sm text-gray-500">Fight participants and their details</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {selectedItem.participantsID?.map((participant, index) => (
+                      <div key={participant._id} className="bg-gray-50 rounded-lg p-4">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="w-8 h-8 bg-green-100 text-green-600 rounded-lg flex items-center justify-center text-sm font-semibold">
+                            {index + 1}
+                          </div>
+                          <h4 className="font-medium text-gray-900">Participant {index + 1}</h4>
+                        </div>
+
+                        <div className="space-y-3">
+                          <div>
+                            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Name</label>
+                            <p className="mt-1 text-sm text-gray-900">{participant.participantName}</p>
+                          </div>
+
+                          <div>
+                            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Contact</label>
+                            <p className="mt-1 text-sm text-gray-900">{participant.contactNumber}</p>
+                          </div>
+
+                          {participant.email && (
+                            <div>
+                              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Email</label>
+                              <p className="mt-1 text-sm text-gray-900">{participant.email}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Cock Profiles */}
+                <div className="bg-white rounded-lg border border-gray-200 p-6">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                      <span className="text-purple-600 font-semibold text-lg">🐓</span>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-lg text-gray-900">Cock Profiles</h3>
+                      <p className="text-sm text-gray-500">Cock details and specifications</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {selectedItem.cockProfileID?.map((cock, index) => (
+                      <div key={cock._id} className="bg-gray-50 rounded-lg p-4">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="w-8 h-8 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center text-sm font-semibold">
+                            {index + 1}
+                          </div>
+                          <h4 className="font-medium text-gray-900">Cock {index + 1}</h4>
+                        </div>
+
+                        <div className="space-y-3">
+                          {/* Entry Number - shown for all events */}
+                          <div>
+                            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Entry Number</label>
+                            <p className="mt-1 text-sm text-gray-900">#{cock.entryNo || cock.legband || 'N/A'}</p>
+                          </div>
+
+                          {/* Leg Band and Weight - only shown for derby events */}
+                          {selectedEvent?.eventType === 'derby' && (
+                            <>
+                              <div>
+                                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Leg Band</label>
+                                <p className="mt-1 text-sm text-gray-900">{cock.legband || 'N/A'}</p>
+                              </div>
+
+                              <div>
+                                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Weight</label>
+                                <p className="mt-1 text-sm text-gray-900">{cock.weight ? `${cock.weight}kg` : 'N/A'}</p>
+                              </div>
+                            </>
+                          )}
+
+                          <div>
+                            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Status</label>
+                            <div className="mt-1">
+                              <span className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${cock.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                }`}>
+                                {cock.isActive ? 'Active' : 'Inactive'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </CustomAlertDialog>
+    </PageLayout>
+  )
+}
 
 export default ParticipantRegistration

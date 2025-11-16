@@ -473,8 +473,8 @@ const FightSchedule = () => {
         results={resultsData}
         fightColumns={fightColumns}
         resultColumns={resultColumns}
-        onAddFight={() => setAddFightDialogOpen(true)}
         eventType={event.eventType}
+        eventStatus={event.status}
       />
 
       {/* Championship Tab Content for Derby Events */}
@@ -533,6 +533,7 @@ const FightSchedule = () => {
         availableCockProfiles={availableCockProfiles}
         isEdit={true}
         event={event}
+        selectedFight={selectedFight}
       />
 
       {/* Add Match Result Dialog */}

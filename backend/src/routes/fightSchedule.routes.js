@@ -20,9 +20,9 @@ router.get('/event/:eventID', verifyToken, getFightSchedulesByEvent);
 router.get('/event/:eventID/available-participants', verifyToken, getAvailableParticipants);
 
 // Routes requiring admin, bet_staff role
-router.post('/', verifyToken, requireRole(['admin', 'bet_staff']), createFightSchedule);
-router.put('/:id', verifyToken, requireRole(['admin', 'bet_staff']), updateFightSchedule);
-router.patch('/:id/status', verifyToken, requireRole(['admin', 'bet_staff']), updateFightStatus);
-router.delete('/:id', verifyToken, requireRole(['admin', 'bet_staff']), deleteFightSchedule);
+router.post('/', verifyToken, requireRole(['admin', 'bet_staff', 'registration_staff']), createFightSchedule);
+router.put('/:id', verifyToken, requireRole(['admin', 'bet_staff', 'registration_staff']), updateFightSchedule);
+router.patch('/:id/status', verifyToken, requireRole(['admin', 'bet_staff', 'registration_staff']), updateFightStatus);
+router.delete('/:id', verifyToken, requireRole(['admin', 'bet_staff', 'registration_staff']), deleteFightSchedule);
 
 export default router;

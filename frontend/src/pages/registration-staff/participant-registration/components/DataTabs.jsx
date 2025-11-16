@@ -1,7 +1,7 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { UserPlus, Feather, Plus } from 'lucide-react'
+import { UserPlus, Feather, Plus, Swords } from 'lucide-react'
 import DataTable from '@/components/custom/DataTable'
 
 const DataTabs = ({
@@ -14,11 +14,19 @@ const DataTabs = ({
   onAddParticipant,
   onAddCockProfile,
   isEventCompleted = false,
-  registrationDeadlinePassed = false
+  registrationDeadlinePassed = false,
+  // Fight Schedule props
+  fights = [],
+  fightColumns = [],
+  onAddFight = () => { },
+  eventStatus = 'active'
 }) => {
+  // Check if event is completed or cancelled
+  const isEventDisabled = eventStatus === 'completed' || eventStatus === 'cancelled'
+
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-      <TabsList className="grid w-full grid-cols-2">
+      <TabsList className="grid w-full grid-cols-3">
         <TabsTrigger value="participants" className="flex items-center gap-2">
           <UserPlus className="h-4 w-4" />
           Participants ({participants.length})
@@ -26,6 +34,10 @@ const DataTabs = ({
         <TabsTrigger value="cock-profiles" className="flex items-center gap-2">
           <Feather className="h-4 w-4" />
           Cock Profiles ({cockProfiles.length})
+        </TabsTrigger>
+        <TabsTrigger value="fight-schedule" className="flex items-center gap-2">
+          <Swords className="h-4 w-4" />
+          Fight Schedule ({fights.length})
         </TabsTrigger>
       </TabsList>
 
@@ -66,6 +78,31 @@ const DataTabs = ({
           title="Cock Profiles"
           loading={false}
           emptyMessage="No cock profiles created yet"
+          className="shadow-sm"
+        />
+      </TabsContent>
+
+      <TabsContent value="fight-schedule" className="space-y-4">
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-semibold">Scheduled Fights</h3>
+          <Button
+            onClick={onAddFight}
+            disabled={isEventDisabled}
+            title={isEventDisabled ? "Cannot schedule fights for completed/cancelled events" : "Schedule a new fight"}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Schedule Fight
+          </Button>
+        </div>
+        <DataTable
+          data={fights}
+          columns={fightColumns}
+          pageSize={10}
+          searchable={true}
+          filterable={true}
+          title="Fights"
+          loading={false}
+          emptyMessage="No fights scheduled yet"
           className="shadow-sm"
         />
       </TabsContent>

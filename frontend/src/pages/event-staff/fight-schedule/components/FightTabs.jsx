@@ -1,7 +1,7 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Swords, Trophy, Plus, Award, Zap } from 'lucide-react'
+import { Swords, Trophy, Award, Zap } from 'lucide-react'
 import DataTable from '@/components/custom/DataTable'
 
 const FightTabs = ({
@@ -11,7 +11,6 @@ const FightTabs = ({
   results,
   fightColumns,
   resultColumns,
-  onAddFight,
   eventStatus = 'active', // Add event status prop with default value
   eventType = 'regular'
 }) => {
@@ -49,14 +48,6 @@ const FightTabs = ({
       <TabsContent value="fights" className="space-y-4">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold">Scheduled Fights</h3>
-          <Button
-            onClick={onAddFight}
-            disabled={isEventCompleted}
-            title={isEventCompleted ? "Cannot schedule fights for completed/cancelled events" : "Schedule a new fight"}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Schedule Fight
-          </Button>
         </div>
         <DataTable
           data={fights}

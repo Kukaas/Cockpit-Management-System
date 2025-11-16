@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Edit, Trash2, Trophy, Clock, Users, Target, Award, Calendar, Info, Eye } from 'lucide-react'
 
-export const createFightColumns = (formatCurrency, formatDate, handleEditClick, handleDeleteClick, handleAddResultClick, handleViewDetails) => [
+export const createFightColumns = (formatCurrency, formatDate, handleEditClick, handleDeleteClick, handleAddResultClick, handleViewDetails, showAddResult = true) => [
   {
     key: 'fightNumber',
     label: 'Fight #',
@@ -85,17 +85,19 @@ export const createFightColumns = (formatCurrency, formatDate, handleEditClick, 
             >
               <Edit className="h-4 w-4" />
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation()
-                handleAddResultClick(row)
-              }}
-              className="h-8 w-8 p-0 text-green-600 hover:text-green-700"
-            >
-              <Trophy className="h-4 w-4" />
-            </Button>
+            {showAddResult && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleAddResultClick(row)
+                }}
+                className="h-8 w-8 p-0 text-green-600 hover:text-green-700"
+              >
+                <Trophy className="h-4 w-4" />
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="sm"

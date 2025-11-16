@@ -18,21 +18,42 @@ const FightForm = ({
   availableParticipants = [],
   availableCockProfiles = [],
   isEdit = false,
-  event = null
+  event = null,
+  selectedFight = null // Pass the selected fight to get the cock profiles in edit mode
 }) => {
   // Get cock profiles for selected participants
-  const getCockProfilesForParticipant = (participantId) => {
+  const getCockProfilesForParticipant = (participantId, selectedCockProfileId = null) => {
     if (!participantId) return []
 
     // Filter cock profiles by participant ID
-    // Backend already filters for available cocks (status: 'available')
-    return availableCockProfiles.filter(
-      cock => cock.participantID === participantId
-    )
+    // Handle both string IDs and object IDs (populated from backend)
+    let filtered = availableCockProfiles.filter(cock => {
+      const cockParticipantId = typeof cock.participantID === 'object'
+        ? cock.participantID?._id
+        : cock.participantID
+      return cockParticipantId === participantId
+    })
+
+    // In edit mode, include the currently selected cock profile even if it's not in available list
+    if (isEdit && selectedCockProfileId && selectedFight) {
+      const selectedCock = selectedFight.cockProfileID?.find(
+        cp => (cp._id || cp) === selectedCockProfileId
+      )
+      if (selectedCock) {
+        // Check if it's not already in the filtered list
+        const alreadyIncluded = filtered.some(cp => (cp._id || cp) === selectedCockProfileId)
+        if (!alreadyIncluded) {
+          // Add the selected cock profile to the list
+          filtered = [...filtered, selectedCock]
+        }
+      }
+    }
+
+    return filtered
   }
 
-  const participant1CockProfiles = getCockProfilesForParticipant(formData.participant1)
-  const participant2CockProfiles = getCockProfilesForParticipant(formData.participant2)
+  const participant1CockProfiles = getCockProfilesForParticipant(formData.participant1, formData.cockProfile1)
+  const participant2CockProfiles = getCockProfilesForParticipant(formData.participant2, formData.cockProfile2)
 
 
   return (
@@ -130,7 +151,7 @@ const FightForm = ({
                 value={formData.cockProfile1}
                 onChange={(e) => onInputChange('cockProfile1', e.target.value)}
                 required
-                disabled={isEdit || !formData.participant1}
+                disabled={!formData.participant1}
               >
                 <option value="">
                   {formData.participant1
@@ -143,14 +164,17 @@ const FightForm = ({
                     No available cocks for this participant
                   </option>
                 )}
-                {participant1CockProfiles.map((cock) => (
-                  <option key={cock._id} value={cock._id}>
-                    {event?.eventType === 'derby'
-                      ? `${cock.legband || 'N/A'} - ${cock.weight || 'N/A'}kg`
-                      : `${cock.entryNo || 'N/A'}`
-                    }
-                  </option>
-                ))}
+                {participant1CockProfiles.map((cock) => {
+                  const cockId = cock._id || cock
+                  return (
+                    <option key={cockId} value={cockId}>
+                      {event?.eventType === 'derby'
+                        ? `${cock.legband || 'N/A'} - ${cock.weight || 'N/A'}kg`
+                        : `${cock.entryNo || 'N/A'}`
+                      }
+                    </option>
+                  )
+                })}
               </NativeSelect>
             </div>
 
@@ -163,7 +187,7 @@ const FightForm = ({
                 value={formData.cockProfile2}
                 onChange={(e) => onInputChange('cockProfile2', e.target.value)}
                 required
-                disabled={isEdit || !formData.participant2}
+                disabled={!formData.participant2}
               >
                 <option value="">
                   {formData.participant2
@@ -176,14 +200,17 @@ const FightForm = ({
                     No available cocks for this participant
                   </option>
                 )}
-                {participant2CockProfiles.map((cock) => (
-                  <option key={cock._id} value={cock._id}>
-                    {event?.eventType === 'derby'
-                      ? `${cock.legband || 'N/A'} - ${cock.weight || 'N/A'}kg`
-                      : `${cock.entryNo || 'N/A'}`
-                    }
-                  </option>
-                ))}
+                {participant2CockProfiles.map((cock) => {
+                  const cockId = cock._id || cock
+                  return (
+                    <option key={cockId} value={cockId}>
+                      {event?.eventType === 'derby'
+                        ? `${cock.legband || 'N/A'} - ${cock.weight || 'N/A'}kg`
+                        : `${cock.entryNo || 'N/A'}`
+                      }
+                    </option>
+                  )
+                })}
               </NativeSelect>
             </div>
           </div>
