@@ -112,7 +112,6 @@ export const createEventColumns = (
             >
               <option value="active">Active</option>
               <option value="completed">Completed</option>
-              <option value="cancelled">Cancelled</option>
             </select>
           </div>
         )

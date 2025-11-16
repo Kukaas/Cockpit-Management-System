@@ -5,6 +5,7 @@ import { Calendar, MapPin } from 'lucide-react'
 import PageLayout from '@/layouts/PageLayout'
 import { useGetAll } from '@/hooks/useApiQueries'
 import { useNavigate } from 'react-router-dom'
+import { Badge } from '@/components/ui/badge'
 
 const Reports = () => {
     const navigate = useNavigate()
@@ -69,9 +70,16 @@ const Reports = () => {
                 'Fastest Kill': 'fastest_kill'
             },
             render: (value) => (
-                <span className="text-sm capitalize">
+                <Badge
+                    variant={
+                        value === 'derby' ? 'default' :
+                            value === 'fastest_kill' ? 'secondary' :
+                                'outline'
+                    }
+                    className="text-xs capitalize"
+                >
                     {value === 'fastest_kill' ? 'Fastest Kill' : value}
-                </span>
+                </Badge>
             )
         },
         {
@@ -79,14 +87,22 @@ const Reports = () => {
             label: 'Status',
             sortable: true,
             filterable: true,
-            filterOptions: ['Active', 'Completed', 'Cancelled'],
+            filterOptions: ['Active', 'Completed'],
             filterValueMap: {
                 'Active': 'active',
                 'Completed': 'completed',
-                'Cancelled': 'cancelled'
             },
             render: (value) => (
-                <span className="text-sm capitalize">{value}</span>
+                <Badge
+                    variant={
+                        value === 'active' ? 'default' :
+                            value === 'completed' ? 'secondary' :
+                                'outline'
+                    }
+                    className="text-xs capitalize"
+                >
+                    {value.replace('_', ' ').charAt(0).toUpperCase() + value.replace('_', ' ').slice(1)}
+                </Badge>
             )
         }
     ]

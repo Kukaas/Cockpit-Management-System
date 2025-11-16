@@ -162,19 +162,17 @@ const AdminEventSelection = () => {
       label: 'Status',
       sortable: true,
       filterable: true,
-      filterOptions: ['Active', 'Completed', 'Cancelled', 'Planned'],
+      filterOptions: ['Active', 'Completed'],
       filterValueMap: {
         'Active': 'active',
         'Completed': 'completed',
-        'Cancelled': 'cancelled',
-        'Planned': 'planned'
       },
       render: (value) => (
         <Badge
           variant={
             value === 'active' ? 'default' :
               value === 'completed' ? 'secondary' :
-                value === 'cancelled' ? 'destructive' : 'outline'
+                'outline'
           }
           className="text-xs capitalize"
         >

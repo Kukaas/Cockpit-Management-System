@@ -160,7 +160,7 @@ export const createViewOnlyFightScheduleColumns = (formatCurrency, formatDate, h
     label: 'Status',
     sortable: true,
     filterable: true,
-    filterOptions: ['scheduled', 'in_progress', 'completed', 'cancelled'],
+    filterOptions: ['scheduled', 'in_progress', 'completed'],
     render: (value) => (
       <Badge
         variant={
