@@ -9,17 +9,6 @@ export const createCageAvailability = async (req, res) => {
             status = 'active'
         } = req.body;
 
-        // Validate required fields
-        const requiredFields = ['cageNumber'];
-        const missingFields = requiredFields.filter(field => !req.body[field]);
-
-        if (missingFields.length > 0) {
-            return res.status(400).json({
-                success: false,
-                message: `Missing required fields: ${missingFields.join(', ')}`
-            });
-        }
-
         // Validate arena
         const validArenas = ['Buenavista Cockpit Arena', 'Mogpog Cockpit Arena', 'Boac Cockpit Arena'];
         if (!validArenas.includes(arena)) {
@@ -29,18 +18,45 @@ export const createCageAvailability = async (req, res) => {
             });
         }
 
+        // Auto-generate incremental cage number if not provided
+        let finalCageNumber = cageNumber;
+        if (!finalCageNumber) {
+            // Get all existing cages in the arena
+            const existingCages = await CageAvailability.find({ arena })
+                .select('cageNumber');
+
+            // Extract numeric values from existing cage numbers
+            // Handle both old format (C12345) and new format (1, 2, 3)
+            let maxNumber = 0;
+            if (existingCages.length > 0) {
+                const numericValues = existingCages
+                    .map(cage => {
+                        // Remove any non-numeric characters and parse
+                        const numStr = cage.cageNumber.replace(/\D/g, '');
+                        return numStr ? parseInt(numStr, 10) : 0;
+                    })
+                    .filter(num => !isNaN(num) && num > 0);
+
+                if (numericValues.length > 0) {
+                    maxNumber = Math.max(...numericValues);
+                }
+            }
+
+            finalCageNumber = String(maxNumber + 1);
+        }
+
         // Check if cage number already exists in the same arena
-        const existingCage = await CageAvailability.findOne({ cageNumber, arena });
+        const existingCage = await CageAvailability.findOne({ cageNumber: finalCageNumber, arena });
         if (existingCage) {
             return res.status(400).json({
                 success: false,
-                message: `Cage ${cageNumber} already exists in ${arena}`
+                message: `Cage ${finalCageNumber} already exists in ${arena}`
             });
         }
 
         // Create new cage availability record
         const newCageAvailability = new CageAvailability({
-            cageNumber,
+            cageNumber: finalCageNumber,
             arena,
             status,
             recordedBy: req.user._id
@@ -104,38 +120,33 @@ export const bulkCreateCageAvailability = async (req, res) => {
             });
         }
 
-        // Get existing cages in the arena to check for duplicates
+        // Get all existing cages in the arena to find the highest number
         const existingCages = await CageAvailability.find({ arena })
             .select('cageNumber');
 
-        const existingCageNumbers = new Set(existingCages.map(cage => cage.cageNumber));
+        // Extract numeric values from existing cage numbers
+        // Handle both old format (C12345) and new format (1, 2, 3)
+        let maxNumber = 0;
+        if (existingCages.length > 0) {
+            const numericValues = existingCages
+                .map(cage => {
+                    // Remove any non-numeric characters and parse
+                    const numStr = cage.cageNumber.replace(/\D/g, '');
+                    return numStr ? parseInt(numStr, 10) : 0;
+                })
+                .filter(num => !isNaN(num) && num > 0);
 
-        // Create cage records with unique numbers
+            if (numericValues.length > 0) {
+                maxNumber = Math.max(...numericValues);
+            }
+        }
+
+        // Create cage records with incremental numbers
         const cagesToCreate = [];
         const createdCages = [];
 
         for (let i = 0; i < count; i++) {
-            let cageNumber;
-            let attempts = 0;
-            const maxAttempts = 100;
-
-            // Generate unique cage number with 5 digits
-            do {
-                // Generate a random 5-digit number
-                const randomNumber = Math.floor(Math.random() * 90000) + 10000; // 10000 to 99999
-                cageNumber = `C${randomNumber}`;
-                attempts++;
-
-                if (attempts > maxAttempts) {
-                    return res.status(500).json({
-                        success: false,
-                        message: 'Unable to generate unique cage numbers. Please try again.'
-                    });
-                }
-            } while (existingCageNumbers.has(cageNumber));
-
-            // Add to existing numbers set to avoid duplicates within this batch
-            existingCageNumbers.add(cageNumber);
+            const cageNumber = String(maxNumber + i + 1);
 
             cagesToCreate.push({
                 cageNumber,

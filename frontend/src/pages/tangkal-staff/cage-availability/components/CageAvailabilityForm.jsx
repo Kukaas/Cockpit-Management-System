@@ -29,8 +29,6 @@ const CageAvailabilityForm = ({
   const statusOptions = [
     { value: 'active', label: 'Active' },
     { value: 'inactive', label: 'Inactive' },
-    { value: 'maintenance', label: 'Maintenance' },
-    { value: 'rented', label: 'Rented' }
   ]
 
   return (
