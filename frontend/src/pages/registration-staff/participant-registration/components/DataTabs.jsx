@@ -51,8 +51,7 @@ const DataTabs = ({
       </TabsContent>
 
       <TabsContent value="cock-profiles" className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold">Cock Profiles</h3>
+        <div className="flex justify-end items-center">
           <Button onClick={onAddCockProfile} disabled={isEventCompleted || registrationDeadlinePassed}>
             <Plus className="h-4 w-4 mr-2" />
             Add Cock Profile

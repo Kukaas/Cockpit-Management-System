@@ -150,27 +150,6 @@ export const createCockProfileColumns = (handleEditClick, handleDeleteClick, han
     }
   ] : []),
   {
-    key: 'isActive',
-    label: 'Active Status',
-    sortable: true,
-    filterable: true,
-    filterOptions: ['Active', 'Inactive'],
-    filterValueMap: {
-      'Active': true,
-      'Inactive': false
-    },
-    render: (value) => (
-      <div className="flex items-center gap-2">
-        <Badge
-          variant={value ? 'default' : 'secondary'}
-          className="text-xs"
-        >
-          {value ? 'Active' : 'Inactive'}
-        </Badge>
-      </div>
-    )
-  },
-  {
     key: 'status',
     label: 'Fight Status',
     sortable: true,

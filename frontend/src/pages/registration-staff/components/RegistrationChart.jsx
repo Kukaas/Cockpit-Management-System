@@ -336,7 +336,7 @@ export function RegistrationChart({ participantsData = [], cockProfilesData = []
       {/* Registration Statistics */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Participant Status Distribution */}
-        <Card>
+        {/* <Card>
           <CardHeader>
             <CardTitle>Participant Status Distribution</CardTitle>
             <CardDescription>
@@ -372,10 +372,10 @@ export function RegistrationChart({ participantsData = [], cockProfilesData = []
               </div>
             )}
           </CardContent>
-        </Card>
+        </Card> */}
 
         {/* Cock Profile Status Distribution */}
-        <Card>
+        {/* <Card>
           <CardHeader>
             <CardTitle>Cock Profile Status Distribution</CardTitle>
             <CardDescription>
@@ -411,10 +411,10 @@ export function RegistrationChart({ participantsData = [], cockProfilesData = []
               </div>
             )}
           </CardContent>
-        </Card>
+        </Card> */}
 
         {/* Event Type Distribution */}
-        <Card>
+        {/* <Card>
           <CardHeader>
             <CardTitle>Event Type Distribution</CardTitle>
             <CardDescription>
@@ -450,7 +450,7 @@ export function RegistrationChart({ participantsData = [], cockProfilesData = []
               </div>
             )}
           </CardContent>
-        </Card>
+        </Card> */}
       </div>
     </div>
   )
