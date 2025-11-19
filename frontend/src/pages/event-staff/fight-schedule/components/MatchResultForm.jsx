@@ -23,6 +23,21 @@ const MatchResultForm = ({
   const participants = selectedFight?.participantsID || []
   const cockProfiles = selectedFight?.cockProfileID || []
 
+  const getParticipantPosition = (participantId) => {
+    if (!participantId || !formData.participantBets || formData.participantBets.length !== 2) return null
+    const participantBet = formData.participantBets.find(bet => bet?.participantID === participantId)
+    const otherBet = formData.participantBets.find(bet => bet?.participantID && bet.participantID !== participantId)
+
+    if (!participantBet || !otherBet) return null
+
+    if (participantBet.position) return participantBet.position
+
+    if (participantBet.betAmount > otherBet.betAmount) return 'Meron'
+    if (participantBet.betAmount < otherBet.betAmount) return 'Wala'
+
+    return null
+  }
+
   // Calculate betting information
   const calculateBettingInfo = () => {
     if (!formData.participantBets || formData.participantBets.length !== 2) return null
@@ -246,11 +261,15 @@ const MatchResultForm = ({
               required
             >
               <option value="">Select Winner</option>
-              {participants.map((participant) => (
-                <option key={participant._id} value={participant._id}>
-                  {participant.participantName}
-                </option>
-              ))}
+              {participants.map((participant) => {
+                const position = getParticipantPosition(participant._id)
+                const labelPrefix = position ? `${position} - ` : ''
+                return (
+                  <option key={participant._id} value={participant._id}>
+                    {`${labelPrefix}${participant.participantName}`}
+                  </option>
+                )
+              })}
             </NativeSelect>
           </div>
 
