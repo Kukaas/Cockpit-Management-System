@@ -207,38 +207,6 @@ export const createMatchResultColumns = (formatCurrency, formatDate, handleViewD
     }
   ] : []),
   {
-    key: 'status',
-    label: 'Status',
-    sortable: true,
-    filterable: true,
-    filterOptions: ['Pending', 'Confirmed', 'Disputed', 'Final'],
-    filterValueMap: {
-      'Pending': 'pending',
-      'Confirmed': 'confirmed',
-      'Disputed': 'disputed',
-      'Final': 'final'
-    },
-    render: (value, row) => (
-      <div className="space-y-1">
-        <Badge
-          variant={
-            value === 'final' ? 'default' :
-              value === 'confirmed' ? 'secondary' :
-                value === 'disputed' ? 'destructive' : 'outline'
-          }
-          className="text-xs capitalize"
-        >
-          {value}
-        </Badge>
-        {row.verified && (
-          <div className="text-xs text-green-600">
-            ✓ Verified
-          </div>
-        )}
-      </div>
-    )
-  },
-  {
     key: 'actions',
     label: 'Actions',
     sortable: false,
