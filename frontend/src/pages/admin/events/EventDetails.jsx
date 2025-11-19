@@ -307,14 +307,14 @@ const EventDetails = () => {
                               {selectedItem.status.replace('_', ' ').charAt(0).toUpperCase() + selectedItem.status.replace('_', ' ').slice(1)}
                             </span>
                           </div>
-                      </div>
+                        </div>
 
-                      <div>
-                        <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Outcome</label>
-                        <p className="mt-1 text-sm text-gray-900">{selectedItem.betWinner || 'N/A'}</p>
-                      </div>
+                        <div>
+                          <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Outcome</label>
+                          <p className="mt-1 text-sm text-gray-900">{selectedItem.betWinner || 'N/A'}</p>
+                        </div>
 
-                    </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -435,20 +435,19 @@ const EventDetails = () => {
                     </div>
                     <div>
                       <h3 className="font-semibold text-lg text-gray-900">Match Result</h3>
-                      <p className="text-sm text-gray-500">Fight #{selectedItem.matchID?.fightNumber} - {selectedItem.status}</p>
+                      <p className="text-sm text-gray-500">Fight #{selectedItem.matchID?.fightNumber} - {selectedItem.betWinner || 'N/A'}</p>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div className="space-y-4">
                       <div>
-                        <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Status</label>
+                        <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Verification</label>
                         <div className="mt-1">
-                          <span className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${selectedItem.status === 'final' ? 'bg-green-100 text-green-800' :
-                            selectedItem.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                              'bg-gray-100 text-gray-800'
+                          <span className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${selectedItem.verified ? 'bg-green-100 text-green-800' :
+                            'bg-yellow-100 text-yellow-800'
                             }`}>
-                            {selectedItem.status.charAt(0).toUpperCase() + selectedItem.status.slice(1)}
+                            {selectedItem.verified ? 'Verified' : 'Unverified'}
                           </span>
                         </div>
                       </div>

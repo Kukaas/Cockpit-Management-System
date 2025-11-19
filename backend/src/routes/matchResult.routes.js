@@ -4,7 +4,6 @@ import {
   getAllMatchResults,
   getMatchResultById,
   updateMatchResult,
-  updateMatchResultStatus,
   deleteMatchResult,
   verifyMatchResult,
   getMatchResultsByEvent,
@@ -29,7 +28,6 @@ router.put('/fastest-kill/:eventID/prize-distribution', verifyToken, requireRole
 // Routes requiring admin, bet_staff role
 router.post('/', verifyToken, requireRole(['admin', 'bet_staff']), createMatchResult);
 router.put('/:id', verifyToken, requireRole(['admin', 'bet_staff']), updateMatchResult);
-router.patch('/:id/status', verifyToken, requireRole(['admin', 'bet_staff']), updateMatchResultStatus);
 router.patch('/:id/prize-amount', verifyToken, requireRole(['admin', 'bet_staff']), updateMatchResultPrizeAmount);
 router.delete('/:id', verifyToken, requireRole(['admin', 'bet_staff']), deleteMatchResult);
 

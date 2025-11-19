@@ -127,7 +127,7 @@ export const createFightColumns = (formatCurrency, formatDate, handleEditClick, 
   }
 ]
 
-export const createMatchResultColumns = (formatCurrency, formatDate, handleDeleteClick, handleViewDetails, handleStatusChange, eventType = 'regular') => [
+export const createMatchResultColumns = (formatCurrency, formatDate, handleDeleteClick, handleViewDetails, eventType = 'regular') => [
   {
     key: 'matchID',
     label: 'Fight #',
@@ -268,65 +268,13 @@ export const createMatchResultColumns = (formatCurrency, formatDate, handleDelet
     }
   ] : []),
   {
-    key: 'status',
-    label: 'Status',
-    sortable: true,
-    filterable: true,
-    filterOptions: ['Pending', 'Final'],
-    filterValueMap: {
-      'Pending': 'pending',
-      'Final': 'final'
-    },
-    render: (value, row) => {
-      // If status is final, show only a status badge
-      if (value === 'final') {
-        return (
-          <Badge variant="default" className="text-xs">
-            Final
-          </Badge>
-        )
-      }
-
-      // Otherwise show the full status with verification
-      return (
-        <div className="space-y-1">
-          {row.verified && (
-            <div className="text-xs text-green-600">
-              ✓ Verified
-            </div>
-          )}
-          {/* Status Change Dropdown - Only show when status is pending */}
-          {row.status === 'pending' && (
-            <select
-              value={row.status}
-              onChange={(e) => {
-                e.stopPropagation()
-                handleStatusChange(row._id, e.target.value, row.status)
-              }}
-              className="text-xs px-2 py-1 border rounded bg-white"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <option value="pending">Pending</option>
-              <option value="final">Final</option>
-            </select>
-          )}
-          {row.status === 'final' && (
-            <Badge variant="default" className="text-xs">
-              Final
-            </Badge>
-          )}
-        </div>
-      )
-    }
-  },
-  {
     key: 'actions',
     label: 'Actions',
     sortable: false,
     filterable: false,
     render: (_, row) => (
       <div className="flex items-center space-x-2">
-        {!row.verified && row.status !== 'final' && (
+        {!row.verified && (
           <>
             <Button
               variant="ghost"

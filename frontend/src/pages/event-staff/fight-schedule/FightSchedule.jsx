@@ -36,12 +36,10 @@ const FightSchedule = () => {
   const [editResultDialogOpen, setEditResultDialogOpen] = useState(false)
   const [deleteFightDialogOpen, setDeleteFightDialogOpen] = useState(false)
   const [deleteResultDialogOpen, setDeleteResultDialogOpen] = useState(false)
-  const [statusChangeDialogOpen, setStatusChangeDialogOpen] = useState(false)
 
   // Selected items
   const [selectedFight, setSelectedFight] = useState(null)
   const [selectedResult, setSelectedResult] = useState(null)
-  const [pendingStatusChange, setPendingStatusChange] = useState(null) // { resultId, newStatus, oldStatus, resultData }
 
   // Form data
   const [fightFormData, setFightFormData] = useState({
@@ -172,25 +170,6 @@ const FightSchedule = () => {
         setSelectedResult(null)
         refetchResults()
         refetchFights() // Refresh fights as status may change
-      }
-    }
-  )
-
-  const updateResultStatusMutation = useCustomMutation(
-    async ({ id, status }) => {
-      const response = await api.patch(`/match-results/${id}/status`, { status })
-      return response.data
-    },
-    {
-      successMessage: 'Match result status updated successfully',
-      errorMessage: (error) => {
-        // Extract the actual error message from the backend response
-        return error?.response?.data?.message || 'Failed to update match result status'
-      },
-      onSuccess: () => {
-        setStatusChangeDialogOpen(false)
-        setPendingStatusChange(null)
-        refetchResults()
       }
     }
   )
@@ -350,42 +329,12 @@ const FightSchedule = () => {
     setDeleteResultDialogOpen(true)
   }
 
-  const handleStatusChange = (resultId, newStatus, currentStatus) => {
-    // Find the result to get more context for the confirmation
-    const result = resultsData.find(r => r._id === resultId)
-
-    setPendingStatusChange({
-      resultId,
-      newStatus,
-      currentStatus,
-      result
-    })
-    setStatusChangeDialogOpen(true)
-  }
-
   // Handle view details
   const handleViewDetails = (item, type) => {
     setSelectedItem({ ...item, type })
     setDetailDialogOpen(true)
   }
 
-
-
-  const confirmStatusChange = () => {
-    if (pendingStatusChange) {
-      updateResultStatusMutation.mutate({
-        id: pendingStatusChange.resultId,
-        status: pendingStatusChange.newStatus
-      })
-      setStatusChangeDialogOpen(false)
-      setPendingStatusChange(null)
-    }
-  }
-
-  const cancelStatusChange = () => {
-    setStatusChangeDialogOpen(false)
-    setPendingStatusChange(null)
-  }
 
   // Format functions
   const formatDate = (dateString) => {
@@ -433,7 +382,6 @@ const FightSchedule = () => {
     formatDate,
     handleDeleteResultClick,
     handleViewDetails,
-    handleStatusChange,
     event?.eventType
   )
 
@@ -642,24 +590,6 @@ const FightSchedule = () => {
         onCancel={() => setDeleteResultDialogOpen(false)}
         variant="destructive"
         loading={deleteResultMutation.isPending}
-      />
-
-      {/* Status Change Confirmation Dialog */}
-      <ConfirmationDialog
-        open={statusChangeDialogOpen}
-        onOpenChange={setStatusChangeDialogOpen}
-        title="Change Match Result Status"
-        description={
-          pendingStatusChange
-            ? `Are you sure you want to change the status from "${pendingStatusChange.currentStatus?.replace('_', ' ')}" to "${pendingStatusChange.newStatus?.replace('_', ' ')}" for Fight #${pendingStatusChange.result?.matchID?.fightNumber}?`
-            : "Are you sure you want to change the status?"
-        }
-        confirmText="Change Status"
-        cancelText="Cancel"
-        onConfirm={confirmStatusChange}
-        onCancel={cancelStatusChange}
-        variant="default"
-        loading={updateResultStatusMutation.isPending}
       />
 
       {/* Detail View Dialog */}

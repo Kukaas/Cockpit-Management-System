@@ -178,7 +178,7 @@ const PlazadaReportTab = ({ event, formatCurrency, formatDate }) => {
                   <td class="text-right">${formatCurrency(result.totalPlazada || 0)}</td>
                   <td>${winnerName}</td>
                   <td>${loserName}</td>
-                  <td>${result.status ? result.status.charAt(0).toUpperCase() + result.status.slice(1) : 'N/A'}</td>
+                  <td>${result.verified ? 'Verified' : 'Unverified'}</td>
                 </tr>
               `
     }).join('')}

@@ -163,23 +163,12 @@ const DetailsDialog = ({
           </div>
           <div>
             <h3 className="font-semibold text-lg text-gray-900">Match Result</h3>
-            <p className="text-sm text-gray-500">Fight #{result.matchID?.fightNumber} - {result.status}</p>
+            <p className="text-sm text-gray-500">Fight #{result.matchID?.fightNumber} - {result.betWinner || 'N/A'}</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div className="space-y-4">
-            <div>
-              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Status</label>
-              <div className="mt-1">
-                <span className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${result.status === 'final' ? 'bg-green-100 text-green-800' :
-                  result.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-gray-100 text-gray-800'
-                  }`}>
-                  {result.status.charAt(0).toUpperCase() + result.status.slice(1)}
-                </span>
-              </div>
-            </div>
 
             <div>
               <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Outcome</label>

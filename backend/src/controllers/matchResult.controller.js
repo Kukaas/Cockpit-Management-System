@@ -276,8 +276,7 @@ export const updateMatchResult = async (req, res) => {
       loserParticipantID,
       winnerCockProfileID,
       loserCockProfileID,
-      matchTimeSeconds,
-      status
+      matchTimeSeconds
     } = req.body;
 
     const matchResult = await MatchResult.findById(id)
@@ -315,8 +314,8 @@ export const updateMatchResult = async (req, res) => {
     }
 
     // Check if result is already verified and final
-    if (matchResult.verified && matchResult.status === 'final') {
-      return res.status(400).json({ message: 'Cannot update verified and final match result' });
+    if (matchResult.verified) {
+      return res.status(400).json({ message: 'Cannot update a verified match result' });
     }
 
     // Update participant bets if provided
@@ -361,9 +360,6 @@ export const updateMatchResult = async (req, res) => {
       // no-op, retain previous time if not provided
     }
 
-    // Update other fields
-    if (status) matchResult.status = status;
-
     // Recalculate bet winner if participants changed
     if (!isSpecialSelection && winnerParticipantID) {
       matchResult.determineBetWinner();
@@ -406,9 +402,9 @@ export const deleteMatchResult = async (req, res) => {
       return res.status(404).json({ message: 'Match result not found' });
     }
 
-    // Check if result is verified and final
-    if (matchResult.verified && matchResult.status === 'final') {
-      return res.status(400).json({ message: 'Cannot delete verified and final match result' });
+    // Check if result is verified
+    if (matchResult.verified) {
+      return res.status(400).json({ message: 'Cannot delete a verified match result' });
     }
 
     // Update fight schedule status back to scheduled (ready for a new result)
@@ -448,40 +444,6 @@ export const deleteMatchResult = async (req, res) => {
 };
 
 // Update match result status only
-export const updateMatchResultStatus = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { status } = req.body;
-
-    // Validate status value
-    const validStatuses = ['pending', 'final'];
-    if (!validStatuses.includes(status)) {
-      return res.status(400).json({ message: 'Invalid status value' });
-    }
-
-    const matchResult = await MatchResult.findById(id);
-    if (!matchResult) {
-      return res.status(404).json({ message: 'Match result not found' });
-    }
-
-    // Check if result is already verified and final
-    if (matchResult.verified && matchResult.status === 'final') {
-      return res.status(400).json({ message: 'Cannot update verified and final match result' });
-    }
-
-    // Update only the status
-    matchResult.status = status;
-    await matchResult.save();
-
-    res.json({
-      message: 'Match result status updated successfully',
-      data: { _id: matchResult._id, status: matchResult.status }
-    });
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to update match result status', error: error.message });
-  }
-};
-
 // Verify match result
 export const verifyMatchResult = async (req, res) => {
   try {
@@ -497,7 +459,6 @@ export const verifyMatchResult = async (req, res) => {
     matchResult.verified = verified;
     matchResult.verifiedBy = verified ? verifiedBy : null;
     matchResult.verifiedAt = verified ? new Date() : null;
-    matchResult.status = verified ? 'final' : 'pending';
 
     await matchResult.save();
 

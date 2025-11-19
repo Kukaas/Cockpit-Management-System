@@ -149,13 +149,6 @@ const matchResultSchema = new mongoose.Schema({
     type: Date
   },
 
-  // Status of result processing
-  status: {
-    type: String,
-    enum: ['pending', 'final'],
-    default: 'pending'
-  },
-
   // Prize amount for fastest kill events (optional, can be set later)
   prizeAmount: {
     type: Number,
@@ -169,7 +162,6 @@ const matchResultSchema = new mongoose.Schema({
 matchResultSchema.index({ matchID: 1 }, { unique: true });
 matchResultSchema.index({ betWinner: 1 });
 matchResultSchema.index({ 'resultMatch.winnerParticipantID': 1 });
-matchResultSchema.index({ status: 1 });
 matchResultSchema.index({ verified: 1 });
 
 // Pre-save middleware to calculate payouts

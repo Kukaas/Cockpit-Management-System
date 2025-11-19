@@ -67,10 +67,11 @@ const EventSelection = () => {
       label: 'Type',
       sortable: true,
       filterable: true,
-      filterOptions: ['Regular', 'Derby'],
+      filterOptions: ['Regular', 'Derby', 'Fastest Kill'],
       filterValueMap: {
         'Regular': 'regular',
-        'Derby': 'derby'
+        'Derby': 'derby',
+        'Fastest Kill': 'fastest_kill'
       },
       render: (value) => {
         // Helper function to get event type icon
@@ -90,7 +91,9 @@ const EventSelection = () => {
             <Badge
               variant={
                 value === 'derby' ? 'default' :
-                value === 'regular' ? 'outline' : 'outline'
+                value === 'regular' ? 'outline' :
+                value === 'fastest_kill' ? 'secondary' : 'outline'
+
               }
               className="text-xs capitalize"
             >
