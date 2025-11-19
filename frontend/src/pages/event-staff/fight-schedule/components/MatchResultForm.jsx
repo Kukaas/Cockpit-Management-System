@@ -19,13 +19,6 @@ const MatchResultForm = ({
   isEdit = false,
   event = null
 }) => {
-  const matchTypes = [
-    { value: 'knockout', label: 'Knockout' },
-    { value: 'decision', label: 'Decision' },
-    { value: 'disqualification', label: 'Disqualification' },
-    { value: 'forfeit', label: 'Forfeit' }
-  ]
-
   // Get participants and cock profiles from selected fight
   const participants = selectedFight?.participantsID || []
   const cockProfiles = selectedFight?.cockProfileID || []
@@ -280,56 +273,40 @@ const MatchResultForm = ({
         </div>
 
         {/* Match Timing */}
-        <div className="space-y-4">
-          <h4 className="font-medium">Match Timing</h4>
-          {/* Only show time inputs for fastest kill events */}
-          {event?.eventType === 'fastest_kill' && (
-            <div className="grid grid-cols-2 gap-4">
-              <InputField
-                id={isEdit ? "editMatchMinutes" : "matchMinutes"}
-                label="Minutes *"
-                type="number"
-                value={matchMinutes}
-                onChange={(e) => handleMinutesChange(e.target.value)}
-                placeholder="0"
-                min="0"
-                step="1"
-                required
-              />
-              <InputField
-                id={isEdit ? "editMatchSeconds" : "matchSeconds"}
-                label="Seconds *"
-                type="number"
-                value={matchSeconds}
-                onChange={(e) => handleSecondsChange(e.target.value)}
-                placeholder="0.00"
-                min="0"
-                max="59.99"
-                step="0.01"
-                required
-              />
-            </div>
-          )}
-        </div>
+        {event?.eventType === 'fastest_kill' && (
+          <div className="space-y-4">
+            <h4 className="font-medium">Match Timing</h4>
+            {/* Only show time inputs for fastest kill events */}
+            {event?.eventType === 'fastest_kill' && (
+              <div className="grid grid-cols-2 gap-4">
+                <InputField
+                  id={isEdit ? "editMatchMinutes" : "matchMinutes"}
+                  label="Minutes *"
+                  type="number"
+                  value={matchMinutes}
+                  onChange={(e) => handleMinutesChange(e.target.value)}
+                  placeholder="0"
+                  min="0"
+                  step="1"
+                  required
+                />
+                <InputField
+                  id={isEdit ? "editMatchSeconds" : "matchSeconds"}
+                  label="Seconds *"
+                  type="number"
+                  value={matchSeconds}
+                  onChange={(e) => handleSecondsChange(e.target.value)}
+                  placeholder="0.00"
+                  min="0"
+                  max="59.99"
+                  step="0.01"
+                  required
+                />
+              </div>
+            )}
+          </div>
+        )}
 
-        {/* Match Type */}
-        <div className="space-y-2">
-          <Label htmlFor={isEdit ? "editMatchType" : "matchType"} className="text-sm font-medium">
-            Match Type *
-          </Label>
-          <NativeSelect
-            id={isEdit ? "editMatchType" : "matchType"}
-            value={formData.matchType}
-            onChange={(e) => onInputChange('matchType', e.target.value)}
-            required
-          >
-            {matchTypes.map((type) => (
-              <option key={type.value} value={type.value}>
-                {type.label}
-              </option>
-            ))}
-          </NativeSelect>
-        </div>
 
         {/* Betting Result Preview */}
         {bettingInfo && formData.winnerParticipantID && (
@@ -447,11 +424,6 @@ const MatchResultForm = ({
                     return 'Select winner to see payout'
                   })()}
                 </div>
-                {bettingInfo.loserBet && (
-                  <div className="text-sm text-red-600 mt-2">
-                    Loser pays: ₱{bettingInfo.loserBet.betAmount?.toLocaleString()} + ₱{bettingInfo.loserPlazada?.toLocaleString()} plazada = ₱{(bettingInfo.loserBet.betAmount + bettingInfo.loserPlazada)?.toLocaleString()} total
-                  </div>
-                )}
               </div>
             </div>
           </div>

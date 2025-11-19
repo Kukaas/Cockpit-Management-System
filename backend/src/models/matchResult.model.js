@@ -74,11 +74,6 @@ const matchResultSchema = new mongoose.Schema({
       type: Number, // in minutes
       min: 0
     },
-    matchType: {
-      type: String,
-      enum: ['knockout', 'decision', 'disqualification', 'forfeit'],
-      required: true
-    }
   },
 
   // Payout information

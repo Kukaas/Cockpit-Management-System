@@ -57,7 +57,6 @@ const FightSchedule = () => {
     winnerCockProfileID: '',
     loserCockProfileID: '',
     matchTimeSeconds: '',
-    matchType: 'knockout',
     description: '',
     notes: ''
   })
@@ -220,7 +219,6 @@ const FightSchedule = () => {
       winnerCockProfileID: '',
       loserCockProfileID: '',
       matchTimeSeconds: '',
-      matchType: 'knockout',
       description: '',
       notes: ''
     })
@@ -257,7 +255,7 @@ const FightSchedule = () => {
 
   const handleAddResult = async () => {
     // Base required fields for all events
-    const baseRequiredFields = ['winnerParticipantID', 'loserParticipantID', 'winnerCockProfileID', 'loserCockProfileID', 'matchType']
+    const baseRequiredFields = ['winnerParticipantID', 'loserParticipantID', 'winnerCockProfileID', 'loserCockProfileID']
 
     // Add timing field only for fastest kill events
     const requiredFields = event?.eventType === 'fastest_kill'
@@ -293,8 +291,7 @@ const FightSchedule = () => {
       winnerParticipantID: resultFormData.winnerParticipantID,
       loserParticipantID: resultFormData.loserParticipantID,
       winnerCockProfileID: resultFormData.winnerCockProfileID,
-      loserCockProfileID: resultFormData.loserCockProfileID,
-      matchType: resultFormData.matchType
+      loserCockProfileID: resultFormData.loserCockProfileID
     }
 
     // Only include match time in seconds for fastest kill events

@@ -181,10 +181,6 @@ const DetailsDialog = ({
               </div>
             </div>
 
-            <div>
-              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Match Type</label>
-              <p className="mt-1 text-sm text-gray-900 capitalize">{result.resultMatch?.matchType}</p>
-            </div>
           </div>
 
           {/* Only show match timing for fastest kill events */}

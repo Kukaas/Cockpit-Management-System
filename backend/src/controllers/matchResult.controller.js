@@ -14,8 +14,7 @@ export const createMatchResult = async (req, res) => {
       loserParticipantID,
       winnerCockProfileID,
       loserCockProfileID,
-      matchTimeSeconds,
-      matchType
+      matchTimeSeconds
     } = req.body;
     const recordedBy = req.user.id;
 
@@ -105,8 +104,7 @@ export const createMatchResult = async (req, res) => {
         winnerParticipantID,
         loserParticipantID,
         winnerCockProfileID,
-        loserCockProfileID,
-        matchType
+        loserCockProfileID
       },
       matchTimeSeconds,
       recordedBy
@@ -175,18 +173,13 @@ export const createMatchResult = async (req, res) => {
 // Get all match results (with filtering)
 export const getAllMatchResults = async (req, res) => {
   try {
-    const { betWinner, matchType, verified } = req.query;
+    const { betWinner, verified } = req.query;
 
     let query = {};
 
     // Filter by bet winner
     if (betWinner) {
       query.betWinner = betWinner;
-    }
-
-    // Filter by match type
-    if (matchType) {
-      query['resultMatch.matchType'] = matchType;
     }
 
     // Filter by verification status
@@ -263,7 +256,6 @@ export const updateMatchResult = async (req, res) => {
       winnerCockProfileID,
       loserCockProfileID,
       matchTimeSeconds,
-      matchType,
       status
     } = req.body;
 
@@ -324,8 +316,6 @@ export const updateMatchResult = async (req, res) => {
     if (loserParticipantID) matchResult.resultMatch.loserParticipantID = loserParticipantID;
     if (winnerCockProfileID) matchResult.resultMatch.winnerCockProfileID = winnerCockProfileID;
     if (loserCockProfileID) matchResult.resultMatch.loserCockProfileID = loserCockProfileID;
-    if (matchType) matchResult.resultMatch.matchType = matchType;
-
     // Update timing
     if (matchTimeSeconds) matchResult.matchTimeSeconds = matchTimeSeconds;
 
