@@ -149,10 +149,12 @@ export const createMatchResultColumns = (formatCurrency, formatDate, handleDelet
       <div className="space-y-1">
         <div className="flex items-center gap-2 text-sm">
           <Trophy className="h-3 w-3 text-yellow-600" />
-          <span className="font-medium text-green-600">Winner: {value.winnerParticipantID?.participantName}</span>
+          <span className="font-medium text-green-600">
+            Winner: {value?.winnerParticipantID?.participantName || 'N/A'}
+          </span>
         </div>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span>Loser: {value.loserParticipantID?.participantName}</span>
+          <span>Loser: {value?.loserParticipantID?.participantName || 'N/A'}</span>
         </div>
       </div>
     )
@@ -162,7 +164,7 @@ export const createMatchResultColumns = (formatCurrency, formatDate, handleDelet
     label: 'Winner',
     sortable: true,
     filterable: true,
-    filterOptions: ['Meron', 'Wala', 'Draw'],
+    filterOptions: ['Meron', 'Wala', 'Draw', 'Cancelled'],
     render: (value) => (
       <div className="flex items-center gap-2">
         <Award className="h-3 w-3 text-yellow-600" />
@@ -230,6 +232,12 @@ export const createMatchResultColumns = (formatCurrency, formatDate, handleDelet
         return (
           <div className="space-y-1 text-sm">
             <div className="text-muted-foreground">Draw - Bets returned</div>
+          </div>
+        )
+      } else if (row.betWinner === 'Cancelled') {
+        return (
+          <div className="space-y-1 text-sm">
+            <div className="text-muted-foreground">Cancelled - No settlement</div>
           </div>
         )
       }

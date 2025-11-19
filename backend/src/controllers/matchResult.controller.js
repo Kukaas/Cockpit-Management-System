@@ -9,7 +9,7 @@ export const createMatchResult = async (req, res) => {
   try {
     const {
       matchID,
-      participantBets, // Array of {participantID, betAmount}
+      participantBets = [], // Array of {participantID, betAmount}
       winnerParticipantID,
       loserParticipantID,
       winnerCockProfileID,
@@ -17,6 +17,11 @@ export const createMatchResult = async (req, res) => {
       matchTimeSeconds
     } = req.body;
     const recordedBy = req.user.id;
+    const outcomeKey = typeof winnerParticipantID === 'string' ? winnerParticipantID.toLowerCase() : '';
+    const isDrawOutcome = outcomeKey === 'draw';
+    const isCancelledOutcome = outcomeKey === 'cancelled';
+    const isSpecialOutcome = isDrawOutcome || isCancelledOutcome;
+    const specialBetWinner = isDrawOutcome ? 'Draw' : isCancelledOutcome ? 'Cancelled' : null;
 
     // Validate fight schedule exists
     const fightSchedule = await FightSchedule.findById(matchID)
@@ -34,7 +39,7 @@ export const createMatchResult = async (req, res) => {
 
     // Validate matchTimeSeconds for fastest kill events
     // Note: Frontend sends total seconds (converted from minutes + seconds)
-    if (eventType === 'fastest_kill') {
+    if (eventType === 'fastest_kill' && !isSpecialOutcome) {
       if (matchTimeSeconds === undefined || matchTimeSeconds === null) {
         return res.status(400).json({ message: 'Match time (in seconds) is required for fastest kill events' });
       }
@@ -58,37 +63,42 @@ export const createMatchResult = async (req, res) => {
       return res.status(400).json({ message: 'Match result already exists for this fight' });
     }
 
-    // Validate participants are part of this fight
-    const participantIDs = fightSchedule.participantsID.map(p => p._id.toString());
-    if (!participantIDs.includes(winnerParticipantID) || !participantIDs.includes(loserParticipantID)) {
-      return res.status(400).json({ message: 'Participants must be part of this fight' });
-    }
+    if (!isSpecialOutcome) {
+      // Validate participants are part of this fight
+      const participantIDs = fightSchedule.participantsID.map(p => p._id.toString());
+      if (!participantIDs.includes(winnerParticipantID) || !participantIDs.includes(loserParticipantID)) {
+        return res.status(400).json({ message: 'Participants must be part of this fight' });
+      }
 
-    // Validate cock profiles
-    const cockProfileIDs = fightSchedule.cockProfileID.map(c => c._id.toString());
-    if (!cockProfileIDs.includes(winnerCockProfileID) || !cockProfileIDs.includes(loserCockProfileID)) {
-      return res.status(400).json({ message: 'Cock profiles must be part of this fight' });
-    }
+      // Validate cock profiles
+      const cockProfileIDs = fightSchedule.cockProfileID.map(c => c._id.toString());
+      if (!cockProfileIDs.includes(winnerCockProfileID) || !cockProfileIDs.includes(loserCockProfileID)) {
+        return res.status(400).json({ message: 'Cock profiles must be part of this fight' });
+      }
 
-    // Validate participant bets
-    if (!participantBets || participantBets.length !== 2) {
-      return res.status(400).json({ message: 'Exactly 2 participant bets are required' });
-    }
+      // Validate participant bets
+      if (!participantBets || participantBets.length !== 2) {
+        return res.status(400).json({ message: 'Exactly 2 participant bets are required' });
+      }
 
-    // Validate that all participants in the fight have bets
-    const betParticipantIDs = participantBets.map(bet => bet.participantID);
-    const missingParticipants = participantIDs.filter(id => !betParticipantIDs.includes(id));
-    if (missingParticipants.length > 0) {
-      return res.status(400).json({ message: 'All participants must have bets' });
+      // Validate that all participants in the fight have bets
+      const betParticipantIDs = participantBets.map(bet => bet.participantID);
+      const missingParticipants = participantIDs.filter(id => !betParticipantIDs.includes(id));
+      if (missingParticipants.length > 0) {
+        return res.status(400).json({ message: 'All participants must have bets' });
+      }
     }
 
     // Calculate betting totals
-    const [bet1, bet2] = participantBets
-    const meronBet = bet1.betAmount > bet2.betAmount ? bet1 : bet2
-    const walaBet = bet1.betAmount > bet2.betAmount ? bet2 : bet1
+    let totalBetPool = 0;
+    if (!isSpecialOutcome && participantBets.length === 2) {
+      const [bet1, bet2] = participantBets
+      const meronBet = bet1.betAmount > bet2.betAmount ? bet1 : bet2
+      const walaBet = bet1.betAmount > bet2.betAmount ? bet2 : bet1
 
-    const gap = Math.max(0, meronBet.betAmount - walaBet.betAmount) // Gap filled by outside bets (only positive)
-    const totalBetPool = meronBet.betAmount + walaBet.betAmount + gap // Total: Meron + Wala + Outside bets
+      const gap = Math.max(0, meronBet.betAmount - walaBet.betAmount) // Gap filled by outside bets (only positive)
+      totalBetPool = meronBet.betAmount + walaBet.betAmount + gap // Total: Meron + Wala + Outside bets
+    }
 
     // Calculate plazada (will be calculated in the model based on loser)
     // NEW: Plazada is now only collected from the loser (10% of loser's bet)
@@ -97,24 +107,33 @@ export const createMatchResult = async (req, res) => {
     // Create match result
     const matchResult = new MatchResult({
       matchID,
-      participantBets,
+      participantBets: isSpecialOutcome ? [] : participantBets,
       totalBetPool,
       totalPlazada,
       resultMatch: {
-        winnerParticipantID,
-        loserParticipantID,
-        winnerCockProfileID,
-        loserCockProfileID
+        ...(isSpecialOutcome ? {} : {
+          winnerParticipantID,
+          loserParticipantID,
+          winnerCockProfileID,
+          loserCockProfileID
+        })
       },
       matchTimeSeconds,
       recordedBy
     });
 
-    // Assign Meron/Wala positions based on bet amounts
-    matchResult.assignPositions();
+    if (isSpecialOutcome) {
+      matchResult.betWinner = specialBetWinner;
+      matchResult.participantBets = [];
+      matchResult.totalBetPool = 0;
+      matchResult.totalPlazada = 0;
+    } else {
+      // Assign Meron/Wala positions based on bet amounts
+      matchResult.assignPositions();
 
-    // Determine bet winner based on participant
-    matchResult.determineBetWinner();
+      // Determine bet winner based on participant
+      matchResult.determineBetWinner();
+    }
 
     // Validate the result
     const validationErrors = matchResult.validateResult();
@@ -137,17 +156,19 @@ export const createMatchResult = async (req, res) => {
     }
 
     // Deactivate the cock profiles that participated in this fight and set status to 'fought'
-    try {
-      await CockProfile.updateMany(
-        {
-          _id: {
-            $in: [winnerCockProfileID, loserCockProfileID]
-          }
-        },
-        { isActive: false, status: 'fought' }
-      );
-    } catch (error) {
-      console.error('Error deactivating cock profiles:', error);
+    if (!isSpecialOutcome) {
+      try {
+        await CockProfile.updateMany(
+          {
+            _id: {
+              $in: [winnerCockProfileID, loserCockProfileID]
+            }
+          },
+          { isActive: false, status: 'fought' }
+        );
+      } catch (error) {
+        console.error('Error deactivating cock profiles:', error);
+      }
     }
 
     // Populate references for response
@@ -269,12 +290,18 @@ export const updateMatchResult = async (req, res) => {
       return res.status(404).json({ message: 'Match result not found' });
     }
 
+    const selectionKey = typeof winnerParticipantID === 'string' ? winnerParticipantID.toLowerCase() : '';
+    const isDrawSelection = selectionKey === 'draw';
+    const isCancelledSelection = selectionKey === 'cancelled';
+    const isSpecialSelection = isDrawSelection || isCancelledSelection;
+    const specialSelectionValue = isDrawSelection ? 'Draw' : isCancelledSelection ? 'Cancelled' : null;
+
     // Get event type for validation
     const eventType = matchResult.matchID?.eventID?.eventType;
 
     // Validate matchTimeSeconds for fastest kill events
     // Note: Frontend sends total seconds (converted from minutes + seconds)
-    if (matchTimeSeconds !== undefined && eventType === 'fastest_kill') {
+    if (matchTimeSeconds !== undefined && eventType === 'fastest_kill' && !isSpecialSelection) {
       if (matchTimeSeconds === null) {
         return res.status(400).json({ message: 'Match time (in seconds) is required for fastest kill events' });
       }
@@ -293,7 +320,7 @@ export const updateMatchResult = async (req, res) => {
     }
 
     // Update participant bets if provided
-    if (participantBets && participantBets.length === 2) {
+    if (!isSpecialSelection && participantBets && participantBets.length === 2) {
       matchResult.participantBets = participantBets;
       matchResult.assignPositions();
 
@@ -311,20 +338,37 @@ export const updateMatchResult = async (req, res) => {
       // totalPlazada will be calculated in the model after betWinner is determined
     }
 
-    // Update result match fields
-    if (winnerParticipantID) matchResult.resultMatch.winnerParticipantID = winnerParticipantID;
-    if (loserParticipantID) matchResult.resultMatch.loserParticipantID = loserParticipantID;
-    if (winnerCockProfileID) matchResult.resultMatch.winnerCockProfileID = winnerCockProfileID;
-    if (loserCockProfileID) matchResult.resultMatch.loserCockProfileID = loserCockProfileID;
-    // Update timing
-    if (matchTimeSeconds) matchResult.matchTimeSeconds = matchTimeSeconds;
+    if (isSpecialSelection) {
+      matchResult.betWinner = specialSelectionValue;
+      matchResult.participantBets = [];
+      matchResult.totalBetPool = 0;
+      matchResult.totalPlazada = 0;
+      matchResult.resultMatch.winnerParticipantID = undefined;
+      matchResult.resultMatch.loserParticipantID = undefined;
+      matchResult.resultMatch.winnerCockProfileID = undefined;
+      matchResult.resultMatch.loserCockProfileID = undefined;
+      matchResult.matchTimeSeconds = undefined;
+    } else {
+      // Update result match fields
+      if (winnerParticipantID) matchResult.resultMatch.winnerParticipantID = winnerParticipantID;
+      if (loserParticipantID) matchResult.resultMatch.loserParticipantID = loserParticipantID;
+      if (winnerCockProfileID) matchResult.resultMatch.winnerCockProfileID = winnerCockProfileID;
+      if (loserCockProfileID) matchResult.resultMatch.loserCockProfileID = loserCockProfileID;
+      // Update timing
+      if (matchTimeSeconds !== undefined) matchResult.matchTimeSeconds = matchTimeSeconds;
+    }
+    if (!isSpecialSelection && matchTimeSeconds === undefined && eventType !== 'fastest_kill') {
+      // no-op, retain previous time if not provided
+    }
 
     // Update other fields
     if (status) matchResult.status = status;
 
     // Recalculate bet winner if participants changed
-    if (winnerParticipantID) {
+    if (!isSpecialSelection && winnerParticipantID) {
       matchResult.determineBetWinner();
+    } else if (isSpecialSelection) {
+      // betWinner already set
     }
 
     // Validate the updated result
@@ -376,17 +420,24 @@ export const deleteMatchResult = async (req, res) => {
     });
 
     // Reactivate the cock profiles since the result is being deleted and set status back to 'scheduled'
-    try {
-      await CockProfile.updateMany(
-        {
-          _id: {
-            $in: [matchResult.resultMatch.winnerCockProfileID, matchResult.resultMatch.loserCockProfileID]
-          }
-        },
-        { isActive: true, status: 'scheduled' }
-      );
-    } catch (error) {
-      console.error('Error reactivating cock profiles:', error);
+    const cockIdsToReactivate = [
+      matchResult.resultMatch?.winnerCockProfileID,
+      matchResult.resultMatch?.loserCockProfileID
+    ].filter(Boolean);
+
+    if (cockIdsToReactivate.length > 0) {
+      try {
+        await CockProfile.updateMany(
+          {
+            _id: {
+              $in: cockIdsToReactivate
+            }
+          },
+          { isActive: true, status: 'scheduled' }
+        );
+      } catch (error) {
+        console.error('Error reactivating cock profiles:', error);
+      }
     }
 
     await MatchResult.findByIdAndDelete(id);

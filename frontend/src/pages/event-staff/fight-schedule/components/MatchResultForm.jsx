@@ -22,6 +22,40 @@ const MatchResultForm = ({
   // Get participants and cock profiles from selected fight
   const participants = selectedFight?.participantsID || []
   const cockProfiles = selectedFight?.cockProfileID || []
+  const participantBets = formData.participantBets || []
+  const isDrawOutcome = formData.winnerParticipantID === 'draw'
+  const isCancelledOutcome = formData.winnerParticipantID === 'cancelled'
+  const isSpecialOutcome = isDrawOutcome || isCancelledOutcome
+
+  const handleWinnerSelection = (value) => {
+    onInputChange('winnerParticipantID', value)
+
+    if (value === 'draw' || value === 'cancelled') {
+      onInputChange('loserParticipantID', '')
+      onInputChange('winnerCockProfileID', '')
+      onInputChange('loserCockProfileID', '')
+      onInputChange('participantBets', [])
+      return
+    }
+
+    const otherParticipant = participants.find(p => p._id !== value)
+    if (otherParticipant) {
+      onInputChange('loserParticipantID', otherParticipant._id)
+    }
+
+    if (value && selectedFight) {
+      const winnerIndex = participants.findIndex(p => p._id === value)
+      const loserIndex = participants.findIndex(p => p._id !== value && p._id)
+
+      if (winnerIndex !== -1 && cockProfiles[winnerIndex]) {
+        onInputChange('winnerCockProfileID', cockProfiles[winnerIndex]._id)
+      }
+
+      if (loserIndex !== -1 && cockProfiles[loserIndex]) {
+        onInputChange('loserCockProfileID', cockProfiles[loserIndex]._id)
+      }
+    }
+  }
 
   const getParticipantPosition = (participantId) => {
     if (!participantId || !formData.participantBets || formData.participantBets.length !== 2) return null
@@ -40,9 +74,9 @@ const MatchResultForm = ({
 
   // Calculate betting information
   const calculateBettingInfo = () => {
-    if (!formData.participantBets || formData.participantBets.length !== 2) return null
+    if (isSpecialOutcome || participantBets.length !== 2) return null
 
-    const [bet1, bet2] = formData.participantBets
+    const [bet1, bet2] = participantBets
     const meronBet = bet1.betAmount > bet2.betAmount ? bet1 : bet2
     const walaBet = bet1.betAmount > bet2.betAmount ? bet2 : bet1
 
@@ -54,9 +88,9 @@ const MatchResultForm = ({
     let walaPayout = 0
     let loserBet = null
 
-    if (formData.winnerParticipantID) {
-      const winnerBet = formData.participantBets.find(bet => bet.participantID === formData.winnerParticipantID)
-      loserBet = formData.participantBets.find(bet => bet.participantID !== formData.winnerParticipantID)
+    if (formData.winnerParticipantID && !isSpecialOutcome) {
+      const winnerBet = participantBets.find(bet => bet.participantID === formData.winnerParticipantID)
+      loserBet = participantBets.find(bet => bet.participantID !== formData.winnerParticipantID)
 
       if (winnerBet && loserBet) {
         // Plazada is collected from the loser (10% of loser's bet)
@@ -198,28 +232,36 @@ const MatchResultForm = ({
 
         {/* Participant Bets */}
         <div className="space-y-4">
-          <h4 className="font-medium">Participant Bets</h4>
+          <div className="flex items-center justify-between">
+            <h4 className="font-medium">Participant Bets</h4>
+            {isSpecialOutcome && (
+              <span className="text-xs text-muted-foreground">
+                Bets not required for draw or cancelled results
+              </span>
+            )}
+          </div>
           {participants.map((participant, index) => (
             <div key={participant._id} className="space-y-2">
               <Label className="text-sm font-medium">
-                {participant.participantName} Bet Amount *
+                {participant.participantName} Bet Amount{isSpecialOutcome ? '' : ' *'}
               </Label>
               <InputField
                 type="number"
                 min="0"
                 step="0.01"
-                value={formData.participantBets?.[index]?.betAmount || ''}
+                disabled={isSpecialOutcome}
+                value={participantBets?.[index]?.betAmount ?? ''}
                 onChange={(e) => {
-                  const newBets = [...(formData.participantBets || [])]
+                  const newBets = [...participantBets]
                   newBets[index] = {
-                    ...newBets[index],
+                    ...(newBets[index] || {}),
                     participantID: participant._id,
                     betAmount: parseFloat(e.target.value) || 0
                   }
                   onInputChange('participantBets', newBets)
                 }}
-                placeholder="Enter bet amount"
-                required
+                placeholder={isSpecialOutcome ? 'Not required' : 'Enter bet amount'}
+                required={!isSpecialOutcome}
               />
             </div>
           ))}
@@ -235,32 +277,12 @@ const MatchResultForm = ({
             <NativeSelect
               id={isEdit ? "editWinnerParticipant" : "winnerParticipant"}
               value={formData.winnerParticipantID}
-              onChange={(e) => {
-                onInputChange('winnerParticipantID', e.target.value)
-
-                // Auto-set loser participant
-                const otherParticipant = participants.find(p => p._id !== e.target.value)
-                if (otherParticipant) {
-                  onInputChange('loserParticipantID', otherParticipant._id)
-                }
-
-                // Auto-set winner and loser cock profiles based on participant selection
-                if (e.target.value && selectedFight) {
-                  const winnerIndex = participants.findIndex(p => p._id === e.target.value)
-                  const loserIndex = participants.findIndex(p => p._id !== e.target.value && p._id)
-
-                  if (winnerIndex !== -1 && cockProfiles[winnerIndex]) {
-                    onInputChange('winnerCockProfileID', cockProfiles[winnerIndex]._id)
-                  }
-
-                  if (loserIndex !== -1 && cockProfiles[loserIndex]) {
-                    onInputChange('loserCockProfileID', cockProfiles[loserIndex]._id)
-                  }
-                }
-              }}
+              onChange={(e) => handleWinnerSelection(e.target.value)}
               required
             >
               <option value="">Select Winner</option>
+              <option value="draw">Draw (no winner)</option>
+              <option value="cancelled">Cancelled</option>
               {participants.map((participant) => {
                 const position = getParticipantPosition(participant._id)
                 const labelPrefix = position ? `${position} - ` : ''
@@ -328,7 +350,7 @@ const MatchResultForm = ({
 
 
         {/* Betting Result Preview */}
-        {bettingInfo && formData.winnerParticipantID && (
+        {bettingInfo && formData.winnerParticipantID && !isSpecialOutcome && (
           <div className="p-6 bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200 rounded-xl shadow-sm">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">

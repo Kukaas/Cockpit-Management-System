@@ -307,9 +307,14 @@ const EventDetails = () => {
                               {selectedItem.status.replace('_', ' ').charAt(0).toUpperCase() + selectedItem.status.replace('_', ' ').slice(1)}
                             </span>
                           </div>
-                        </div>
-
                       </div>
+
+                      <div>
+                        <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Outcome</label>
+                        <p className="mt-1 text-sm text-gray-900">{selectedItem.betWinner || 'N/A'}</p>
+                      </div>
+
+                    </div>
                     </div>
                   </div>
                 </div>
@@ -547,73 +552,81 @@ const EventDetails = () => {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div className="bg-green-50 rounded-lg p-4 border border-green-200">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                        <h4 className="font-medium text-green-800">Winner</h4>
+                  {['Draw', 'Cancelled'].includes(selectedItem.betWinner) ? (
+                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 text-sm text-gray-700">
+                      {selectedItem.betWinner === 'Draw'
+                        ? 'This match ended in a draw. No winner or loser was declared.'
+                        : 'This match was cancelled. Participants remain available for future fights.'}
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      <div className="bg-green-50 rounded-lg p-4 border border-green-200">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                          <h4 className="font-medium text-green-800">Winner</h4>
+                        </div>
+
+                        <div className="space-y-3">
+                          <div>
+                            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Participant</label>
+                            <p className="mt-1 text-sm text-gray-900">{selectedItem.resultMatch?.winnerParticipantID?.participantName}</p>
+                          </div>
+
+                          <div>
+                            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Entry Number</label>
+                            <p className="mt-1 text-sm text-gray-900">#{selectedItem.resultMatch?.winnerCockProfileID?.entryNo}</p>
+                          </div>
+
+                          {selectedEvent?.eventType === 'derby' && (
+                            <>
+                              <div>
+                                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Leg Band</label>
+                                <p className="mt-1 text-sm text-gray-900">{selectedItem.resultMatch?.winnerCockProfileID?.legband || 'N/A'}</p>
+                              </div>
+
+                              <div>
+                                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Weight</label>
+                                <p className="mt-1 text-sm text-gray-900">{selectedItem.resultMatch?.winnerCockProfileID?.weight ? `${selectedItem.resultMatch?.winnerCockProfileID?.weight}kg` : 'N/A'}</p>
+                              </div>
+                            </>
+                          )}
+                        </div>
                       </div>
 
-                      <div className="space-y-3">
-                        <div>
-                          <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Participant</label>
-                          <p className="mt-1 text-sm text-gray-900">{selectedItem.resultMatch?.winnerParticipantID?.participantName}</p>
+                      <div className="bg-red-50 rounded-lg p-4 border border-red-200">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                          <h4 className="font-medium text-red-800">Loser</h4>
                         </div>
 
-                        <div>
-                          <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Entry Number</label>
-                          <p className="mt-1 text-sm text-gray-900">#{selectedItem.resultMatch?.winnerCockProfileID?.entryNo}</p>
+                        <div className="space-y-3">
+                          <div>
+                            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Participant</label>
+                            <p className="mt-1 text-sm text-gray-900">{selectedItem.resultMatch?.loserParticipantID?.participantName}</p>
+                          </div>
+
+                          <div>
+                            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Entry Number</label>
+                            <p className="mt-1 text-sm text-gray-900">#{selectedItem.resultMatch?.loserCockProfileID?.entryNo}</p>
+                          </div>
+
+                          {selectedEvent?.eventType === 'derby' && (
+                            <>
+                              <div>
+                                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Leg Band</label>
+                                <p className="mt-1 text-sm text-gray-900">{selectedItem.resultMatch?.loserCockProfileID?.legband || 'N/A'}</p>
+                              </div>
+
+                              <div>
+                                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Weight</label>
+                                <p className="mt-1 text-sm text-gray-900">{selectedItem.resultMatch?.loserCockProfileID?.weight ? `${selectedItem.resultMatch?.loserCockProfileID?.weight}kg` : 'N/A'}</p>
+                              </div>
+                            </>
+                          )}
                         </div>
-
-                        {selectedEvent?.eventType === 'derby' && (
-                          <>
-                            <div>
-                              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Leg Band</label>
-                              <p className="mt-1 text-sm text-gray-900">{selectedItem.resultMatch?.winnerCockProfileID?.legband || 'N/A'}</p>
-                            </div>
-
-                            <div>
-                              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Weight</label>
-                              <p className="mt-1 text-sm text-gray-900">{selectedItem.resultMatch?.winnerCockProfileID?.weight ? `${selectedItem.resultMatch?.winnerCockProfileID?.weight}kg` : 'N/A'}</p>
-                            </div>
-                          </>
-                        )}
                       </div>
                     </div>
-
-                    <div className="bg-red-50 rounded-lg p-4 border border-red-200">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                        <h4 className="font-medium text-red-800">Loser</h4>
-                      </div>
-
-                      <div className="space-y-3">
-                        <div>
-                          <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Participant</label>
-                          <p className="mt-1 text-sm text-gray-900">{selectedItem.resultMatch?.loserParticipantID?.participantName}</p>
-                        </div>
-
-                        <div>
-                          <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Entry Number</label>
-                          <p className="mt-1 text-sm text-gray-900">#{selectedItem.resultMatch?.loserCockProfileID?.entryNo}</p>
-                        </div>
-
-                        {selectedEvent?.eventType === 'derby' && (
-                          <>
-                            <div>
-                              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Leg Band</label>
-                              <p className="mt-1 text-sm text-gray-900">{selectedItem.resultMatch?.loserCockProfileID?.legband || 'N/A'}</p>
-                            </div>
-
-                            <div>
-                              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Weight</label>
-                              <p className="mt-1 text-sm text-gray-900">{selectedItem.resultMatch?.loserCockProfileID?.weight ? `${selectedItem.resultMatch?.loserCockProfileID?.weight}kg` : 'N/A'}</p>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+                  )}
                 </div>
 
                 {/* Payout Information */}

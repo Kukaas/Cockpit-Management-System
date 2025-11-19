@@ -57,6 +57,7 @@ const FightSchedule = () => {
     winnerCockProfileID: '',
     loserCockProfileID: '',
     matchTimeSeconds: '',
+    participantBets: [],
     description: '',
     notes: ''
   })
@@ -219,6 +220,7 @@ const FightSchedule = () => {
       winnerCockProfileID: '',
       loserCockProfileID: '',
       matchTimeSeconds: '',
+      participantBets: [],
       description: '',
       notes: ''
     })
@@ -254,11 +256,20 @@ const FightSchedule = () => {
   }
 
   const handleAddResult = async () => {
-    // Base required fields for all events
-    const baseRequiredFields = ['winnerParticipantID', 'loserParticipantID', 'winnerCockProfileID', 'loserCockProfileID']
+    if (!selectedFight) {
+      toast.error('Please select a fight before recording a result')
+      return
+    }
 
-    // Add timing field only for fastest kill events
-    const requiredFields = event?.eventType === 'fastest_kill'
+    const isDrawOutcome = resultFormData.winnerParticipantID === 'draw'
+    const isCancelledOutcome = resultFormData.winnerParticipantID === 'cancelled'
+    const isSpecialOutcome = isDrawOutcome || isCancelledOutcome
+
+    const baseRequiredFields = isSpecialOutcome
+      ? ['winnerParticipantID']
+      : ['winnerParticipantID', 'loserParticipantID', 'winnerCockProfileID', 'loserCockProfileID']
+
+    const requiredFields = (!isSpecialOutcome && event?.eventType === 'fastest_kill')
       ? [...baseRequiredFields, 'matchTimeSeconds']
       : baseRequiredFields
 
@@ -269,36 +280,42 @@ const FightSchedule = () => {
       return
     }
 
-    // Calculate betting totals for backend
-    const participantBets = resultFormData.participantBets || []
-    if (participantBets.length !== 2) {
-      toast.error('Please enter bet amounts for both participants')
-      return
+    let participantBets = resultFormData.participantBets || []
+    let totalBetPool = 0
+
+    if (!isSpecialOutcome) {
+      if (participantBets.length !== 2) {
+        toast.error('Please enter bet amounts for both participants')
+        return
+      }
+
+      const [bet1, bet2] = participantBets
+      const meronBet = bet1.betAmount > bet2.betAmount ? bet1 : bet2
+      const walaBet = bet1.betAmount > bet2.betAmount ? bet2 : bet1
+
+      const gap = Math.max(0, meronBet.betAmount - walaBet.betAmount) // Gap filled by outside bets (only positive)
+      totalBetPool = meronBet.betAmount + walaBet.betAmount + gap // Total: Meron + Wala + Outside bets
+    } else {
+      participantBets = []
     }
 
-    const [bet1, bet2] = participantBets
-    const meronBet = bet1.betAmount > bet2.betAmount ? bet1 : bet2
-    const walaBet = bet1.betAmount > bet2.betAmount ? bet2 : bet1
-
-    const gap = Math.max(0, meronBet.betAmount - walaBet.betAmount) // Gap filled by outside bets (only positive)
-    const totalBetPool = meronBet.betAmount + walaBet.betAmount + gap // Total: Meron + Wala + Outside bets
-
-    // Plazada will be calculated in the model based on winner
     const resultData = {
       matchID: selectedFight._id,
-      participantBets,
-      totalBetPool,
       winnerParticipantID: resultFormData.winnerParticipantID,
-      loserParticipantID: resultFormData.loserParticipantID,
-      winnerCockProfileID: resultFormData.winnerCockProfileID,
-      loserCockProfileID: resultFormData.loserCockProfileID
+      participantBets
     }
 
-    // Only include match time in seconds for fastest kill events
-    if (event?.eventType === 'fastest_kill') {
+    if (!isSpecialOutcome) {
+      resultData.totalBetPool = totalBetPool
+      resultData.loserParticipantID = resultFormData.loserParticipantID
+      resultData.winnerCockProfileID = resultFormData.winnerCockProfileID
+      resultData.loserCockProfileID = resultFormData.loserCockProfileID
+      if (event?.eventType === 'fastest_kill') {
+        resultData.matchTimeSeconds = resultFormData.matchTimeSeconds
+      }
+    } else if (event?.eventType === 'fastest_kill' && resultFormData.matchTimeSeconds) {
       resultData.matchTimeSeconds = resultFormData.matchTimeSeconds
     }
-    // For Derby/Regular events, don't include match timing at all
 
     createResultMutation.mutate(resultData)
   }
@@ -324,11 +341,7 @@ const FightSchedule = () => {
 
   const handleAddResultClick = (fight) => {
     setSelectedFight(fight)
-    // Pre-populate with default values
-    setResultFormData(prev => ({
-      ...prev,
-      // We'll let user select winner/loser from the fight participants
-    }))
+    resetResultForm()
     setAddResultDialogOpen(true)
   }
 
@@ -559,6 +572,21 @@ const FightSchedule = () => {
         onInputChange={handleResultInputChange}
         onSubmit={() => {
           if (!selectedResult) return
+
+          const isDrawOutcome = resultFormData.winnerParticipantID === 'draw'
+          const isCancelledOutcome = resultFormData.winnerParticipantID === 'cancelled'
+          const isSpecialOutcome = isDrawOutcome || isCancelledOutcome
+
+          if (isSpecialOutcome) {
+            const updateData = {
+              winnerParticipantID: resultFormData.winnerParticipantID
+            }
+            if (event?.eventType === 'fastest_kill' && resultFormData.matchTimeSeconds) {
+              updateData.matchTimeSeconds = resultFormData.matchTimeSeconds
+            }
+            updateResultMutation.mutate({ id: selectedResult._id, data: updateData })
+            return
+          }
 
           // Calculate betting totals for backend
           const participantBets = resultFormData.participantBets || []

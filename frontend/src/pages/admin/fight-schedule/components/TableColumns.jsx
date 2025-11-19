@@ -120,29 +120,38 @@ export const createMatchResultColumns = (formatCurrency, formatDate, handleViewD
     label: 'Match Result',
     sortable: false,
     filterable: false,
-    render: (value) => (
-      <div className="space-y-1">
-        <div className="flex items-center gap-2 text-sm">
-          <Trophy className="h-3 w-3 text-yellow-600" />
-          <span className="font-medium text-green-600">Winner: {value.winnerParticipantID?.participantName}</span>
+    render: (value) => {
+      const winnerName = value?.winnerParticipantID?.participantName || 'N/A'
+      const loserName = value?.loserParticipantID?.participantName || 'N/A'
+
+      return (
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 text-sm">
+            <Trophy className="h-3 w-3 text-yellow-600" />
+            <span className="font-medium text-green-600">Winner: {winnerName}</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span>Loser: {loserName}</span>
+          </div>
         </div>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span>Loser: {value.loserParticipantID?.participantName}</span>
-        </div>
-      </div>
-    )
+      )
+    }
   },
   {
     key: 'betWinner',
     label: 'Bet Winner',
     sortable: true,
     filterable: true,
-    filterOptions: ['Meron', 'Wala', 'Draw'],
+    filterOptions: ['Meron', 'Wala', 'Draw', 'Cancelled'],
     render: (value) => (
       <div className="flex items-center gap-2">
         <Award className="h-3 w-3 text-yellow-600" />
         <Badge
-          variant={value === 'Meron' ? 'default' : value === 'Wala' ? 'secondary' : 'outline'}
+          variant={
+            value === 'Meron' ? 'default' :
+              value === 'Wala' ? 'secondary' :
+                value === 'Cancelled' ? 'destructive' : 'outline'
+          }
           className="text-xs"
         >
           {value}
