@@ -24,11 +24,6 @@ const CageAvailabilityForm = ({
     'Buenavista Cockpit Arena',
   ]
 
-  const statusOptions = [
-    { value: 'active', label: 'Active' },
-    { value: 'inactive', label: 'Inactive' },
-  ]
-
   return (
     <CustomAlertDialog
       open={open}
@@ -130,24 +125,6 @@ const CageAvailabilityForm = ({
               {arenaOptions.map((arena) => (
                 <option key={arena} value={arena}>
                   {arena}
-                </option>
-              ))}
-            </NativeSelect>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor={isEdit ? "editStatus" : "status"} className="text-sm font-medium">
-              Status *
-            </Label>
-            <NativeSelect
-              id={isEdit ? "editStatus" : "status"}
-              value={formData.status}
-              onChange={(e) => onInputChange('status', e.target.value)}
-              required
-            >
-              {statusOptions.map((status) => (
-                <option key={status.value} value={status.value}>
-                  {status.label}
                 </option>
               ))}
             </NativeSelect>
