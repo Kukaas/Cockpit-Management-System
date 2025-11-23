@@ -14,6 +14,9 @@ const EventSelection = () => {
   // Fetch events
   const { data: events = [], isLoading } = useGetAll('/events')
 
+  // Filter to only show active events
+  const activeEvents = events.filter(event => event.status === 'active')
+
   // Format date for display
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -196,7 +199,7 @@ const EventSelection = () => {
       description="Choose an event to register participants and manage cock profiles"
     >
       <DataTable
-        data={events}
+        data={activeEvents}
         columns={columns}
         pageSize={10}
         searchable={true}
@@ -206,12 +209,6 @@ const EventSelection = () => {
         loading={isLoading}
         emptyMessage="No events available for registration"
         className="shadow-sm"
-        filterOnlyColumns={[
-          {
-            key: 'location',
-            label: 'Venue'
-          }
-        ]}
       />
 
     </PageLayout>

@@ -359,12 +359,6 @@ const AdminEventSelection = () => {
           loading={isLoading}
           emptyMessage="No events available"
           className="shadow-sm"
-          filterOnlyColumns={[
-            {
-              key: 'location',
-              label: 'Venue'
-            }
-          ]}
         />
 
       </div>

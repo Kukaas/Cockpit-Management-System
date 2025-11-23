@@ -14,6 +14,9 @@ const EventSelection = () => {
   // Fetch events
   const { data: events = [], isLoading } = useGetAll('/events')
 
+  // Filter to only show active events
+  const activeEvents = events.filter(event => event.status === 'active')
+
   // Format date for display
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -91,8 +94,8 @@ const EventSelection = () => {
             <Badge
               variant={
                 value === 'derby' ? 'default' :
-                value === 'regular' ? 'outline' :
-                value === 'fastest_kill' ? 'secondary' : 'outline'
+                  value === 'regular' ? 'outline' :
+                    value === 'fastest_kill' ? 'secondary' : 'outline'
 
               }
               className="text-xs capitalize"
@@ -111,8 +114,8 @@ const EventSelection = () => {
         <Badge
           variant={
             value === 'active' ? 'default' :
-            value === 'completed' ? 'secondary' :
-            value === 'cancelled' ? 'destructive' : 'outline'
+              value === 'completed' ? 'secondary' :
+                value === 'cancelled' ? 'destructive' : 'outline'
           }
           className="text-xs capitalize"
         >
@@ -192,7 +195,7 @@ const EventSelection = () => {
       description="Choose an event to manage cage rentals and track availability"
     >
       <DataTable
-        data={events}
+        data={activeEvents}
         columns={columns}
         pageSize={10}
         searchable={true}
@@ -202,12 +205,6 @@ const EventSelection = () => {
         loading={isLoading}
         emptyMessage="No events available for cage rental management"
         className="shadow-sm"
-        filterOnlyColumns={[
-          {
-            key: 'location',
-            label: 'Venue'
-          }
-        ]}
       />
     </PageLayout>
   )

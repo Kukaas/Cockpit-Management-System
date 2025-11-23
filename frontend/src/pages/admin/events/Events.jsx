@@ -480,12 +480,6 @@ const Events = () => {
         loading={isLoading}
         emptyMessage="No events found"
         className="shadow-sm"
-        filterOnlyColumns={[
-          {
-            key: 'location',
-            label: 'Venue'
-          }
-        ]}
       />
     </PageLayout>
   )
