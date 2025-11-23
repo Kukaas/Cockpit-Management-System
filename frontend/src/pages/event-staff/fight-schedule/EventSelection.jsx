@@ -13,6 +13,9 @@ const StaffEventSelection = () => {
   // Fetch events
   const { data: events = [], isLoading } = useGetAll('/events')
 
+  // Filter to only show active events
+  const activeEvents = events.filter(event => event.status === 'active')
+
   // Format date for display
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -100,7 +103,7 @@ const StaffEventSelection = () => {
           variant={
             value === 'active' ? 'default' :
               value === 'completed' ? 'secondary' :
-                  'outline'
+                'outline'
           }
           className="text-xs capitalize"
         >
@@ -186,7 +189,7 @@ const StaffEventSelection = () => {
       }
     >
       <DataTable
-        data={events}
+        data={activeEvents}
         columns={columns}
         pageSize={10}
         searchable={true}
