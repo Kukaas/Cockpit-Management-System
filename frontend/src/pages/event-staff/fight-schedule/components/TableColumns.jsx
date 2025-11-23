@@ -42,10 +42,9 @@ export const createFightColumns = (formatCurrency, formatDate, handleEditClick, 
     label: 'Status',
     sortable: true,
     filterable: true,
-    filterOptions: ['Scheduled', 'In Progress', 'Completed'],
+    filterOptions: ['Scheduled', 'Completed'],
     filterValueMap: {
       'Scheduled': 'scheduled',
-      'In Progress': 'in_progress',
       'Completed': 'completed',
     },
     render: (value) => {
@@ -54,8 +53,7 @@ export const createFightColumns = (formatCurrency, formatDate, handleEditClick, 
           <Badge
             variant={
               value === 'completed' ? 'default' :
-                value === 'in_progress' ? 'secondary' :
-                  'outline'
+                'outline'
             }
             className="text-xs capitalize"
           >

@@ -1196,16 +1196,6 @@ const ParticipantRegistration = () => {
                               </div>
                             </>
                           )}
-
-                          <div>
-                            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Status</label>
-                            <div className="mt-1">
-                              <span className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${cock.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                                }`}>
-                                {cock.isActive ? 'Active' : 'Inactive'}
-                              </span>
-                            </div>
-                          </div>
                         </div>
                       </div>
                     ))}

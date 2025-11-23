@@ -32,17 +32,36 @@ const DataTable = ({
   const [filters, setFilters] = useState({})
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' })
 
+  // Helper function to recursively search through nested objects
+  const searchInObject = (obj, searchTerm) => {
+    if (!obj || typeof obj !== 'object') {
+      return String(obj || '').toLowerCase().includes(searchTerm.toLowerCase())
+    }
+
+    // Handle arrays
+    if (Array.isArray(obj)) {
+      return obj.some(item => searchInObject(item, searchTerm))
+    }
+
+    // Handle objects
+    return Object.values(obj).some(value => {
+      if (value === null || value === undefined) {
+        return false
+      }
+      if (typeof value === 'object') {
+        return searchInObject(value, searchTerm)
+      }
+      return String(value).toLowerCase().includes(searchTerm.toLowerCase())
+    })
+  }
+
   // Filter and search data
   const filteredData = useMemo(() => {
     let filtered = [...data]
 
     // Apply search
     if (searchTerm) {
-      filtered = filtered.filter(item =>
-        Object.values(item).some(value =>
-          String(value).toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      )
+      filtered = filtered.filter(item => searchInObject(item, searchTerm))
     }
 
     // Apply filters
@@ -68,7 +87,7 @@ const DataTable = ({
     })
 
     return filtered
-  }, [data, searchTerm, filters])
+  }, [data, searchTerm, filters, columns])
 
   // Sort data
   const sortedData = useMemo(() => {
