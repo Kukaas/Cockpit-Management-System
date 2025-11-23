@@ -194,20 +194,6 @@ const RentalForm = ({
     >
       <div className="space-y-6 overflow-y-auto pr-2">
 
-
-
-        {/* Arena Display - Auto-selected from event */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Shield className="h-4 w-4" />
-            <Label className="text-sm font-medium">Arena (Auto-selected from event)</Label>
-          </div>
-          <div className="p-3 bg-green-50 border border-green-200 rounded-md">
-            <p className="text-sm text-green-800 font-medium">{formData.arena}</p>
-            <p className="text-xs text-green-600 mt-1">✓ Arena automatically selected based on event location</p>
-          </div>
-        </div>
-
         {/* Cage Selection */}
         {(
           <div className="space-y-4">

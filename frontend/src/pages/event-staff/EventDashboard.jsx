@@ -12,6 +12,7 @@ const EventDashboard = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth())
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const [selectedVenue, setSelectedVenue] = useState('')
+  const [selectedEventType, setSelectedEventType] = useState('')
 
   // Fetch data
   const { data: eventsData } = useGetAll('/events?status=active')
@@ -24,7 +25,8 @@ const EventDashboard = () => {
     const matchesMonth = eventDate.getMonth() === selectedMonth
     const matchesYear = eventDate.getFullYear() === selectedYear
     const matchesVenue = !selectedVenue || schedule.eventID?.location === selectedVenue
-    return matchesMonth && matchesYear && matchesVenue
+    const matchesEventType = !selectedEventType || schedule.eventID?.eventType === selectedEventType
+    return matchesMonth && matchesYear && matchesVenue && matchesEventType
   }) || []
 
   const filteredMatchResults = matchResultsData?.filter(result => {
@@ -32,7 +34,8 @@ const EventDashboard = () => {
     const matchesMonth = eventDate.getMonth() === selectedMonth
     const matchesYear = eventDate.getFullYear() === selectedYear
     const matchesVenue = !selectedVenue || result.matchID?.eventID?.location === selectedVenue
-    return matchesMonth && matchesYear && matchesVenue
+    const matchesEventType = !selectedEventType || result.matchID?.eventID?.eventType === selectedEventType
+    return matchesMonth && matchesYear && matchesVenue && matchesEventType
   }) || []
 
   // Calculate statistics
@@ -85,6 +88,7 @@ const EventDashboard = () => {
     setSelectedMonth(new Date().getMonth())
     setSelectedYear(new Date().getFullYear())
     setSelectedVenue('')
+    setSelectedEventType('')
   }
 
   return (
@@ -106,11 +110,11 @@ const EventDashboard = () => {
               </Button>
             </div>
             <CardDescription>
-              Filter dashboard data by month, year, and venue
+              Filter dashboard data by month, year, venue, and event type
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Month</label>
                 <NativeSelect
@@ -140,17 +144,15 @@ const EventDashboard = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Venue</label>
+                <label className="text-sm font-medium">Event Type</label>
                 <NativeSelect
-                  value={selectedVenue}
-                  onChange={(e) => setSelectedVenue(e.target.value)}
+                  value={selectedEventType}
+                  onChange={(e) => setSelectedEventType(e.target.value)}
                 >
-                  <option value="">All Venues</option>
-                  {venues.map((venue) => (
-                    <option key={venue} value={venue}>
-                      {venue}
-                    </option>
-                  ))}
+                  <option value="">All Types</option>
+                  <option value="regular">Regular</option>
+                  <option value="derby">Derby</option>
+                  <option value="fastest_kill">Fastest Kill</option>
                 </NativeSelect>
               </div>
             </div>

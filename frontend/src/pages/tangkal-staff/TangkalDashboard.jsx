@@ -14,6 +14,7 @@ const TangkalDashboard = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth())
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const [selectedEvent, setSelectedEvent] = useState('')
+  const [selectedEventType, setSelectedEventType] = useState('')
 
   // Fetch data with filters
   const { data: availabilityData } = useGetAll('/cage-availability/summary')
@@ -26,8 +27,9 @@ const TangkalDashboard = () => {
     const matchesMonth = rentalDate.getMonth() === selectedMonth
     const matchesYear = rentalDate.getFullYear() === selectedYear
     const matchesEvent = !selectedEvent || rental.eventID?._id === selectedEvent
+    const matchesEventType = !selectedEventType || rental.eventID?.eventType === selectedEventType
 
-    return matchesMonth && matchesYear && matchesEvent
+    return matchesMonth && matchesYear && matchesEvent && matchesEventType
   }) || []
 
   // Calculate filtered statistics
@@ -131,6 +133,7 @@ const TangkalDashboard = () => {
     setSelectedMonth(new Date().getMonth())
     setSelectedYear(new Date().getFullYear())
     setSelectedEvent('')
+    setSelectedEventType('')
   }
 
   return (
@@ -152,7 +155,7 @@ const TangkalDashboard = () => {
               </Button>
             </div>
             <CardDescription>
-              Filter dashboard data by month, year, and event
+              Filter dashboard data by month, year, event, and event type
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -186,17 +189,15 @@ const TangkalDashboard = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Event</label>
+                <label className="text-sm font-medium">Event Type</label>
                 <NativeSelect
-                  value={selectedEvent}
-                  onChange={(e) => setSelectedEvent(e.target.value)}
+                  value={selectedEventType}
+                  onChange={(e) => setSelectedEventType(e.target.value)}
                 >
-                  <option value="">All Events</option>
-                  {events.map((event) => (
-                    <option key={event._id} value={event._id}>
-                      {event.eventName} - {formatDate(event.date)}
-                    </option>
-                  ))}
+                  <option value="">All Types</option>
+                  <option value="regular">Regular</option>
+                  <option value="derby">Derby</option>
+                  <option value="fastest_kill">Fastest Kill</option>
                 </NativeSelect>
               </div>
             </div>
