@@ -121,8 +121,7 @@ const Entrance = () => {
 
       {/* Entrance Records Section */}
       <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold">Entrance Tally Records ({entrances.length})</h3>
+        <div className="flex justify-end items-center">
           <Button variant="outline" onClick={handlePrint}>
             <Printer className="h-4 w-4 mr-2" />
             Print Report
@@ -132,10 +131,9 @@ const Entrance = () => {
           data={entrances}
           columns={entranceColumns}
           pageSize={10}
-          searchable={true}
-          filterable={true}
-
           loading={false}
+          title="Entrance Tally Records"
+          searchable={false}
           emptyMessage="No entrance tally records yet"
           className="shadow-sm"
         />
