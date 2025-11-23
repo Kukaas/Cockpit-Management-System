@@ -96,18 +96,6 @@ const EventSelection = () => {
       )
     },
     {
-      key: 'maxCapacity',
-      label: 'Max Capacity',
-      sortable: true,
-      filterable: false,
-      render: (value) => (
-        <div className="flex items-center gap-1">
-          <Building className="h-4 w-4 text-blue-600" />
-          <span>{value}</span>
-        </div>
-      )
-    },
-    {
       key: 'actions',
       label: 'Actions',
       sortable: false,
