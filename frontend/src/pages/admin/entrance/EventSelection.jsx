@@ -150,18 +150,6 @@ const EventSelection = () => {
       )
     },
     {
-      key: 'maxCapacity',
-      label: 'Max Capacity',
-      sortable: true,
-      filterable: false,
-      render: (value) => (
-        <div className="flex items-center gap-1">
-          <Building className="h-4 w-4 text-blue-600" />
-          <span>{value}</span>
-        </div>
-      )
-    },
-    {
       key: 'actions',
       label: 'Actions',
       sortable: false,
@@ -257,7 +245,7 @@ const EventSelection = () => {
         </Card>
 
         {/* Quick Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Events</CardTitle>
@@ -309,7 +297,7 @@ const EventSelection = () => {
               </p>
             </CardContent>
           </Card>
-        </div>
+        </div> */}
 
         {/* Event Chart */}
         <EventChart
@@ -319,29 +307,18 @@ const EventSelection = () => {
         />
 
         {/* Events Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Events</CardTitle>
-            <CardDescription>
-              Showing {filteredEvents.length} events for {months[selectedMonth].label} {selectedYear}
-              {selectedEventType && ` - ${selectedEventType.charAt(0).toUpperCase() + selectedEventType.slice(1)}`}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <DataTable
-              data={filteredEvents}
-              columns={columns}
-              pageSize={10}
-              searchable={true}
-              filterable={true}
-              title="Events"
-              onRowClick={handleRowClick}
-              loading={isLoading}
-              emptyMessage="No events available for entrance tally"
-              className="shadow-sm"
-            />
-          </CardContent>
-        </Card>
+        <DataTable
+          data={filteredEvents}
+          columns={columns}
+          pageSize={10}
+          searchable={true}
+          filterable={true}
+          title="Events"
+          onRowClick={handleRowClick}
+          loading={isLoading}
+          emptyMessage="No events available for entrance tally"
+          className="shadow-sm"
+        />
       </div>
     </PageLayout>
   )
