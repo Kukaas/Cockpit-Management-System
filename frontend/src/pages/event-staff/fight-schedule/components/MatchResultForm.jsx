@@ -58,16 +58,28 @@ const MatchResultForm = ({
   }
 
   const getParticipantPosition = (participantId) => {
-    if (!participantId || !formData.participantBets || formData.participantBets.length !== 2) return null
-    const participantBet = formData.participantBets.find(bet => bet?.participantID === participantId)
-    const otherBet = formData.participantBets.find(bet => bet?.participantID && bet.participantID !== participantId)
+    if (!participantId || !participantBets || participantBets.length !== 2) return null
+    const participantBet = participantBets.find(bet => {
+      // Handle both object ID and string ID
+      const betParticipantId = bet?.participantID?._id || bet?.participantID
+      return betParticipantId === participantId || betParticipantId?.toString() === participantId?.toString()
+    })
+    const otherBet = participantBets.find(bet => {
+      const betParticipantId = bet?.participantID?._id || bet?.participantID
+      return betParticipantId !== participantId && betParticipantId?.toString() !== participantId?.toString()
+    })
 
     if (!participantBet || !otherBet) return null
 
+    // Use saved position if available (from edit mode)
     if (participantBet.position) return participantBet.position
 
-    if (participantBet.betAmount > otherBet.betAmount) return 'Meron'
-    if (participantBet.betAmount < otherBet.betAmount) return 'Wala'
+    // Calculate from bet amounts if position not saved
+    const betAmount1 = participantBet.betAmount || 0
+    const betAmount2 = otherBet.betAmount || 0
+
+    if (betAmount1 > betAmount2) return 'Meron'
+    if (betAmount1 < betAmount2) return 'Wala'
 
     return null
   }
@@ -77,10 +89,22 @@ const MatchResultForm = ({
     if (isSpecialOutcome || participantBets.length !== 2) return null
 
     const [bet1, bet2] = participantBets
-    const meronBet = bet1.betAmount > bet2.betAmount ? bet1 : bet2
-    const walaBet = bet1.betAmount > bet2.betAmount ? bet2 : bet1
 
-    const gap = Math.max(0, meronBet.betAmount - walaBet.betAmount) // Outside bets only exist when Meron > Wala
+    // Use saved position if available (from edit mode), otherwise calculate from bet amounts
+    let meronBet, walaBet
+    if (bet1.position === 'Meron' || bet2.position === 'Wala') {
+      meronBet = bet1.position === 'Meron' ? bet1 : bet2
+      walaBet = bet1.position === 'Wala' ? bet1 : bet2
+    } else if (bet1.position === 'Wala' || bet2.position === 'Meron') {
+      meronBet = bet1.position === 'Meron' ? bet1 : bet2
+      walaBet = bet1.position === 'Wala' ? bet1 : bet2
+    } else {
+      // Calculate from bet amounts if position not saved
+      meronBet = bet1.betAmount > bet2.betAmount ? bet1 : bet2
+      walaBet = bet1.betAmount > bet2.betAmount ? bet2 : bet1
+    }
+
+    const gap = Math.max(0, (meronBet.betAmount || 0) - (walaBet.betAmount || 0)) // Outside bets only exist when Meron > Wala
 
     // Calculate plazada from the loser (10% of loser's bet)
     let loserPlazada = 0
@@ -89,20 +113,32 @@ const MatchResultForm = ({
     let loserBet = null
 
     if (formData.winnerParticipantID && !isSpecialOutcome) {
-      const winnerBet = participantBets.find(bet => bet.participantID === formData.winnerParticipantID)
-      loserBet = participantBets.find(bet => bet.participantID !== formData.winnerParticipantID)
+      // Handle both object ID and string ID when finding bets
+      const winnerBet = participantBets.find(bet => {
+        const betParticipantId = bet?.participantID?._id || bet?.participantID
+        const winnerId = formData.winnerParticipantID?._id || formData.winnerParticipantID
+        return betParticipantId === winnerId || betParticipantId?.toString() === winnerId?.toString()
+      })
+      loserBet = participantBets.find(bet => {
+        const betParticipantId = bet?.participantID?._id || bet?.participantID
+        const winnerId = formData.winnerParticipantID?._id || formData.winnerParticipantID
+        return betParticipantId !== winnerId && betParticipantId?.toString() !== winnerId?.toString()
+      })
 
       if (winnerBet && loserBet) {
         // Plazada is collected from the loser (10% of loser's bet)
-        loserPlazada = loserBet.betAmount * 0.10
+        loserPlazada = (loserBet.betAmount || 0) * 0.10
 
         // Winner gets their bet amount back (no plazada deduction)
-        const winnerIsMeron = meronBet.participantID === formData.winnerParticipantID
+        const meronParticipantId = meronBet?.participantID?._id || meronBet?.participantID
+        const winnerId = formData.winnerParticipantID?._id || formData.winnerParticipantID
+        const winnerIsMeron = meronParticipantId === winnerId || meronParticipantId?.toString() === winnerId?.toString()
+
         if (winnerIsMeron) {
-          meronPayout = meronBet.betAmount
+          meronPayout = meronBet.betAmount || 0
           walaPayout = 0
         } else {
-          walaPayout = walaBet.betAmount
+          walaPayout = walaBet.betAmount || 0
           meronPayout = 0
         }
       }
@@ -240,31 +276,69 @@ const MatchResultForm = ({
               </span>
             )}
           </div>
-          {participants.map((participant, index) => (
-            <div key={participant._id} className="space-y-2">
-              <Label className="text-sm font-medium">
-                {participant.participantName} Bet Amount{isSpecialOutcome ? '' : ' *'}
-              </Label>
-              <InputField
-                type="number"
-                min="0"
-                step="0.01"
-                disabled={isSpecialOutcome}
-                value={participantBets?.[index]?.betAmount ?? ''}
-                onChange={(e) => {
-                  const newBets = [...participantBets]
-                  newBets[index] = {
-                    ...(newBets[index] || {}),
-                    participantID: participant._id,
-                    betAmount: parseFloat(e.target.value) || 0
-                  }
-                  onInputChange('participantBets', newBets)
-                }}
-                placeholder={isSpecialOutcome ? 'Not required' : 'Enter bet amount'}
-                required={!isSpecialOutcome}
-              />
-            </div>
-          ))}
+          {participants.map((participant) => {
+            // Find bet by participantID (handle both object and string IDs)
+            const participantBet = participantBets.find(bet => {
+              const betParticipantId = bet?.participantID?._id || bet?.participantID
+              const participantId = participant._id
+              return betParticipantId === participantId || betParticipantId?.toString() === participantId?.toString()
+            })
+
+            return (
+              <div key={participant._id} className="space-y-2">
+                <Label className="text-sm font-medium">
+                  {participant.participantName} Bet Amount{isSpecialOutcome ? '' : ' *'}
+                </Label>
+                <InputField
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  disabled={isSpecialOutcome}
+                  value={participantBet?.betAmount ?? ''}
+                  onChange={(e) => {
+                    const newBets = [...participantBets]
+                    const existingBetIndex = newBets.findIndex(bet => {
+                      const betParticipantId = bet?.participantID?._id || bet?.participantID
+                      const participantId = participant._id
+                      return betParticipantId === participantId || betParticipantId?.toString() === participantId?.toString()
+                    })
+
+                    const newBetAmount = parseFloat(e.target.value) || 0
+                    const betData = {
+                      participantID: participant._id,
+                      betAmount: newBetAmount,
+                      position: participantBet?.position // Preserve position if exists from saved data
+                    }
+
+                    if (existingBetIndex >= 0) {
+                      newBets[existingBetIndex] = betData
+                    } else {
+                      newBets.push(betData)
+                    }
+
+                    // Calculate position if not already set (when both bets are entered)
+                    if (newBets.length === 2 && newBets.every(bet => bet.betAmount > 0)) {
+                      const [bet1, bet2] = newBets
+                      // Only calculate if position not already saved
+                      if (!bet1.position && !bet2.position) {
+                        if (bet1.betAmount > bet2.betAmount) {
+                          bet1.position = 'Meron'
+                          bet2.position = 'Wala'
+                        } else if (bet2.betAmount > bet1.betAmount) {
+                          bet2.position = 'Meron'
+                          bet1.position = 'Wala'
+                        }
+                      }
+                    }
+
+                    onInputChange('participantBets', newBets)
+                  }}
+                  placeholder={isSpecialOutcome ? 'Not required' : 'Enter bet amount'}
+                  required={!isSpecialOutcome}
+                />
+              </div>
+            )
+          })}
         </div>
 
         {/* Match Result */}
@@ -279,7 +353,10 @@ const MatchResultForm = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {participants.map((participant) => {
                 const position = getParticipantPosition(participant._id)
-                const isSelected = formData.winnerParticipantID === participant._id
+                // Handle both string and object ID comparison
+                const winnerId = formData.winnerParticipantID?._id || formData.winnerParticipantID
+                const participantId = participant._id
+                const isSelected = winnerId === participantId || winnerId?.toString() === participantId?.toString()
                 const isMeron = position === 'Meron'
                 const isWala = position === 'Wala'
 
@@ -508,13 +585,30 @@ const MatchResultForm = ({
                 <div className="text-sm text-gray-600 mb-1">Winner Payout</div>
                 <div className="font-bold text-lg text-emerald-800">
                   {(() => {
-                    const winnerBet = formData.participantBets?.find(bet => bet.participantID === formData.winnerParticipantID)
-                    if (winnerBet) {
-                      const isMeron = bettingInfo.meronBet.participantID === formData.winnerParticipantID
+                    if (!formData.winnerParticipantID) {
+                      return 'Select winner to see payout'
+                    }
+
+                    // Get the winner participant (handle both string and object IDs)
+                    const winnerId = formData.winnerParticipantID?._id || formData.winnerParticipantID
+                    const winnerParticipant = participants.find(p => {
+                      const pId = p._id
+                      return pId === winnerId || pId?.toString() === winnerId?.toString()
+                    })
+                    const winnerPosition = winnerParticipant ? getParticipantPosition(winnerParticipant._id) : null
+                    const winnerBet = participantBets.find(bet => {
+                      const betParticipantId = bet?.participantID?._id || bet?.participantID
+                      return betParticipantId === winnerId || betParticipantId?.toString() === winnerId?.toString()
+                    })
+
+                    if (winnerBet && winnerParticipant && bettingInfo) {
+                      const meronParticipantId = bettingInfo.meronBet?.participantID?._id || bettingInfo.meronBet?.participantID
+                      const isMeron = meronParticipantId === winnerId || meronParticipantId?.toString() === winnerId?.toString()
+                      const positionLabel = winnerPosition ? `${winnerPosition} - ` : ''
                       if (isMeron) {
-                        return `Meron wins! Gets ₱${bettingInfo.meronPayout?.toLocaleString()}`
+                        return `${positionLabel}${winnerParticipant.participantName} wins! Gets ₱${bettingInfo.meronPayout?.toLocaleString()}`
                       } else {
-                        return `Wala wins! Gets ₱${bettingInfo.walaPayout?.toLocaleString()}`
+                        return `${positionLabel}${winnerParticipant.participantName} wins! Gets ₱${bettingInfo.walaPayout?.toLocaleString()}`
                       }
                     }
                     return 'Select winner to see payout'

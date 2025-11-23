@@ -501,11 +501,21 @@ export const getMatchResultsByEvent = async (req, res) => {
     const matchResults = await MatchResult.find(query)
       .populate({
         path: 'matchID',
-        select: 'fightNumber eventID',
-        populate: {
-          path: 'eventID',
-          select: 'eventName'
-        }
+        select: 'fightNumber eventID participantsID cockProfileID status',
+        populate: [
+          {
+            path: 'eventID',
+            select: 'eventName date location eventType'
+          },
+          {
+            path: 'participantsID',
+            select: 'participantName contactNumber address'
+          },
+          {
+            path: 'cockProfileID',
+            select: 'legband weight entryNo ownerName participantID'
+          }
+        ]
       })
       .populate('participantBets.participantID', 'participantName')
       .populate('resultMatch.winnerParticipantID', 'participantName')

@@ -324,6 +324,26 @@ const FightSchedule = () => {
     setAddResultDialogOpen(true)
   }
 
+  const handleEditResultClick = (result) => {
+    setSelectedResult(result)
+    // Use the matchID which should now have participants and cock profiles populated from backend
+    // The backend now populates participantsID and cockProfileID in matchID
+    setSelectedFight(result.matchID) // Set the fight for the form - this now has participants populated
+
+    // Populate form with result data
+    setResultFormData({
+      winnerParticipantID: result.resultMatch?.winnerParticipantID?._id || result.winnerParticipantID || '',
+      loserParticipantID: result.resultMatch?.loserParticipantID?._id || result.loserParticipantID || '',
+      winnerCockProfileID: result.resultMatch?.winnerCockProfileID?._id || result.winnerCockProfileID || '',
+      loserCockProfileID: result.resultMatch?.loserCockProfileID?._id || result.loserCockProfileID || '',
+      matchTimeSeconds: result.matchTimeSeconds || '',
+      participantBets: result.participantBets || [],
+      description: result.description || '',
+      notes: result.notes || ''
+    })
+    setEditResultDialogOpen(true)
+  }
+
   const handleDeleteResultClick = (result) => {
     setSelectedResult(result)
     setDeleteResultDialogOpen(true)
@@ -380,7 +400,7 @@ const FightSchedule = () => {
   const resultColumns = createMatchResultColumns(
     formatCurrency,
     formatDate,
-    handleDeleteResultClick,
+    handleEditResultClick,
     handleViewDetails,
     event?.eventType
   )
@@ -559,7 +579,7 @@ const FightSchedule = () => {
         }}
         onCancel={() => setEditResultDialogOpen(false)}
         isPending={updateResultMutation.isPending}
-        selectedFight={selectedResult?.matchID}
+        selectedFight={selectedFight || selectedResult?.matchID}
         isEdit={true}
         event={event}
       />

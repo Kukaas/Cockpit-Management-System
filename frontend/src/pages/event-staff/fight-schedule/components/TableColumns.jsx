@@ -127,7 +127,7 @@ export const createFightColumns = (formatCurrency, formatDate, handleEditClick, 
   }
 ]
 
-export const createMatchResultColumns = (formatCurrency, formatDate, handleDeleteClick, handleViewDetails, eventType = 'regular') => [
+export const createMatchResultColumns = (formatCurrency, formatDate, handleEditClick, handleViewDetails, eventType = 'regular') => [
   {
     key: 'matchID',
     label: 'Fight #',
@@ -275,19 +275,17 @@ export const createMatchResultColumns = (formatCurrency, formatDate, handleDelet
     render: (_, row) => (
       <div className="flex items-center space-x-2">
         {!row.verified && (
-          <>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation()
-                handleDeleteClick(row)
-              }}
-              className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation()
+              handleEditClick(row)
+            }}
+            className="h-8 w-8 p-0"
+          >
+            <Edit className="h-4 w-4" />
+          </Button>
         )}
         <Button
           variant="ghost"
