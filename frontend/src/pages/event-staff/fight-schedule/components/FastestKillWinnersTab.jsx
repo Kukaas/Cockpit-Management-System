@@ -275,9 +275,6 @@ const FastestKillWinnersTab = ({ eventId, eventType, formatCurrency }) => {
                         <Zap className="h-5 w-5 text-yellow-600" />
                         Fastest Kill Winners
                     </CardTitle>
-                    <CardDescription>
-                        Track the fastest kill times and prize distribution
-                    </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

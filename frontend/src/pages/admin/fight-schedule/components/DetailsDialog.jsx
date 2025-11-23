@@ -348,7 +348,7 @@ const DetailsDialog = ({
               <p>This match contributes to the derby championship. Participants need {event.noCockRequirements} wins to become champions.</p>
               <p className="mt-2">
                 <strong>Winner:</strong> {result.resultMatch?.winnerParticipantID?.participantName} -
-                Check the Championship tab for current standings and prize distribution.
+                Check the Championship tab for current standings.
               </p>
             </div>
           </div>
