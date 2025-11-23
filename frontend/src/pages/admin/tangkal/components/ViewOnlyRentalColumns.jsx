@@ -68,12 +68,10 @@ export const createViewOnlyRentalColumns = (formatCurrency, formatDate, handleVi
     label: 'Payment Status',
     sortable: true,
     filterable: true,
-    filterOptions: ['Paid', 'Unpaid', 'Pending', 'Cancelled'],
+    filterOptions: ['Paid', 'Unpaid'],
     filterValueMap: {
       'Paid': 'paid',
       'Unpaid': 'unpaid',
-      'Pending': 'pending',
-      'Cancelled': 'cancelled'
     },
     render: (value) => (
       <Badge
@@ -82,25 +80,6 @@ export const createViewOnlyRentalColumns = (formatCurrency, formatDate, handleVi
           value === 'unpaid' ? 'destructive' :
           value === 'pending' ? 'secondary' : 'outline'
         }
-        className="text-xs capitalize"
-      >
-        {value}
-      </Badge>
-    )
-  },
-  {
-    key: 'rentalStatus',
-    label: 'Rental Status',
-    sortable: true,
-    filterable: true,
-    filterOptions: ['Active', 'Returned'],
-    filterValueMap: {
-      'Active': 'active',
-      'Returned': 'returned'
-    },
-    render: (value) => (
-      <Badge
-        variant={value === 'returned' ? 'secondary' : 'default'}
         className="text-xs capitalize"
       >
         {value}

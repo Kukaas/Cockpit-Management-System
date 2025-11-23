@@ -18,7 +18,6 @@ const EventSelection = () => {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const [selectedEventType, setSelectedEventType] = useState('')
   const [selectedStatus, setSelectedStatus] = useState('')
-  const [selectedVenue, setSelectedVenue] = useState('')
 
   // Fetch events and rentals
   const { data: events = [], isLoading } = useGetAll('/events')
@@ -47,9 +46,8 @@ const EventSelection = () => {
     const matchesYear = eventDate.getFullYear() === selectedYear
     const matchesEventType = !selectedEventType || event.eventType === selectedEventType
     const matchesStatus = !selectedStatus || event.status === selectedStatus
-    const matchesVenue = !selectedVenue || event.location === selectedVenue
 
-    return matchesMonth && matchesYear && matchesEventType && matchesStatus && matchesVenue
+    return matchesMonth && matchesYear && matchesEventType && matchesStatus
   })
 
   // Filter rentals based on selected filters
@@ -57,9 +55,8 @@ const EventSelection = () => {
     const rentalDate = new Date(rental.date)
     const matchesMonth = rentalDate.getMonth() === selectedMonth
     const matchesYear = rentalDate.getFullYear() === selectedYear
-    const matchesVenue = !selectedVenue || rental.arena === selectedVenue
 
-    return matchesMonth && matchesYear && matchesVenue
+    return matchesMonth && matchesYear
   })
 
   // Calculate filtered statistics
@@ -106,7 +103,6 @@ const EventSelection = () => {
     setSelectedYear(new Date().getFullYear())
     setSelectedEventType('')
     setSelectedStatus('')
-    setSelectedVenue('')
   }
 
   // Create table columns
@@ -143,10 +139,11 @@ const EventSelection = () => {
       label: 'Type',
       sortable: true,
       filterable: true,
-      filterOptions: ['Regular', 'Derby'],
+      filterOptions: ['Regular', 'Derby', 'Fastest Kill'  ],
       filterValueMap: {
         'Regular': 'regular',
-        'Derby': 'derby'
+        'Derby': 'derby',
+        'Fastest Kill': 'fastest_kill'
       },
       render: (value) => (
         <Badge
@@ -229,11 +226,11 @@ const EventSelection = () => {
             <CardTitle className="text-lg">Filters</CardTitle>
           </div>
           <CardDescription>
-            Filter events and rentals by month, year, event type, status, and venue
+            Filter events and rentals by month, year, event type, and status
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Month</label>
               <NativeSelect
@@ -283,16 +280,6 @@ const EventSelection = () => {
                 <option value="cancelled">Cancelled</option>
               </NativeSelect>
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Venue</label>
-              <NativeSelect
-                value={selectedVenue}
-                onChange={(e) => setSelectedVenue(e.target.value)}
-              >
-                <option value="">All Venues</option>
-                <option value="Buenavista Cockpit Arena">Buenavista Cockpit Arena</option>
-              </NativeSelect>
-            </div>
             <div className="flex items-end">
               <Button variant="outline" onClick={resetFilters} className="w-full">
                 Reset Filters
@@ -303,20 +290,7 @@ const EventSelection = () => {
       </Card>
 
       {/* Quick Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Events</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{filteredStats.totalEvents}</div>
-            <p className="text-xs text-muted-foreground">
-              {months[selectedMonth].label} {selectedYear}
-            </p>
-          </CardContent>
-        </Card>
-
+      <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-1">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
@@ -326,32 +300,6 @@ const EventSelection = () => {
             <div className="text-2xl font-bold text-green-600">{formatCurrency(filteredStats.totalRevenue)}</div>
             <p className="text-xs text-muted-foreground">
               From all rentals
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Rentals</CardTitle>
-            <Home className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{filteredStats.totalRentals}</div>
-            <p className="text-xs text-muted-foreground">
-              Cage rentals
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Rentals</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{filteredStats.activeRentals}</div>
-            <p className="text-xs text-muted-foreground">
-              Currently active
             </p>
           </CardContent>
         </Card>
