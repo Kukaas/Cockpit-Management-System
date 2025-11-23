@@ -36,11 +36,6 @@ const SidebarComponent = () => {
 									path: '/admin/events',
 									icon: <Calendar className="size-4" />
 								},
-								{
-									label: 'Fight Schedule',
-									path: '/admin/fight-schedule',
-									icon: <Swords className="size-4" />
-								}
 							]
 						},
 						{

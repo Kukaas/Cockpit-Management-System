@@ -19,7 +19,8 @@ import {
   Home,
   ArrowRight,
   BarChart3,
-  Activity
+  Activity,
+  FileBarChart
 } from 'lucide-react'
 import PageLayout from '@/layouts/PageLayout'
 import { useGetAll } from '@/hooks/useApiQueries'
@@ -27,7 +28,7 @@ import NativeSelect from '@/components/custom/NativeSelect'
 import { useNavigate } from 'react-router-dom'
 
 // Import chart components
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Tooltip, PieChart, Pie, Cell } from 'recharts'
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer } from 'recharts'
 import {
   ChartContainer,
   ChartLegend,
@@ -47,7 +48,6 @@ const AdminDashboard = () => {
   const navigate = useNavigate()
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth())
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
-  const [selectedVenue, setSelectedVenue] = useState('')
   const [timeRange, setTimeRange] = useState("90d")
 
   // Fetch all data
@@ -62,40 +62,35 @@ const AdminDashboard = () => {
     const eventDate = new Date(event.date)
     const matchesMonth = eventDate.getMonth() === selectedMonth
     const matchesYear = eventDate.getFullYear() === selectedYear
-    const matchesVenue = !selectedVenue || event.location === selectedVenue
-    return matchesMonth && matchesYear && matchesVenue
+    return matchesMonth && matchesYear
   })
 
   const filteredFightSchedules = fightSchedules.filter(schedule => {
     const eventDate = new Date(schedule.eventID?.date)
     const matchesMonth = eventDate.getMonth() === selectedMonth
     const matchesYear = eventDate.getFullYear() === selectedYear
-    const matchesVenue = !selectedVenue || schedule.eventID?.location === selectedVenue
-    return matchesMonth && matchesYear && matchesVenue
+    return matchesMonth && matchesYear
   })
 
   const filteredMatchResults = matchResults.filter(result => {
     const eventDate = new Date(result.matchID?.eventID?.date)
     const matchesMonth = eventDate.getMonth() === selectedMonth
     const matchesYear = eventDate.getFullYear() === selectedYear
-    const matchesVenue = !selectedVenue || result.matchID?.eventID?.location === selectedVenue
-    return matchesMonth && matchesYear && matchesVenue
+    return matchesMonth && matchesYear
   })
 
   const filteredCageRentals = cageRentals.filter(rental => {
     const rentalDate = new Date(rental.date)
     const matchesMonth = rentalDate.getMonth() === selectedMonth
     const matchesYear = rentalDate.getFullYear() === selectedYear
-    const matchesVenue = !selectedVenue || rental.arena === selectedVenue
-    return matchesMonth && matchesYear && matchesVenue
+    return matchesMonth && matchesYear
   })
 
   const filteredEntrances = entrances.filter(entrance => {
     const entranceDate = new Date(entrance.createdAt)
     const matchesMonth = entranceDate.getMonth() === selectedMonth
     const matchesYear = entranceDate.getFullYear() === selectedYear
-    const matchesVenue = !selectedVenue || entrance.eventID?.location === selectedVenue
-    return matchesMonth && matchesYear && matchesVenue
+    return matchesMonth && matchesYear
   })
 
   // Calculate comprehensive statistics
@@ -138,9 +133,6 @@ const AdminDashboard = () => {
     totalEntranceRevenue: filteredEntrances.reduce((sum, entrance) => sum + ((entrance.count || 0) * (entrance.eventID?.entranceFee || 0)), 0),
   }
 
-  // Get unique venues from events
-  const venues = events ? [...new Set(events.map(event => event.location).filter(Boolean))] : []
-
   // Month options
   const months = [
     { value: 0, label: 'January' },
@@ -165,7 +157,6 @@ const AdminDashboard = () => {
   const resetFilters = () => {
     setSelectedMonth(new Date().getMonth())
     setSelectedYear(new Date().getFullYear())
-    setSelectedVenue('')
   }
 
   // Format currency
@@ -254,14 +245,6 @@ const AdminDashboard = () => {
   // Navigation shortcuts
   const navigationShortcuts = [
     {
-      title: 'Fight Schedules',
-      description: 'Manage fight schedules and match results',
-      icon: Swords,
-      href: '/admin/fight-schedule',
-      color: 'bg-blue-500',
-      stats: `${stats.totalFights} fights`
-    },
-    {
       title: 'Events',
       description: 'View and manage all events',
       icon: Calendar,
@@ -286,6 +269,22 @@ const AdminDashboard = () => {
       stats: `${stats.totalRentals} rentals`
     },
     {
+      title: 'Cage Availability',
+      description: 'View cage availability status',
+      icon: Target,
+      href: '/admin/cage-availability',
+      color: 'bg-indigo-500',
+      stats: 'View availability'
+    },
+    {
+      title: 'Reports',
+      description: 'View reports and analytics',
+      icon: FileBarChart,
+      href: '/admin/reports',
+      color: 'bg-yellow-500',
+      stats: 'View reports'
+    },
+    {
       title: 'User Management',
       description: 'Manage system users and permissions',
       icon: Users,
@@ -293,14 +292,6 @@ const AdminDashboard = () => {
       color: 'bg-red-500',
       stats: 'Manage users'
     },
-    {
-      title: 'Cage Availability',
-      description: 'View cage availability status',
-      icon: Target,
-      href: '/admin/cage-availability',
-      color: 'bg-indigo-500',
-      stats: 'View availability'
-    }
   ]
 
   return (
@@ -322,11 +313,11 @@ const AdminDashboard = () => {
               </Button>
             </div>
             <CardDescription>
-              Filter dashboard data by month, year, and venue
+              Filter dashboard data by month and year
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Month</label>
                 <NativeSelect
@@ -350,21 +341,6 @@ const AdminDashboard = () => {
                   {years.map((year) => (
                     <option key={year} value={year}>
                       {year}
-                    </option>
-                  ))}
-                </NativeSelect>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Venue</label>
-                <NativeSelect
-                  value={selectedVenue}
-                  onChange={(e) => setSelectedVenue(e.target.value)}
-                >
-                  <option value="">All Venues</option>
-                  {venues.map((venue) => (
-                    <option key={venue} value={venue}>
-                      {venue}
                     </option>
                   ))}
                 </NativeSelect>
@@ -457,97 +433,120 @@ const AdminDashboard = () => {
                 config={chartConfig}
                 className="aspect-auto h-[250px] w-full"
               >
-                <AreaChart data={revenueData}>
-                  <defs>
-                    <linearGradient id="fillPlazada" x1="0" y1="0" x2="0" y2="1">
-                      <stop
-                        offset="5%"
-                        stopColor="var(--color-plazada)"
-                        stopOpacity={0.8}
-                      />
-                      <stop
-                        offset="95%"
-                        stopColor="var(--color-plazada)"
-                        stopOpacity={0.1}
-                      />
-                    </linearGradient>
-                    <linearGradient id="fillRentals" x1="0" y1="0" x2="0" y2="1">
-                      <stop
-                        offset="5%"
-                        stopColor="var(--color-rentals)"
-                        stopOpacity={0.8}
-                      />
-                      <stop
-                        offset="95%"
-                        stopColor="var(--color-rentals)"
-                        stopOpacity={0.1}
-                      />
-                    </linearGradient>
-                    <linearGradient id="fillEntrances" x1="0" y1="0" x2="0" y2="1">
-                      <stop
-                        offset="5%"
-                        stopColor="var(--color-entrances)"
-                        stopOpacity={0.8}
-                      />
-                      <stop
-                        offset="95%"
-                        stopColor="var(--color-entrances)"
-                        stopOpacity={0.1}
-                      />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid vertical={false} />
-                  <XAxis
-                    dataKey="date"
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
-                    minTickGap={32}
-                    tickFormatter={(value) => {
-                      const date = new Date(value)
-                      return date.toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                      })
-                    }}
-                  />
-                  <ChartTooltip
-                    cursor={false}
-                    content={
-                      <ChartTooltipContent
-                        labelFormatter={(value) => {
-                          return new Date(value).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                          })
-                        }}
-                        indicator="dot"
-                      />
-                    }
-                  />
-                  <Area
-                    dataKey="entrances"
-                    type="natural"
-                    fill="url(#fillEntrances)"
-                    stroke="var(--color-entrances)"
-                    stackId="a"
-                  />
-                  <Area
-                    dataKey="rentals"
-                    type="natural"
-                    fill="url(#fillRentals)"
-                    stroke="var(--color-rentals)"
-                    stackId="a"
-                  />
-                  <Area
-                    dataKey="plazada"
-                    type="natural"
-                    fill="url(#fillPlazada)"
-                    stroke="var(--color-plazada)"
-                    stackId="a"
-                  />
-                  <ChartLegend content={<ChartLegendContent />} />
-                </AreaChart>
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={revenueData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="fillPlazada" x1="0" y1="0" x2="0" y2="1">
+                        <stop
+                          offset="5%"
+                          stopColor="var(--color-plazada)"
+                          stopOpacity={0.8}
+                        />
+                        <stop
+                          offset="95%"
+                          stopColor="var(--color-plazada)"
+                          stopOpacity={0.1}
+                        />
+                      </linearGradient>
+                      <linearGradient id="fillRentals" x1="0" y1="0" x2="0" y2="1">
+                        <stop
+                          offset="5%"
+                          stopColor="var(--color-rentals)"
+                          stopOpacity={0.8}
+                        />
+                        <stop
+                          offset="95%"
+                          stopColor="var(--color-rentals)"
+                          stopOpacity={0.1}
+                        />
+                      </linearGradient>
+                      <linearGradient id="fillEntrances" x1="0" y1="0" x2="0" y2="1">
+                        <stop
+                          offset="5%"
+                          stopColor="var(--color-entrances)"
+                          stopOpacity={0.8}
+                        />
+                        <stop
+                          offset="95%"
+                          stopColor="var(--color-entrances)"
+                          stopOpacity={0.1}
+                        />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis
+                      dataKey="date"
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={8}
+                      minTickGap={32}
+                      tickFormatter={(value) => {
+                        const date = new Date(value)
+                        return date.toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                        })
+                      }}
+                    />
+                    <YAxis
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={8}
+                      tickFormatter={(value) => {
+                        return `₱${(value / 1000).toFixed(0)}k`
+                      }}
+                    />
+                    <ChartTooltip
+                      cursor={false}
+                      content={
+                        <ChartTooltipContent
+                          labelFormatter={(value) => {
+                            return new Date(value).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })
+                          }}
+                          indicator="dot"
+                          formatter={(value) => {
+                            return formatCurrency(value)
+                          }}
+                        />
+                      }
+                    />
+                    <Area
+                      dataKey="plazada"
+                      type="monotone"
+                      fill="url(#fillPlazada)"
+                      fillOpacity={0.6}
+                      stroke="var(--color-plazada)"
+                      strokeWidth={2.5}
+                      connectNulls={true}
+                      name="Plazada"
+                    />
+                    <Area
+                      dataKey="rentals"
+                      type="monotone"
+                      fill="url(#fillRentals)"
+                      fillOpacity={0.6}
+                      stroke="var(--color-rentals)"
+                      strokeWidth={2.5}
+                      connectNulls={true}
+                      name="Rentals"
+                    />
+                    <Area
+                      dataKey="entrances"
+                      type="monotone"
+                      fill="url(#fillEntrances)"
+                      fillOpacity={0.6}
+                      stroke="var(--color-entrances)"
+                      strokeWidth={2.5}
+                      connectNulls={true}
+                      name="Entrances"
+                    />
+                    <ChartLegend content={<ChartLegendContent />} />
+                  </AreaChart>
+                </ResponsiveContainer>
               </ChartContainer>
             ) : (
               <div className="flex items-center justify-center h-[250px] text-muted-foreground">
