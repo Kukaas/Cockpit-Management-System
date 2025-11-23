@@ -110,7 +110,7 @@ export const getAllEvents = async (req, res) => {
             status,
             eventType,
             search,
-            sortBy = 'date',
+            sortBy = 'createdAt',
             sortOrder = 'desc'
         } = req.query;
 
@@ -132,7 +132,7 @@ export const getAllEvents = async (req, res) => {
             ];
         }
 
-        // Build sort object
+        // Build sort object - default to createdAt descending to show newest first
         const sort = {};
         sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
 
