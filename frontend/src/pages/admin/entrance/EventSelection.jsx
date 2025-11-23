@@ -14,7 +14,6 @@ const EventSelection = () => {
   const navigate = useNavigate()
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth())
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
-  const [selectedVenue, setSelectedVenue] = useState('')
   const [selectedEventType, setSelectedEventType] = useState('')
 
   // Fetch events
@@ -25,10 +24,9 @@ const EventSelection = () => {
     const eventDate = new Date(event.date)
     const matchesMonth = eventDate.getMonth() === selectedMonth
     const matchesYear = eventDate.getFullYear() === selectedYear
-    const matchesVenue = !selectedVenue || event.location === selectedVenue
     const matchesEventType = !selectedEventType || event.eventType === selectedEventType
 
-    return matchesMonth && matchesYear && matchesVenue && matchesEventType
+    return matchesMonth && matchesYear && matchesEventType
   })
 
   // Calculate filtered statistics
@@ -43,8 +41,7 @@ const EventSelection = () => {
       : 0
   }
 
-  // Get unique venues and event types from events
-  const venues = [...new Set(events.map(event => event.location).filter(Boolean))]
+  // Get unique event types from events
   const eventTypes = [...new Set(events.map(event => event.eventType).filter(Boolean))]
 
   // Month options
@@ -82,7 +79,6 @@ const EventSelection = () => {
   const resetFilters = () => {
     setSelectedMonth(new Date().getMonth())
     setSelectedYear(new Date().getFullYear())
-    setSelectedVenue('')
     setSelectedEventType('')
   }
 
@@ -209,11 +205,11 @@ const EventSelection = () => {
               </Button>
             </div>
             <CardDescription>
-              Filter events by month, year, venue, and event type
+              Filter events by month, year, and event type
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Month</label>
                 <NativeSelect
@@ -237,21 +233,6 @@ const EventSelection = () => {
                   {years.map((year) => (
                     <option key={year} value={year}>
                       {year}
-                    </option>
-                  ))}
-                </NativeSelect>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Venue</label>
-                <NativeSelect
-                  value={selectedVenue}
-                  onChange={(e) => setSelectedVenue(e.target.value)}
-                >
-                  <option value="">All Venues</option>
-                  {venues.map((venue) => (
-                    <option key={venue} value={venue}>
-                      {venue}
                     </option>
                   ))}
                 </NativeSelect>
@@ -343,7 +324,6 @@ const EventSelection = () => {
             <CardTitle className="text-lg">Events</CardTitle>
             <CardDescription>
               Showing {filteredEvents.length} events for {months[selectedMonth].label} {selectedYear}
-              {selectedVenue && ` - ${selectedVenue}`}
               {selectedEventType && ` - ${selectedEventType.charAt(0).toUpperCase() + selectedEventType.slice(1)}`}
             </CardDescription>
           </CardHeader>
