@@ -54,9 +54,9 @@ const ParticipantRegistration = () => {
 
   const [cockProfileFormData, setCockProfileFormData] = useState({
     participantID: '',
-    legbandNumber: '',
-    weight: ''
+    cockProfiles: [{ legbandNumber: '', weight: '' }]
   })
+  const [isCreatingBulk, setIsCreatingBulk] = useState(false)
 
   const [fightFormData, setFightFormData] = useState({
     participant1: '',
@@ -257,8 +257,7 @@ const ParticipantRegistration = () => {
   const resetCockProfileForm = () => {
     setCockProfileFormData({
       participantID: '',
-      legbandNumber: '',
-      weight: ''
+      cockProfiles: [{ legbandNumber: '', weight: '' }]
     })
   }
 
@@ -294,34 +293,53 @@ const ParticipantRegistration = () => {
   }
 
   const handleAddCockProfile = async () => {
-    const requiredFields = ['participantID']
-    const missingFields = requiredFields.filter(field => !cockProfileFormData[field])
-
-    if (missingFields.length > 0) {
-      toast.error(`Please fill in all required fields: ${missingFields.join(', ')}`)
+    if (!cockProfileFormData.participantID) {
+      toast.error('Please select a participant')
       return
     }
 
-    // For derby events, also require legbandNumber and weight
-    if (selectedEvent?.eventType === 'derby') {
-      const derbyRequiredFields = ['participantID', 'legbandNumber', 'weight']
-      const derbyMissingFields = derbyRequiredFields.filter(field => !cockProfileFormData[field])
+    if (!cockProfileFormData.cockProfiles || cockProfileFormData.cockProfiles.length === 0) {
+      toast.error('Please add at least one cock profile')
+      return
+    }
 
-      if (derbyMissingFields.length > 0) {
-        toast.error(`Please fill in all required fields: ${derbyMissingFields.join(', ')}`)
-        return
+    // Validate all cock profiles
+    for (let i = 0; i < cockProfileFormData.cockProfiles.length; i++) {
+      const profile = cockProfileFormData.cockProfiles[i]
+
+      // For derby events, validate legbandNumber and weight for each profile
+      if (selectedEvent?.eventType === 'derby') {
+        if (!profile.legbandNumber || !profile.weight) {
+          toast.error(`Please fill in legband number and weight for cock profile ${i + 1}`)
+          return
+        }
       }
     }
 
-    // Map legbandNumber to legband for backend
-    const cockProfileData = {
-      ...cockProfileFormData,
-      legband: cockProfileFormData.legbandNumber, // Map legbandNumber to legband
-      eventID: eventId // Automatically set the event ID
+    // Prepare bulk creation data
+    const bulkData = {
+      eventID: eventId,
+      participantID: cockProfileFormData.participantID,
+      cockProfiles: cockProfileFormData.cockProfiles.map(profile => ({
+        legband: profile.legbandNumber, // Map legbandNumber to legband
+        weight: profile.weight ? parseFloat(profile.weight) : undefined
+      }))
     }
-    delete cockProfileData.legbandNumber // Remove legbandNumber before sending
 
-    createCockProfileMutation.mutate(cockProfileData)
+    // Use bulk creation endpoint
+    setIsCreatingBulk(true)
+    try {
+      const response = await api.post('/cock-profiles/bulk', bulkData)
+      toast.success(`Successfully created ${response.data.data.length} cock profile(s)`)
+      setAddCockProfileDialogOpen(false)
+      resetCockProfileForm()
+      refetchCockProfiles()
+    } catch (error) {
+      const errorMessage = error?.response?.data?.message || 'Failed to create cock profiles'
+      toast.error(errorMessage)
+    } finally {
+      setIsCreatingBulk(false)
+    }
   }
 
   const handleEditParticipant = async () => {
@@ -406,7 +424,8 @@ const ParticipantRegistration = () => {
     setCockProfileFormData({
       participantID: cockProfile.participantID?._id || cockProfile.participantID,
       legbandNumber: cockProfile.legband || '', // Map legband to legbandNumber for frontend
-      weight: cockProfile.weight || ''
+      weight: cockProfile.weight || '',
+      entryNo: cockProfile.entryNo
     })
     setEditCockProfileDialogOpen(true)
   }
@@ -675,7 +694,7 @@ const ParticipantRegistration = () => {
         onInputChange={handleCockProfileInputChange}
         onSubmit={handleAddCockProfile}
         onCancel={() => setAddCockProfileDialogOpen(false)}
-        isPending={createCockProfileMutation.isPending}
+        isPending={isCreatingBulk}
         isEdit={false}
         eventId={eventId}
       />

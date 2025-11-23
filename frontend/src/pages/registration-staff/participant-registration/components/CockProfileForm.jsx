@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import CustomAlertDialog from '@/components/custom/CustomAlertDialog'
 import InputField from '@/components/custom/InputField'
-import { User, Search, Phone } from 'lucide-react'
+import { User, Search, Phone, Plus, Trash2 } from 'lucide-react'
 import { useGetAll, useGetById } from '@/hooks/useApiQueries'
 
 const CockProfileForm = ({
@@ -21,6 +21,7 @@ const CockProfileForm = ({
 }) => {
   const [selectedParticipantId, setSelectedParticipantId] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
+  const [cockProfiles, setCockProfiles] = useState([{ legbandNumber: '', weight: '' }])
 
   // Fetch event details to check event type
   const { data: event } = useGetById('/events', eventId)
@@ -57,8 +58,38 @@ const CockProfileForm = ({
     if (open) {
       setSelectedParticipantId('')
       setSearchQuery('')
+      if (!isEdit) {
+        setCockProfiles([{ legbandNumber: '', weight: '' }])
+      }
     }
-  }, [open])
+  }, [open, isEdit])
+
+  // Update formData when cockProfiles changes (for non-edit mode)
+  useEffect(() => {
+    if (!isEdit && open) {
+      onInputChange('cockProfiles', cockProfiles)
+    }
+  }, [cockProfiles, isEdit, open])
+
+  // Handle adding a new cock profile entry
+  const handleAddCockProfile = () => {
+    setCockProfiles([...cockProfiles, { legbandNumber: '', weight: '' }])
+  }
+
+  // Handle removing a cock profile entry
+  const handleRemoveCockProfile = (index) => {
+    if (cockProfiles.length > 1) {
+      const newProfiles = cockProfiles.filter((_, i) => i !== index)
+      setCockProfiles(newProfiles)
+    }
+  }
+
+  // Handle input change for a specific cock profile
+  const handleCockProfileInputChange = (index, field, value) => {
+    const newProfiles = [...cockProfiles]
+    newProfiles[index] = { ...newProfiles[index], [field]: value }
+    setCockProfiles(newProfiles)
+  }
 
   // Get selected participant data for preview
   const selectedParticipant = participantRecords.find(p => p._id === selectedParticipantId)
@@ -76,7 +107,7 @@ const CockProfileForm = ({
             Cancel
           </Button>
           <Button onClick={onSubmit} disabled={isPending}>
-            {isPending ? (isEdit ? 'Updating...' : 'Creating...') : (isEdit ? 'Update Profile' : 'Create Profile')}
+            {isPending ? (isEdit ? 'Updating...' : 'Creating...') : (isEdit ? 'Update Profile' : `Create ${cockProfiles.length} Profile${cockProfiles.length > 1 ? 's' : ''}`)}
           </Button>
         </>
       }
@@ -191,53 +222,115 @@ const CockProfileForm = ({
         )}
 
         {/* Cock Profile Information Form */}
-        <div className="space-y-4">
-          {/* Entry number is auto-generated - show next available number */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Entry Number</Label>
-            <div className="p-3 bg-muted/50 rounded-md border text-sm text-muted-foreground">
-              Next available entry number: <span className="font-mono font-semibold text-primary">#{nextEntryNo}</span>
+        {!isEdit && selectedParticipantId && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <Label className="text-sm font-medium">Cock Profiles</Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleAddCockProfile}
+                className="flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Add Another
+              </Button>
             </div>
+
+            {cockProfiles.map((profile, index) => (
+              <div key={index} className="p-4 border rounded-lg space-y-4 bg-gray-50">
+                <div className="flex items-center justify-between mb-2">
+                  <Label className="text-sm font-medium">Cock Profile {index + 1}</Label>
+                  {cockProfiles.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleRemoveCockProfile(index)}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+
+                {/* Entry number is auto-generated - show next available number */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Entry Number</Label>
+                  <div className="p-3 bg-muted/50 rounded-md border text-sm text-muted-foreground">
+                    Next available entry number: <span className="font-mono font-semibold text-primary">#{nextEntryNo + index}</span>
+                  </div>
+                </div>
+
+                {/* Derby Event Fields */}
+                {event?.eventType === 'derby' && (
+                  <>
+                    <InputField
+                      id={`legbandNumber-${index}`}
+                      label="Legband Number *"
+                      value={profile.legbandNumber}
+                      onChange={(e) => handleCockProfileInputChange(index, 'legbandNumber', e.target.value)}
+                      placeholder="Enter legband number"
+                      required
+                    />
+                    <InputField
+                      id={`weight-${index}`}
+                      label="Weight (kg) *"
+                      type="number"
+                      value={profile.weight}
+                      onChange={(e) => handleCockProfileInputChange(index, 'weight', e.target.value)}
+                      placeholder="Enter weight in kg (e.g., 2.24)"
+                      min="0.01"
+                      max="10.0"
+                      step="0.01"
+                      required
+                    />
+                  </>
+                )}
+              </div>
+            ))}
           </div>
+        )}
 
-          {/* Derby Event Fields */}
-          {event?.eventType === 'derby' && (
-            <>
-              <InputField
-                id={isEdit ? "editLegbandNumber" : "legbandNumber"}
-                label="Legband Number *"
-                value={formData.legbandNumber}
-                onChange={(e) => onInputChange('legbandNumber', e.target.value)}
-                placeholder="Enter legband number"
-                required
-              />
-              <InputField
-                id={isEdit ? "editWeight" : "weight"}
-                label="Weight (kg) *"
-                type="number"
-                value={formData.weight}
-                onChange={(e) => onInputChange('weight', e.target.value)}
-                placeholder="Enter weight in kg (e.g., 2.24)"
-                min="0.01"
-                max="10.0"
-                step="0.01"
-                required
-              />
-            </>
-          )}
+        {/* Edit mode - single cock profile */}
+        {isEdit && (
+          <div className="space-y-4">
+            {/* Entry number is auto-generated - show next available number */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Entry Number</Label>
+              <div className="p-3 bg-muted/50 rounded-md border text-sm text-muted-foreground">
+                Entry number: <span className="font-mono font-semibold text-primary">#{formData.entryNo || nextEntryNo}</span>
+              </div>
+            </div>
 
-
-          {/* {isEdit && (
-            <InputField
-              id="editParticipantID"
-              label="Participant ID *"
-              value={formData.participantID}
-              onChange={(e) => onInputChange('participantID', e.target.value)}
-              placeholder="Enter participant ID"
-              required
-            />
-          )} */}
-        </div>
+            {/* Derby Event Fields */}
+            {event?.eventType === 'derby' && (
+              <>
+                <InputField
+                  id="editLegbandNumber"
+                  label="Legband Number *"
+                  value={formData.legbandNumber}
+                  onChange={(e) => onInputChange('legbandNumber', e.target.value)}
+                  placeholder="Enter legband number"
+                  required
+                />
+                <InputField
+                  id="editWeight"
+                  label="Weight (kg) *"
+                  type="number"
+                  value={formData.weight}
+                  onChange={(e) => onInputChange('weight', e.target.value)}
+                  placeholder="Enter weight in kg (e.g., 2.24)"
+                  min="0.01"
+                  max="10.0"
+                  step="0.01"
+                  required
+                />
+              </>
+            )}
+          </div>
+        )}
       </div>
     </CustomAlertDialog>
   )

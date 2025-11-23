@@ -96,6 +96,121 @@ export const createCockProfile = async (req, res) => {
   }
 };
 
+// Create multiple cock profiles in bulk
+export const createBulkCockProfiles = async (req, res) => {
+  try {
+    const { eventID, participantID, cockProfiles } = req.body;
+
+    if (!eventID || !participantID || !cockProfiles || !Array.isArray(cockProfiles) || cockProfiles.length === 0) {
+      return res.status(400).json({ message: 'Event ID, participant ID, and at least one cock profile are required' });
+    }
+
+    // Get event details to check event type
+    const event = await Event.findById(eventID);
+    if (!event) {
+      return res.status(404).json({ message: 'Event not found' });
+    }
+
+    // Check if event is active
+    if (event.status !== 'active') {
+      return res.status(400).json({ message: 'Event is not active for registration' });
+    }
+
+    // Check registration deadline for derby events
+    if (event.eventType === 'derby' && event.registrationDeadline) {
+      const currentTime = new Date();
+      const deadline = new Date(event.registrationDeadline);
+
+      if (currentTime > deadline) {
+        return res.status(400).json({
+          message: `Registration deadline has passed. Registration closed on ${deadline.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          })}`
+        });
+      }
+    }
+
+    // Enforce per-participant cock limit for derby events
+    if (event.eventType === 'derby' && typeof event.noCockRequirements === 'number' && event.noCockRequirements > 0) {
+      const currentCount = await CockProfile.countDocuments({ eventID, participantID });
+      const newTotal = currentCount + cockProfiles.length;
+      if (newTotal > event.noCockRequirements) {
+        return res.status(400).json({
+          message: `Limit exceeded: Participant may register up to ${event.noCockRequirements} cocks for this event. Currently registered: ${currentCount}, attempting to add: ${cockProfiles.length}`
+        });
+      }
+    }
+
+    // Get the last entry number for this event
+    const lastCockProfile = await CockProfile.findOne({ eventID }).sort({ entryNo: -1 });
+    let nextEntryNo = lastCockProfile ? lastCockProfile.entryNo + 1 : 1;
+
+    // Validate and prepare cock profiles
+    const profilesToCreate = [];
+    const legbands = new Set();
+
+    for (let i = 0; i < cockProfiles.length; i++) {
+      const profile = cockProfiles[i];
+
+      // For derby events, validate legband and weight
+      if (event.eventType === 'derby') {
+        if (!profile.legband) {
+          return res.status(400).json({ message: `Legband is required for cock profile ${i + 1}` });
+        }
+        if (!profile.weight) {
+          return res.status(400).json({ message: `Weight is required for cock profile ${i + 1}` });
+        }
+
+        // Check for duplicate legbands in the request
+        if (legbands.has(profile.legband)) {
+          return res.status(400).json({ message: `Duplicate legband "${profile.legband}" found in the request` });
+        }
+        legbands.add(profile.legband);
+
+        // Check if legband already exists for this event
+        const existingLegband = await CockProfile.findOne({ eventID, legband: profile.legband });
+        if (existingLegband) {
+          return res.status(400).json({ message: `Cock with legband "${profile.legband}" already exists for this event` });
+        }
+      }
+
+      const cockProfileData = {
+        eventID,
+        participantID,
+        entryNo: nextEntryNo + i
+      };
+
+      // Only add legband and weight for derby events
+      if (event.eventType === 'derby') {
+        cockProfileData.legband = profile.legband;
+        cockProfileData.weight = parseFloat(profile.weight);
+      }
+
+      profilesToCreate.push(cockProfileData);
+    }
+
+    // Create all cock profiles
+    const createdProfiles = await CockProfile.insertMany(profilesToCreate);
+
+    // Populate references for response
+    await CockProfile.populate(createdProfiles, [
+      { path: 'eventID', select: 'eventName date location eventType' },
+      { path: 'participantID', select: 'participantName contactNumber address' }
+    ]);
+
+    res.status(201).json({
+      message: `Successfully created ${createdProfiles.length} cock profile(s)`,
+      data: createdProfiles
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to create cock profiles', error: error.message });
+  }
+};
+
 // Get all cock profiles (with filtering)
 export const getAllCockProfiles = async (req, res) => {
   try {

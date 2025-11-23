@@ -1,5 +1,5 @@
 import express from 'express';
-import { createCockProfile, getAllCockProfiles, getCockProfileById, updateCockProfile, deleteCockProfile, getCockProfilesByParticipant, getCockProfilesByEvent } from '../controllers/cockProfile.controller.js';
+import { createCockProfile, createBulkCockProfiles, getAllCockProfiles, getCockProfileById, updateCockProfile, deleteCockProfile, getCockProfilesByParticipant, getCockProfilesByEvent } from '../controllers/cockProfile.controller.js';
 import { verifyToken, requireRole } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
@@ -15,6 +15,7 @@ router.get('/participant/:participantID', verifyToken, getCockProfilesByParticip
 
 // Routes requiring admin or registration_staff role for modification, bet_staff can view
 router.post('/', verifyToken, requireRole(['admin', 'registration_staff']), createCockProfile);
+router.post('/bulk', verifyToken, requireRole(['admin', 'registration_staff']), createBulkCockProfiles);
 router.put('/:id', verifyToken, requireRole(['admin', 'bet_staff', 'registration_staff']), updateCockProfile);
 router.delete('/:id', verifyToken, requireRole(['admin', 'registration_staff']), deleteCockProfile);
 
