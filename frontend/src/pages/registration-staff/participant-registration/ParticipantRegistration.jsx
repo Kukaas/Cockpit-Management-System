@@ -54,7 +54,7 @@ const ParticipantRegistration = () => {
 
   const [cockProfileFormData, setCockProfileFormData] = useState({
     participantID: '',
-    legband: '',
+    legbandNumber: '',
     weight: ''
   })
 
@@ -257,7 +257,7 @@ const ParticipantRegistration = () => {
   const resetCockProfileForm = () => {
     setCockProfileFormData({
       participantID: '',
-      legband: '',
+      legbandNumber: '',
       weight: ''
     })
   }
@@ -302,9 +302,9 @@ const ParticipantRegistration = () => {
       return
     }
 
-    // For derby events, also require legband and weight
+    // For derby events, also require legbandNumber and weight
     if (selectedEvent?.eventType === 'derby') {
-      const derbyRequiredFields = ['participantID', 'legband', 'weight']
+      const derbyRequiredFields = ['participantID', 'legbandNumber', 'weight']
       const derbyMissingFields = derbyRequiredFields.filter(field => !cockProfileFormData[field])
 
       if (derbyMissingFields.length > 0) {
@@ -313,10 +313,13 @@ const ParticipantRegistration = () => {
       }
     }
 
+    // Map legbandNumber to legband for backend
     const cockProfileData = {
       ...cockProfileFormData,
+      legband: cockProfileFormData.legbandNumber, // Map legbandNumber to legband
       eventID: eventId // Automatically set the event ID
     }
+    delete cockProfileData.legbandNumber // Remove legbandNumber before sending
 
     createCockProfileMutation.mutate(cockProfileData)
   }
@@ -353,9 +356,9 @@ const ParticipantRegistration = () => {
       return
     }
 
-    // For derby events, also require legband and weight
+    // For derby events, also require legbandNumber and weight
     if (selectedEvent?.eventType === 'derby') {
-      const derbyRequiredFields = ['participantID', 'legband', 'weight']
+      const derbyRequiredFields = ['participantID', 'legbandNumber', 'weight']
       const derbyMissingFields = derbyRequiredFields.filter(field => !cockProfileFormData[field])
 
       if (derbyMissingFields.length > 0) {
@@ -364,9 +367,12 @@ const ParticipantRegistration = () => {
       }
     }
 
+    // Map legbandNumber to legband for backend
     const cockProfileData = {
-      ...cockProfileFormData
+      ...cockProfileFormData,
+      legband: cockProfileFormData.legbandNumber // Map legbandNumber to legband
     }
+    delete cockProfileData.legbandNumber // Remove legbandNumber before sending
 
     updateCockProfileMutation.mutate({
       id: selectedCockProfile._id,
@@ -399,7 +405,7 @@ const ParticipantRegistration = () => {
     setSelectedCockProfile(cockProfile)
     setCockProfileFormData({
       participantID: cockProfile.participantID?._id || cockProfile.participantID,
-      legband: cockProfile.legband || '',
+      legbandNumber: cockProfile.legband || '', // Map legband to legbandNumber for frontend
       weight: cockProfile.weight || ''
     })
     setEditCockProfileDialogOpen(true)
@@ -853,7 +859,7 @@ const ParticipantRegistration = () => {
                     {selectedEvent?.eventType === 'derby' && (
                       <>
                         <div>
-                          <p className="text-sm font-medium text-gray-600 mb-1">Legband</p>
+                          <p className="text-sm font-medium text-gray-600 mb-1">Legband Number</p>
                           <p className="font-medium text-gray-900">{selectedItem.legband || 'N/A'}</p>
                         </div>
                         <div>
@@ -1001,11 +1007,11 @@ const ParticipantRegistration = () => {
                             <p className="mt-1 text-sm text-gray-900">#{cock.entryNo || cock.legband || 'N/A'}</p>
                           </div>
 
-                          {/* Leg Band and Weight - only shown for derby events */}
+                          {/* Leg Band Number and Weight - only shown for derby events */}
                           {selectedEvent?.eventType === 'derby' && (
                             <>
                               <div>
-                                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Leg Band</label>
+                                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Legband Number</label>
                                 <p className="mt-1 text-sm text-gray-900">{cock.legband || 'N/A'}</p>
                               </div>
 

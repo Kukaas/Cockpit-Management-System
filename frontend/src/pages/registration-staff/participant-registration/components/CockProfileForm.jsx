@@ -204,11 +204,11 @@ const CockProfileForm = ({
           {event?.eventType === 'derby' && (
             <>
               <InputField
-                id={isEdit ? "editLegband" : "legband"}
-                label="Legband *"
-                value={formData.legband}
-                onChange={(e) => onInputChange('legband', e.target.value)}
-                placeholder="Enter legband"
+                id={isEdit ? "editLegbandNumber" : "legbandNumber"}
+                label="Legband Number *"
+                value={formData.legbandNumber}
+                onChange={(e) => onInputChange('legbandNumber', e.target.value)}
+                placeholder="Enter legband number"
                 required
               />
               <InputField

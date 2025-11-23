@@ -232,7 +232,7 @@ const EventDetails = () => {
                     {selectedEvent?.eventType === 'derby' && (
                       <>
                         <div>
-                          <p className="text-sm font-medium text-gray-600 mb-1">Legband</p>
+                          <p className="text-sm font-medium text-gray-600 mb-1">Legband Number</p>
                           <p className="font-medium text-gray-900">{selectedItem.legband || 'N/A'}</p>
                         </div>
                         <div>
@@ -393,11 +393,11 @@ const EventDetails = () => {
                             <p className="mt-1 text-sm text-gray-900">#{cock.entryNo}</p>
                           </div>
 
-                          {/* Leg Band and Weight - only shown for derby events */}
+                          {/* Legband Number and Weight - only shown for derby events */}
                           {selectedEvent?.eventType === 'derby' && (
                             <>
                               <div>
-                                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Leg Band</label>
+                                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Legband Number</label>
                                 <p className="mt-1 text-sm text-gray-900">{cock.legband || 'N/A'}</p>
                               </div>
 
@@ -579,7 +579,7 @@ const EventDetails = () => {
                           {selectedEvent?.eventType === 'derby' && (
                             <>
                               <div>
-                                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Leg Band</label>
+                                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Legband Number</label>
                                 <p className="mt-1 text-sm text-gray-900">{selectedItem.resultMatch?.winnerCockProfileID?.legband || 'N/A'}</p>
                               </div>
 
@@ -612,7 +612,7 @@ const EventDetails = () => {
                           {selectedEvent?.eventType === 'derby' && (
                             <>
                               <div>
-                                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Leg Band</label>
+                                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Legband Number</label>
                                 <p className="mt-1 text-sm text-gray-900">{selectedItem.resultMatch?.loserCockProfileID?.legband || 'N/A'}</p>
                               </div>
 

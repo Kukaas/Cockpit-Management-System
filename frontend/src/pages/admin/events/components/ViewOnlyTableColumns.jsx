@@ -77,11 +77,11 @@ export const createViewOnlyCockProfileColumns = (handleViewDetails, eventType = 
     filterable: false,
     render: (value) => value?.participantName || 'N/A'
   },
-  // Only include legband and weight columns for derby events
+  // Only include legbandNumber and weight columns for derby events
   ...(eventType === 'derby' ? [
     {
       key: 'legband',
-      label: 'Legband',
+      label: 'Legband Number',
       sortable: true,
       filterable: false
     },

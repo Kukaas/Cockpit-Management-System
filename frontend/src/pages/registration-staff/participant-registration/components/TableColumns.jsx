@@ -122,11 +122,11 @@ export const createCockProfileColumns = (handleEditClick, handleDeleteClick, han
       </div>
     )
   },
-  // Only include legband and weight columns for derby events
+  // Only include legbandNumber and weight columns for derby events
   ...(eventType === 'derby' ? [
     {
       key: 'legband',
-      label: 'Legband',
+      label: 'Legband Number',
       sortable: true,
       filterable: false,
       render: (value) => (

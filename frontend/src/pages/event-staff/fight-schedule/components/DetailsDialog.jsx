@@ -121,11 +121,11 @@ const DetailsDialog = ({
                   <p className="mt-1 text-sm text-gray-900">#{cock.entryNo}</p>
                 </div>
 
-                {/* Leg Band and Weight - only shown for derby events */}
+                {/* Legband Number and Weight - only shown for derby events */}
                 {event?.eventType === 'derby' && (
                   <>
                     <div>
-                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Leg Band</label>
+                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Legband Number</label>
                       <p className="mt-1 text-sm text-gray-900">{cock.legband || 'N/A'}</p>
                     </div>
 
@@ -305,7 +305,7 @@ const DetailsDialog = ({
                 {event?.eventType === 'derby' && (
                   <>
                     <div>
-                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Leg Band</label>
+                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Legband Number</label>
                       <p className="mt-1 text-sm text-gray-900">{result.resultMatch?.winnerCockProfileID?.legband || 'N/A'}</p>
                     </div>
 
@@ -338,7 +338,7 @@ const DetailsDialog = ({
                 {event?.eventType === 'derby' && (
                   <>
                     <div>
-                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Leg Band</label>
+                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Legband Number</label>
                       <p className="mt-1 text-sm text-gray-900">{result.resultMatch?.loserCockProfileID?.legband || 'N/A'}</p>
                     </div>
 
