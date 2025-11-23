@@ -87,7 +87,7 @@ const TangkalDashboard = () => {
   const dashboardCards = [
     {
       title: 'Cage Availability',
-      description: 'Manage cage availability records and track cage status across different arenas',
+      description: 'Manage cage availability records and track cage',
       icon: <Home className="h-8 w-8" />,
       action: () => navigate('/tangkal-staff/cage-availability'),
       color: 'bg-blue-500',
@@ -204,8 +204,8 @@ const TangkalDashboard = () => {
         </Card>
 
         {/* Quick Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
+          {/* <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Cages</CardTitle>
               <Home className="h-4 w-4 text-muted-foreground" />
@@ -242,8 +242,7 @@ const TangkalDashboard = () => {
                 Currently active rentals
               </p>
             </CardContent>
-          </Card>
-
+          </Card> */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
@@ -269,47 +268,6 @@ const TangkalDashboard = () => {
           selectedYear={selectedYear}
         />
 
-        {/* Arena Breakdown */}
-        {filteredAvailabilityData?.arenaBreakdown && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Arena Breakdown</CardTitle>
-              <CardDescription>
-                Cage availability across different arenas
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {filteredAvailabilityData.arenaBreakdown.map((arena) => (
-                  <div key={arena.arena} className="p-4 border rounded-lg">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Home className="h-4 w-4 text-blue-600" />
-                      <h4 className="font-medium text-sm">{arena.arena}</h4>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs text-muted-foreground">Total:</span>
-                        <Badge variant="outline" className="text-xs">{arena.total}</Badge>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs text-muted-foreground">Available:</span>
-                        <Badge variant="default" className="text-xs">{arena.available}</Badge>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs text-muted-foreground">Rented:</span>
-                        <Badge variant="secondary" className="text-xs">{arena.rented}</Badge>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs text-muted-foreground">Maintenance:</span>
-                        <Badge variant="destructive" className="text-xs">{arena.maintenance}</Badge>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Dashboard Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

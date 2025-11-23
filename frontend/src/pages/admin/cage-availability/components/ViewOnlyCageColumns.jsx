@@ -30,9 +30,9 @@ export const createViewOnlyCageColumns = () => [
     label: 'Status',
     sortable: true,
     filterable: true,
-    filterOptions: ['Active', 'Rented'],
+    filterOptions: ['Available', 'Rented'],
     filterValueMap: {
-      'Active': 'active',
+      'Available': 'active',
       'Rented': 'rented'
     },
     render: (value) => {
@@ -68,6 +68,18 @@ export const createViewOnlyCageColumns = () => [
         }
       }
 
+      // Helper function to get display text
+      const getStatusDisplayText = (status) => {
+        switch (status) {
+          case 'active':
+            return 'Available'
+          case 'rented':
+            return 'Rented'
+          default:
+            return status
+        }
+      }
+
       return (
         <div className="flex items-center gap-2">
           {getStatusIcon(value)}
@@ -75,7 +87,7 @@ export const createViewOnlyCageColumns = () => [
             variant={getBadgeVariant(value)}
             className="text-xs capitalize"
           >
-            {value}
+            {getStatusDisplayText(value)}
           </Badge>
         </div>
       )

@@ -32,7 +32,7 @@ const CageAvailability = () => {
     arena: 'Buenavista Cockpit Arena',
     status: 'active',
     bulkCount: '1'
-  })  
+  })
 
   // Fetch cage availability records
   const { data: cagesData = [], refetch: refetchCages } = useGetAll('/cage-availability')
@@ -207,7 +207,7 @@ const CageAvailability = () => {
   return (
     <PageLayout
       title="Cage Availability Management"
-      description="Manage cage availability records and track cage status across different arenas"
+      description="Manage cage availability records and track cage"
       headerButton={
         <Button variant="outline" onClick={() => navigate('/tangkal-staff')}>
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -230,7 +230,7 @@ const CageAvailability = () => {
           data={cages}
           columns={cageColumns}
           pageSize={10}
-          searchable={true}
+          searchable={false}
           filterable={true}
           title="Cage Availability"
           loading={false}
