@@ -47,16 +47,7 @@ export const recordEntrance = async (req, res) => {
       });
     }
 
-    // Check capacity limit
-    const currentTotal = await getCurrentTotalEntrances(eventID);
-    const newTotal = currentTotal + Number(count);
-
-    if (newTotal > event.maxCapacity) {
-      return res.status(400).json({
-        success: false,
-        message: `Maximum capacity reached. Current entrances: ${currentTotal}, Maximum capacity: ${event.maxCapacity}. Cannot add ${count} more entrances.`
-      });
-    }
+    // Capacity limit check removed (maxCapacity field removed)
 
     // Create entrance record
     const entrance = new Entrance({
@@ -70,7 +61,7 @@ export const recordEntrance = async (req, res) => {
 
     // Populate references for response
     await entrance.populate([
-      { path: 'eventID', select: 'eventName date location maxCapacity entranceFee' },
+      { path: 'eventID', select: 'eventName date location entranceFee' },
       { path: 'recordedBy', select: 'username firstName lastName' }
     ]);
 
@@ -118,14 +109,14 @@ export const getAllEntrances = async (req, res) => {
 
     if (page) {
       entrances = await Entrance.find(query)
-        .populate('eventID', 'eventName date location maxCapacity entranceFee')
+        .populate('eventID', 'eventName date location entranceFee')
         .populate('recordedBy', 'username firstName lastName')
         .sort({ date: -1 })
 
     } else {
       // Get all records without pagination
       entrances = await Entrance.find(query)
-        .populate('eventID', 'eventName date location maxCapacity entranceFee')
+        .populate('eventID', 'eventName date location entranceFee')
         .populate('recordedBy', 'username firstName lastName')
         .sort({ date: -1 });
     }
@@ -151,7 +142,7 @@ export const getEntranceById = async (req, res) => {
     const { id } = req.params;
 
     const entrance = await Entrance.findById(id)
-      .populate('eventID', 'eventName date location maxCapacity entranceFee')
+      .populate('eventID', 'eventName date location entranceFee')
       .populate('recordedBy', 'username firstName lastName');
 
     if (!entrance) {
@@ -208,16 +199,7 @@ export const updateEntrance = async (req, res) => {
         });
       }
 
-      const currentTotal = await getCurrentTotalEntrances(entrance.eventID);
-      const currentRecordCount = entrance.count || 0;
-      const newTotal = currentTotal - currentRecordCount + Number(count);
-
-      if (newTotal > event.maxCapacity) {
-        return res.status(400).json({
-          success: false,
-          message: `Maximum capacity reached. Current entrances: ${currentTotal - currentRecordCount}, Maximum capacity: ${event.maxCapacity}. Cannot update to ${count} entrances.`
-        });
-      }
+      // Capacity limit check removed (maxCapacity field removed)
     }
 
     const updatedEntrance = await Entrance.findByIdAndUpdate(
@@ -227,7 +209,7 @@ export const updateEntrance = async (req, res) => {
       },
       { new: true, runValidators: true }
     ).populate([
-      { path: 'eventID', select: 'eventName date location maxCapacity entranceFee' },
+      { path: 'eventID', select: 'eventName date location entranceFee' },
       { path: 'recordedBy', select: 'username firstName lastName' }
     ]);
 
@@ -281,14 +263,14 @@ export const getEntrancesByEvent = async (req, res) => {
     const { eventID } = req.params;
 
     const entrances = await Entrance.find({ eventID })
-      .populate('eventID', 'eventName date location maxCapacity entranceFee')
+      .populate('eventID', 'eventName date location entranceFee')
       .populate('recordedBy', 'username firstName lastName')
       .sort({ date: -1 })
 
     res.status(200).json({
       success: true,
       message: 'Event entrance records retrieved successfully',
-        data: entrances
+      data: entrances
     });
   } catch (error) {
     console.error('Error getting entrances by event:', error);
@@ -347,7 +329,6 @@ export const getEntranceStats = async (req, res) => {
       event: {
         _id: event._id,
         eventName: event.eventName,
-        maxCapacity: event.maxCapacity,
         entranceFee: event.entranceFee
       },
       summary: stats[0] || {
@@ -389,20 +370,17 @@ export const getCapacityStatus = async (req, res) => {
 
     // Get current total entrances
     const currentTotal = await getCurrentTotalEntrances(eventID);
-    const remainingCapacity = event.maxCapacity - currentTotal;
-    const isAtCapacity = currentTotal >= event.maxCapacity;
-    const capacityPercentage = Math.round((currentTotal / event.maxCapacity) * 100);
+    // Capacity status removed (maxCapacity field removed)
 
     const capacityStatus = {
       event: {
         _id: event._id,
-        eventName: event.eventName,
-        maxCapacity: event.maxCapacity
+        eventName: event.eventName
       },
       currentTotal,
-      remainingCapacity: Math.max(0, remainingCapacity),
-      isAtCapacity,
-      capacityPercentage: Math.min(100, capacityPercentage)
+      remainingCapacity: null,
+      isAtCapacity: false,
+      capacityPercentage: null
     };
 
     res.status(200).json({

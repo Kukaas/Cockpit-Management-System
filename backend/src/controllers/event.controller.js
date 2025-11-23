@@ -10,14 +10,12 @@ export const createEvent = async (req, res) => {
             prize,
             eventType,
             noCockRequirements,
-            maxParticipants,
             registrationDeadline,
-            maxCapacity,
             entranceFee
         } = req.body;
 
         // Validate required fields based on event type
-        const basicRequiredFields = ['eventName', 'location', 'date', 'eventType', 'maxCapacity', 'entranceFee'];
+        const basicRequiredFields = ['eventName', 'location', 'date', 'eventType', 'entranceFee'];
         const missingBasicFields = basicRequiredFields.filter(field => !req.body[field]);
 
         if (missingBasicFields.length > 0) {
@@ -69,9 +67,7 @@ export const createEvent = async (req, res) => {
             date: eventDate,
             eventType,
             adminID: req.user._id,
-            maxCapacity: Number(maxCapacity),
             entranceFee: Number(entranceFee),
-            maxParticipants: maxParticipants ? Number(maxParticipants) : null,
             registrationDeadline: registrationDeadline ? new Date(registrationDeadline) : null
         };
 
@@ -214,7 +210,7 @@ export const updateEvent = async (req, res) => {
 
         // Validate required fields based on event type
         const eventType = updateData.eventType || event.eventType;
-        const basicRequiredFields = ['eventName', 'location', 'date', 'eventType', 'maxCapacity', 'entranceFee'];
+        const basicRequiredFields = ['eventName', 'location', 'date', 'eventType', 'entranceFee'];
         const missingBasicFields = basicRequiredFields.filter(field => !updateData[field] && !event[field]);
 
         if (missingBasicFields.length > 0) {
@@ -226,7 +222,7 @@ export const updateEvent = async (req, res) => {
 
         // Additional required fields for derby events
         if (eventType === 'derby') {
-            const additionalRequiredFields = ['prize', 'noCockRequirements', 'maxParticipants', 'registrationDeadline'];
+            const additionalRequiredFields = ['prize', 'noCockRequirements', 'registrationDeadline'];
             const missingAdditionalFields = additionalRequiredFields.filter(field => !updateData[field] && !event[field]);
 
             if (missingAdditionalFields.length > 0) {
@@ -264,22 +260,18 @@ export const updateEvent = async (req, res) => {
         // Convert numeric fields conditionally
         if (updateData.prize) updateData.prize = Number(updateData.prize);
         if (updateData.noCockRequirements) updateData.noCockRequirements = Number(updateData.noCockRequirements);
-        if (updateData.maxParticipants) updateData.maxParticipants = Number(updateData.maxParticipants);
-        if (updateData.maxCapacity) updateData.maxCapacity = Number(updateData.maxCapacity);
         if (updateData.entranceFee) updateData.entranceFee = Number(updateData.entranceFee);
 
         // For regular events, remove the fields that are not required
         if (eventType === 'regular') {
             delete updateData.prize;
             delete updateData.noCockRequirements;
-            delete updateData.maxParticipants;
             delete updateData.registrationDeadline;
         }
 
         // For fastest_kill events, remove derby-specific fields
         if (eventType === 'fastest_kill') {
             delete updateData.noCockRequirements;
-            delete updateData.maxParticipants;
             delete updateData.registrationDeadline;
         }
 

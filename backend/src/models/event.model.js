@@ -48,19 +48,9 @@ const eventSchema = new mongoose.Schema({
         enum: ['active', 'completed', 'cancelled'],
         default: 'active'
     },
-    maxParticipants: {
-        type: Number,
-        min: 1,
-        default: null
-    },
     registrationDeadline: {
         type: Date,
         default: null
-    },
-    maxCapacity: {
-        type: Number,
-        required: true,
-        min: 1
     },
     entranceFee: {
         type: Number,

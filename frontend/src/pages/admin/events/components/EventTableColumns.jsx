@@ -118,18 +118,6 @@ export const createEventColumns = (
       }
     },
     {
-      key: 'maxCapacity',
-      label: 'Max Capacity',
-      sortable: true,
-      filterable: false,
-      render: (value) => (
-        <div className="flex items-center gap-1">
-          <Building className="h-4 w-4 text-blue-600" />
-          <span>{value}</span>
-        </div>
-      )
-    },
-    {
       key: 'entranceFee',
       label: 'Entrance Fee',
       sortable: true,
@@ -170,12 +158,6 @@ export const createEventColumns = (
                 <div className="flex items-center gap-1">
                   <Users className="h-3 w-3 text-muted-foreground" />
                   <span className="text-xs">{row.noCockRequirements} cocks</span>
-                </div>
-              )}
-              {row.maxParticipants && (
-                <div className="flex items-center gap-1">
-                  <Users className="h-3 w-3 text-blue-600" />
-                  <span className="text-xs">Max: {row.maxParticipants} participants</span>
                 </div>
               )}
             </div>

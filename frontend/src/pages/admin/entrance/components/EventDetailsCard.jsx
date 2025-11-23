@@ -107,13 +107,6 @@ const EventDetailsCard = ({ event, formatDate, formatCurrency }) => {
             </p>
           </div>
           <div className="space-y-1">
-            <p className="text-sm font-medium text-muted-foreground">Max Capacity</p>
-            <p className="flex items-center gap-1">
-              <Building className="h-4 w-4" />
-              {event.maxCapacity} people
-            </p>
-          </div>
-          <div className="space-y-1">
             <p className="text-sm font-medium text-muted-foreground">Entrance Fee</p>
             <p className="flex items-center gap-1">
               <DollarSign className="h-4 w-4 text-green-600" />
@@ -128,7 +121,7 @@ const EventDetailsCard = ({ event, formatDate, formatCurrency }) => {
                 <span className="text-sm">Loading...</span>
               ) : capacityStatus ? (
                 <span>
-                  {capacityStatus.currentTotal} / {event.maxCapacity} ({capacityStatus.capacityPercentage}%)
+                  {capacityStatus.currentTotal}
                 </span>
               ) : (
                 <span>N/A</span>
@@ -213,10 +206,6 @@ const EventDetailsCard = ({ event, formatDate, formatCurrency }) => {
           {event.eventType === 'derby' && event.maxParticipants && (
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">Max Participants</p>
-              <p className="flex items-center gap-1">
-                <Users className="h-4 w-4" />
-                {event.maxParticipants} participants
-              </p>
             </div>
           )}
 

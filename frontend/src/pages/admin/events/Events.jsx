@@ -30,9 +30,7 @@ const Events = () => {
     prize: '',
     eventType: '',
     noCockRequirements: '',
-    maxParticipants: '',
     registrationDeadline: '',
-    maxCapacity: '',
     entranceFee: ''
   })
   const [editFormData, setEditFormData] = useState({
@@ -42,9 +40,7 @@ const Events = () => {
     prize: '',
     eventType: '',
     noCockRequirements: '',
-    maxParticipants: '',
     registrationDeadline: '',
-    maxCapacity: '',
     entranceFee: ''
   })
 
@@ -132,7 +128,7 @@ const Events = () => {
 
   const handleAddEvent = async () => {
     // Basic required fields for all events
-    const basicRequiredFields = ['eventName', 'location', 'date', 'eventType', 'maxCapacity', 'entranceFee']
+    const basicRequiredFields = ['eventName', 'location', 'date', 'eventType', 'entranceFee']
     const missingBasicFields = basicRequiredFields.filter(field => !formData[field])
 
     if (missingBasicFields.length > 0) {
@@ -142,11 +138,22 @@ const Events = () => {
 
     // Additional required fields for derby events
     if (formData.eventType === 'derby') {
-      const additionalRequiredFields = ['prize', 'noCockRequirements', 'maxParticipants', 'registrationDeadline']
+      const additionalRequiredFields = ['prize', 'noCockRequirements', 'registrationDeadline']
       const missingAdditionalFields = additionalRequiredFields.filter(field => !formData[field])
 
       if (missingAdditionalFields.length > 0) {
         toast.error(`For derby events, please fill in: ${missingAdditionalFields.join(', ')}`)
+        return
+      }
+    }
+
+    // Additional required fields for fastest_kill events
+    if (formData.eventType === 'fastest_kill') {
+      const additionalRequiredFields = ['prize']
+      const missingAdditionalFields = additionalRequiredFields.filter(field => !formData[field])
+
+      if (missingAdditionalFields.length > 0) {
+        toast.error(`For fastest kill events, please fill in: ${missingAdditionalFields.join(', ')}`)
         return
       }
     }
@@ -159,9 +166,12 @@ const Events = () => {
     }
 
     // Validate numeric fields
-    const numericFields = ['maxCapacity', 'entranceFee']
+    const numericFields = ['entranceFee']
     if (formData.eventType === 'derby') {
-      numericFields.push('prize', 'noCockRequirements', 'maxParticipants')
+      numericFields.push('prize', 'noCockRequirements')
+    }
+    if (formData.eventType === 'fastest_kill') {
+      numericFields.push('prize')
     }
 
     for (const field of numericFields) {
@@ -178,7 +188,6 @@ const Events = () => {
     if (formData.eventType === 'regular') {
       delete createData.prize
       delete createData.noCockRequirements
-      delete createData.maxParticipants
       delete createData.registrationDeadline
     }
 
@@ -187,7 +196,7 @@ const Events = () => {
 
   const handleEditEvent = async () => {
     // Basic required fields for all events
-    const basicRequiredFields = ['eventName', 'location', 'date', 'eventType', 'maxCapacity', 'entranceFee']
+    const basicRequiredFields = ['eventName', 'location', 'date', 'eventType', 'entranceFee']
     const missingBasicFields = basicRequiredFields.filter(field => !editFormData[field])
 
     if (missingBasicFields.length > 0) {
@@ -197,11 +206,22 @@ const Events = () => {
 
     // Additional required fields for derby events
     if (editFormData.eventType === 'derby') {
-      const additionalRequiredFields = ['prize', 'noCockRequirements', 'maxParticipants', 'registrationDeadline']
+      const additionalRequiredFields = ['prize', 'noCockRequirements', 'registrationDeadline']
       const missingAdditionalFields = additionalRequiredFields.filter(field => !editFormData[field])
 
       if (missingAdditionalFields.length > 0) {
         toast.error(`For derby events, please fill in: ${missingAdditionalFields.join(', ')}`)
+        return
+      }
+    }
+
+    // Additional required fields for fastest_kill events
+    if (editFormData.eventType === 'fastest_kill') {
+      const additionalRequiredFields = ['prize']
+      const missingAdditionalFields = additionalRequiredFields.filter(field => !editFormData[field])
+
+      if (missingAdditionalFields.length > 0) {
+        toast.error(`For fastest kill events, please fill in: ${missingAdditionalFields.join(', ')}`)
         return
       }
     }
@@ -216,9 +236,12 @@ const Events = () => {
     }
 
     // Validate numeric fields
-    const numericFields = ['maxCapacity', 'entranceFee']
+    const numericFields = ['entranceFee']
     if (editFormData.eventType === 'derby') {
-      numericFields.push('prize', 'noCockRequirements', 'maxParticipants')
+      numericFields.push('prize', 'noCockRequirements')
+    }
+    if (editFormData.eventType === 'fastest_kill') {
+      numericFields.push('prize')
     }
 
     for (const field of numericFields) {
@@ -235,7 +258,6 @@ const Events = () => {
     if (editFormData.eventType === 'regular') {
       delete updateData.prize
       delete updateData.noCockRequirements
-      delete updateData.maxParticipants
       delete updateData.registrationDeadline
     }
 
@@ -261,9 +283,7 @@ const Events = () => {
       prize: '',
       eventType: '',
       noCockRequirements: '',
-      maxParticipants: '',
       registrationDeadline: '',
-      maxCapacity: '',
       entranceFee: ''
     })
   }
@@ -276,9 +296,7 @@ const Events = () => {
       prize: '',
       eventType: '',
       noCockRequirements: '',
-      maxParticipants: '',
       registrationDeadline: '',
-      maxCapacity: '',
       entranceFee: ''
     })
   }
@@ -366,9 +384,7 @@ const Events = () => {
       prize: event.prize ? event.prize.toString() : '',
       eventType: event.eventType || '',
       noCockRequirements: event.noCockRequirements ? event.noCockRequirements.toString() : '',
-      maxParticipants: event.maxParticipants ? event.maxParticipants.toString() : '',
       registrationDeadline: event.registrationDeadline ? new Date(event.registrationDeadline).toISOString().slice(0, 16) : '',
-      maxCapacity: event.maxCapacity ? event.maxCapacity.toString() : '',
       entranceFee: event.entranceFee ? event.entranceFee.toString() : ''
     })
     setEditEventDialogOpen(true)

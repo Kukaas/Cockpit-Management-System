@@ -200,8 +200,8 @@ const Entrance = () => {
   const totalEntrances = entrances.reduce((sum, entrance) => sum + entrance.count, 0)
   const totalRevenue = totalEntrances * (selectedEvent?.entranceFee || 0) // Use dynamic entrance fee
 
-  // Check if event is at capacity
-  const isAtCapacity = totalEntrances >= (selectedEvent?.maxCapacity || 0)
+  // Check if event is at capacity (removed maxCapacity - no longer checking capacity)
+  const isAtCapacity = false
 
   // Create table columns
   const entranceColumns = createEntranceColumns(
@@ -277,13 +277,8 @@ const Entrance = () => {
           <p className="text-2xl font-bold text-green-600">{formatCurrency(totalRevenue)}</p>
         </div>
         <div className="bg-white p-4 rounded-lg border shadow-sm">
-          <h3 className="text-sm font-medium text-gray-600">Capacity Status</h3>
-          <p className={`text-2xl font-bold ${isAtCapacity ? 'text-red-600' : totalEntrances / (selectedEvent?.maxCapacity || 1) >= 0.8 ? 'text-orange-600' : 'text-green-600'}`}>
-            {totalEntrances} / {selectedEvent?.maxCapacity || 0}
-          </p>
-          <p className="text-xs text-gray-500">
-            {selectedEvent?.maxCapacity ? Math.round((totalEntrances / selectedEvent.maxCapacity) * 100) : 0}% full
-          </p>
+          <h3 className="text-sm font-medium text-gray-600">Total Entrances</h3>
+          <p className="text-2xl font-bold text-blue-600">{totalEntrances}</p>
         </div>
       </div>
 

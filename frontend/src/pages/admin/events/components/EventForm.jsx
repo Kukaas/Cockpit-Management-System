@@ -89,19 +89,6 @@ const EventForm = ({
           </NativeSelect>
         </div>
 
-        {/* Max Capacity - Always required */}
-        <InputField
-          id={isEdit ? "editMaxCapacity" : "maxCapacity"}
-          label="Max Arena Capacity *"
-          icon={Building}
-          type="number"
-          value={formData.maxCapacity}
-          onChange={(e) => onInputChange('maxCapacity', e.target.value)}
-          placeholder="Enter max arena capacity"
-          min="1"
-          required
-        />
-
         {/* Entrance Fee - Always required */}
         <InputField
           id={isEdit ? "editEntranceFee" : "entranceFee"}
@@ -171,18 +158,6 @@ const EventForm = ({
               />
             </div>
 
-            {/* Max Participants */}
-            <InputField
-              id={isEdit ? "editMaxParticipants" : "maxParticipants"}
-              label="Max Participants *"
-              icon={Users}
-              type="number"
-              value={formData.maxParticipants}
-              onChange={(e) => onInputChange('maxParticipants', e.target.value)}
-              placeholder="Enter max participants"
-              min="1"
-              required
-            />
           </>
         )}
 
