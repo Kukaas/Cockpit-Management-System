@@ -49,9 +49,10 @@ const Entrance = () => {
       return error?.response?.data?.message || 'Failed to record entrance tally'
     },
     onSuccess: () => {
-      setAddEntranceDialogOpen(false)
+      // Reset form but keep dialog open for quick consecutive entries
       resetEntranceForm()
       refetchEntrances()
+      // Keep the dialog open - don't close it
     }
   })
 
