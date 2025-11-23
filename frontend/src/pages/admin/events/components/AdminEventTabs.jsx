@@ -1,9 +1,10 @@
 import React from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
-import { UserPlus, Feather, Swords, Trophy, Printer } from 'lucide-react'
+import { UserPlus, Feather, Swords, Trophy, Printer, Zap } from 'lucide-react'
 import DataTable from '@/components/custom/DataTable'
 import ChampionshipTab from '../../fight-schedule/components/ChampionshipTab'
+import FastestKillWinnersTab from '../../fight-schedule/components/FastestKillWinnersTab'
 
 const AdminEventTabs = ({
   activeTab,
@@ -90,24 +91,24 @@ const AdminEventTabs = ({
           <div class="header">
             <div class="event-title">${event?.eventName || 'Event Name'}</div>
             <div class="event-details">Date: ${event?.date ? new Date(event.date).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric'
-            }) : 'N/A'}</div>
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    }) : 'N/A'}</div>
             <div class="event-details">Time: ${event?.date ? new Date(event.date).toLocaleTimeString('en-US', {
-              hour: '2-digit',
-              minute: '2-digit',
-              hour12: true
-            }) : 'N/A'}</div>
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    }) : 'N/A'}</div>
             <div class="event-details">Location: ${event?.location || 'N/A'}</div>
             <div class="event-details">Type: ${event?.eventType || 'N/A'}</div>
             <div class="event-details">Entrance Fee: ${event?.entranceFee ? formatCurrency(event.entranceFee) : 'N/A'}</div>
             <div class="event-details">Max Participants: ${event?.maxParticipants || 'N/A'}</div>
             <div class="event-details">Registration Deadline: ${event?.registrationDeadline ? new Date(event.registrationDeadline).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric'
-            }) : 'N/A'}</div>
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    }) : 'N/A'}</div>
           </div>
 
           <table class="table">
@@ -142,7 +143,10 @@ const AdminEventTabs = ({
   }
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-      <TabsList className={`grid w-full ${event?.eventType === 'derby' ? 'grid-cols-5' : 'grid-cols-4'}`}>
+      <TabsList className={`grid w-full ${event?.eventType === 'derby' ? 'grid-cols-5' :
+        event?.eventType === 'fastest_kill' ? 'grid-cols-5' :
+          'grid-cols-4'
+        }`}>
         <TabsTrigger value="participants" className="flex items-center gap-2">
           <UserPlus className="h-4 w-4" />
           Participants ({participants.length})
@@ -163,6 +167,12 @@ const AdminEventTabs = ({
           <TabsTrigger value="championship" className="flex items-center gap-2">
             <Trophy className="h-4 w-4" />
             Championship
+          </TabsTrigger>
+        )}
+        {event?.eventType === 'fastest_kill' && (
+          <TabsTrigger value="fastest-kill" className="flex items-center gap-2">
+            <Zap className="h-4 w-4" />
+            Fastest Kill Winners
           </TabsTrigger>
         )}
       </TabsList>
@@ -193,9 +203,6 @@ const AdminEventTabs = ({
       </TabsContent>
 
       <TabsContent value="cock-profiles" className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold">Cock Profiles</h3>
-        </div>
         <DataTable
           data={cockProfiles}
           columns={cockProfileColumns}
@@ -210,9 +217,6 @@ const AdminEventTabs = ({
       </TabsContent>
 
       <TabsContent value="fight-schedules" className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold">Fight Schedules</h3>
-        </div>
         <DataTable
           data={fightSchedules}
           columns={fightScheduleColumns}
@@ -227,9 +231,6 @@ const AdminEventTabs = ({
       </TabsContent>
 
       <TabsContent value="match-results" className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold">Match Results</h3>
-        </div>
         <DataTable
           data={matchResults}
           columns={matchResultColumns}
@@ -246,6 +247,16 @@ const AdminEventTabs = ({
       {event?.eventType === 'derby' && (
         <TabsContent value="championship" className="space-y-4">
           <ChampionshipTab
+            eventId={event?._id}
+            eventType={event?.eventType}
+            formatCurrency={formatCurrency}
+          />
+        </TabsContent>
+      )}
+
+      {event?.eventType === 'fastest_kill' && (
+        <TabsContent value="fastest-kill" className="space-y-4">
+          <FastestKillWinnersTab
             eventId={event?._id}
             eventType={event?.eventType}
             formatCurrency={formatCurrency}
