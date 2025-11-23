@@ -270,29 +270,84 @@ const MatchResultForm = ({
         {/* Match Result */}
         <div className="space-y-4">
           <h4 className="font-medium">Match Result</h4>
-          <div className="space-y-2">
-            <Label htmlFor={isEdit ? "editWinnerParticipant" : "winnerParticipant"} className="text-sm font-medium">
+          <div className="space-y-3">
+            <Label className="text-sm font-medium">
               Winner Participant *
             </Label>
-            <NativeSelect
-              id={isEdit ? "editWinnerParticipant" : "winnerParticipant"}
-              value={formData.winnerParticipantID}
-              onChange={(e) => handleWinnerSelection(e.target.value)}
-              required
-            >
-              <option value="">Select Winner</option>
-              <option value="draw">Draw (no winner)</option>
-              <option value="cancelled">Cancelled</option>
+
+            {/* Participant Buttons */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {participants.map((participant) => {
                 const position = getParticipantPosition(participant._id)
-                const labelPrefix = position ? `${position} - ` : ''
+                const isSelected = formData.winnerParticipantID === participant._id
+                const isMeron = position === 'Meron'
+                const isWala = position === 'Wala'
+
                 return (
-                  <option key={participant._id} value={participant._id}>
-                    {`${labelPrefix}${participant.participantName}`}
-                  </option>
+                  <Button
+                    key={participant._id}
+                    type="button"
+                    variant={isSelected ? "default" : "outline"}
+                    onClick={() => handleWinnerSelection(participant._id)}
+                    className={`w-full justify-start h-auto py-3 px-4 ${isSelected
+                      ? isMeron
+                        ? 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600'
+                        : isWala
+                          ? 'bg-gray-600 hover:bg-gray-700 text-white border-gray-600'
+                          : 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600'
+                      : 'hover:bg-gray-50'
+                      }`}
+                  >
+                    <div className="flex flex-col items-start w-full gap-1">
+                      {position && (
+                        <span className={`text-xs font-semibold uppercase ${isSelected
+                          ? 'text-white opacity-90'
+                          : isMeron
+                            ? 'text-blue-600'
+                            : isWala
+                              ? 'text-gray-600'
+                              : 'text-gray-500'
+                          }`}>
+                          {position}
+                        </span>
+                      )}
+                      <span className="font-medium">{participant.participantName}</span>
+                    </div>
+                  </Button>
                 )
               })}
-            </NativeSelect>
+            </div>
+
+            {/* Special Outcome Buttons */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+              <Button
+                type="button"
+                variant={formData.winnerParticipantID === 'draw' ? "default" : "outline"}
+                onClick={() => handleWinnerSelection('draw')}
+                className={`w-full justify-start h-auto py-3 px-4 ${formData.winnerParticipantID === 'draw'
+                  ? 'bg-yellow-600 hover:bg-yellow-700 text-white border-yellow-600'
+                  : 'hover:bg-gray-50'
+                  }`}
+              >
+                <div className="flex flex-col items-start w-full">
+                  <span className="font-medium">Draw (no winner)</span>
+                </div>
+              </Button>
+
+              <Button
+                type="button"
+                variant={formData.winnerParticipantID === 'cancelled' ? "default" : "outline"}
+                onClick={() => handleWinnerSelection('cancelled')}
+                className={`w-full justify-start h-auto py-3 px-4 ${formData.winnerParticipantID === 'cancelled'
+                  ? 'bg-red-600 hover:bg-red-700 text-white border-red-600'
+                  : 'hover:bg-gray-50'
+                  }`}
+              >
+                <div className="flex flex-col items-start w-full">
+                  <span className="font-medium">Cancelled</span>
+                </div>
+              </Button>
+            </div>
           </div>
 
           {/* Hidden fields for auto-selected values - still saved to database */}
@@ -361,7 +416,7 @@ const MatchResultForm = ({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               {/* Meron Bet */}
-              <div className="bg-white p-4 rounded-lg border border-emerald-100">
+              {/* <div className="bg-white p-4 rounded-lg border border-emerald-100">
                 <div className="flex items-center gap-2 mb-3">
                   <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
                   <span className="font-semibold text-blue-700">Meron</span>
@@ -390,10 +445,10 @@ const MatchResultForm = ({
                     </div>
                   </div>
                 </div>
-              </div>
+              </div> */}
 
               {/* Wala Bet */}
-              <div className="bg-white p-4 rounded-lg border border-emerald-100">
+              {/* <div className="bg-white p-4 rounded-lg border border-emerald-100">
                 <div className="flex items-center gap-2 mb-3">
                   <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
                   <span className="font-semibold text-gray-700">Wala</span>
@@ -422,7 +477,7 @@ const MatchResultForm = ({
                     </div>
                   </div>
                 </div>
-              </div>
+              </div> */}
             </div>
 
             {/* Summary */}
@@ -467,6 +522,18 @@ const MatchResultForm = ({
                 </div>
               </div>
             </div>
+
+            {/* Loser Pays */}
+            {bettingInfo.loserBet && (
+              <div className="mt-4 bg-gradient-to-r from-red-50 to-rose-50 p-4 rounded-lg border border-red-200">
+                <div className="text-center">
+                  <div className="text-sm text-gray-600 mb-1">Loser Pays</div>
+                  <div className="font-bold text-lg text-red-800">
+                    Loser pays: ₱{bettingInfo.loserBet.betAmount?.toLocaleString()} + ₱{bettingInfo.loserPlazada?.toLocaleString()} plazada = ₱{(bettingInfo.loserBet.betAmount + bettingInfo.loserPlazada)?.toLocaleString()} total
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
