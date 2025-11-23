@@ -103,6 +103,20 @@ const EventForm = ({
           required
         />
 
+        {/* Cage Rental Fee - Always required */}
+        <InputField
+          id={isEdit ? "editCageRentalFee" : "cageRentalFee"}
+          label="Cage Rental Fee (PHP) *"
+          icon={DollarSign}
+          type="number"
+          value={formData.cageRentalFee}
+          onChange={(e) => onInputChange('cageRentalFee', e.target.value)}
+          placeholder="Enter cage rental fee per cage"
+          min="0"
+          step="0.01"
+          required
+        />
+
         {/* Date and Time */}
         <InputField
           id={isEdit ? "editDate" : "date"}

@@ -31,7 +31,8 @@ const Events = () => {
     eventType: '',
     noCockRequirements: '',
     registrationDeadline: '',
-    entranceFee: ''
+    entranceFee: '',
+    cageRentalFee: ''
   })
   const [editFormData, setEditFormData] = useState({
     eventName: '',
@@ -41,7 +42,8 @@ const Events = () => {
     eventType: '',
     noCockRequirements: '',
     registrationDeadline: '',
-    entranceFee: ''
+    entranceFee: '',
+    cageRentalFee: ''
   })
 
   // Fetch events with general hook
@@ -128,7 +130,7 @@ const Events = () => {
 
   const handleAddEvent = async () => {
     // Basic required fields for all events
-    const basicRequiredFields = ['eventName', 'location', 'date', 'eventType', 'entranceFee']
+    const basicRequiredFields = ['eventName', 'location', 'date', 'eventType', 'entranceFee', 'cageRentalFee']
     const missingBasicFields = basicRequiredFields.filter(field => !formData[field])
 
     if (missingBasicFields.length > 0) {
@@ -166,7 +168,7 @@ const Events = () => {
     }
 
     // Validate numeric fields
-    const numericFields = ['entranceFee']
+    const numericFields = ['entranceFee', 'cageRentalFee']
     if (formData.eventType === 'derby') {
       numericFields.push('prize', 'noCockRequirements')
     }
@@ -196,7 +198,7 @@ const Events = () => {
 
   const handleEditEvent = async () => {
     // Basic required fields for all events
-    const basicRequiredFields = ['eventName', 'location', 'date', 'eventType', 'entranceFee']
+    const basicRequiredFields = ['eventName', 'location', 'date', 'eventType', 'entranceFee', 'cageRentalFee']
     const missingBasicFields = basicRequiredFields.filter(field => !editFormData[field])
 
     if (missingBasicFields.length > 0) {
@@ -236,7 +238,7 @@ const Events = () => {
     }
 
     // Validate numeric fields
-    const numericFields = ['entranceFee']
+    const numericFields = ['entranceFee', 'cageRentalFee']
     if (editFormData.eventType === 'derby') {
       numericFields.push('prize', 'noCockRequirements')
     }
@@ -385,7 +387,8 @@ const Events = () => {
       eventType: event.eventType || '',
       noCockRequirements: event.noCockRequirements ? event.noCockRequirements.toString() : '',
       registrationDeadline: event.registrationDeadline ? new Date(event.registrationDeadline).toISOString().slice(0, 16) : '',
-      entranceFee: event.entranceFee ? event.entranceFee.toString() : ''
+      entranceFee: event.entranceFee ? event.entranceFee.toString() : '',
+      cageRentalFee: event.cageRentalFee ? event.cageRentalFee.toString() : ''
     })
     setEditEventDialogOpen(true)
   }

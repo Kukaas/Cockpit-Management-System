@@ -57,6 +57,12 @@ const eventSchema = new mongoose.Schema({
         required: true,
         min: 0,
         default: 100
+    },
+    cageRentalFee: {
+        type: Number,
+        required: true,
+        min: 0,
+        default: 20
     }
 }, {
     timestamps: true

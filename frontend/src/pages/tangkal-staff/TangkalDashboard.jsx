@@ -14,7 +14,6 @@ const TangkalDashboard = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth())
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const [selectedEvent, setSelectedEvent] = useState('')
-  const [selectedVenue, setSelectedVenue] = useState('')
 
   // Fetch data with filters
   const { data: availabilityData } = useGetAll('/cage-availability/summary')
@@ -27,9 +26,8 @@ const TangkalDashboard = () => {
     const matchesMonth = rentalDate.getMonth() === selectedMonth
     const matchesYear = rentalDate.getFullYear() === selectedYear
     const matchesEvent = !selectedEvent || rental.eventID?._id === selectedEvent
-    const matchesVenue = !selectedVenue || rental.arena === selectedVenue
 
-    return matchesMonth && matchesYear && matchesEvent && matchesVenue
+    return matchesMonth && matchesYear && matchesEvent
   }) || []
 
   // Calculate filtered statistics
@@ -48,20 +46,7 @@ const TangkalDashboard = () => {
   const getFilteredAvailabilityData = () => {
     if (!availabilityData?.arenaBreakdown) return availabilityData
 
-    // If venue filter is applied, show only that venue's data
-    if (selectedVenue) {
-      const filteredArena = availabilityData.arenaBreakdown.find(arena => arena.arena === selectedVenue)
-      if (filteredArena) {
-        return {
-          totalCages: filteredArena.total,
-          availableCages: filteredArena.available,
-          occupiedCages: filteredArena.rented,
-          arenaBreakdown: [filteredArena]
-        }
-      }
-    }
-
-    // If no venue filter, show all venues but calculate totals from filtered rentals
+    // Show all venues but calculate totals from filtered rentals
     const activeCagesRentedInPeriod = filteredStats.activeCagesRented
     const totalCages = availabilityData.totalCages
     const availableCages = availabilityData.availableCages - activeCagesRentedInPeriod
@@ -78,7 +63,6 @@ const TangkalDashboard = () => {
 
   // Get events for filter
   const events = eventsData || []
-  const venues = ['Buenavista Cockpit Arena']
 
   // Month options
   const months = [
@@ -147,7 +131,6 @@ const TangkalDashboard = () => {
     setSelectedMonth(new Date().getMonth())
     setSelectedYear(new Date().getFullYear())
     setSelectedEvent('')
-    setSelectedVenue('')
   }
 
   return (
@@ -169,11 +152,11 @@ const TangkalDashboard = () => {
               </Button>
             </div>
             <CardDescription>
-              Filter dashboard data by month, year, event, and venue
+              Filter dashboard data by month, year, and event
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Month</label>
                 <NativeSelect
@@ -216,133 +199,117 @@ const TangkalDashboard = () => {
                   ))}
                 </NativeSelect>
               </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Venue</label>
-                <NativeSelect
-                  value={selectedVenue}
-                  onChange={(e) => setSelectedVenue(e.target.value)}
-                >
-                  <option value="">All Venues</option>
-                  {venues.map((venue) => (
-                    <option key={venue} value={venue}>
-                      {venue}
-                    </option>
-                  ))}
-                </NativeSelect>
-              </div>
             </div>
           </CardContent>
         </Card>
 
-                 {/* Quick Stats Cards */}
-         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-           <Card>
-             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-               <CardTitle className="text-sm font-medium">Total Cages</CardTitle>
-               <Home className="h-4 w-4 text-muted-foreground" />
-             </CardHeader>
-             <CardContent>
-               <div className="text-2xl font-bold">{filteredAvailabilityData?.totalCages || 0}</div>
-               <p className="text-xs text-muted-foreground">
-                 {selectedVenue ? `In ${selectedVenue}` : 'Across all arenas'}
-               </p>
-             </CardContent>
-           </Card>
+        {/* Quick Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Cages</CardTitle>
+              <Home className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{filteredAvailabilityData?.totalCages || 0}</div>
+              <p className="text-xs text-muted-foreground">
+                Across all arenas
+              </p>
+            </CardContent>
+          </Card>
 
-           <Card>
-             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-               <CardTitle className="text-sm font-medium">Available Cages</CardTitle>
-               <TrendingUp className="h-4 w-4 text-muted-foreground" />
-             </CardHeader>
-             <CardContent>
-               <div className="text-2xl font-bold text-green-600">{filteredAvailabilityData?.availableCages || 0}</div>
-               <p className="text-xs text-muted-foreground">
-                 Ready for rental
-               </p>
-             </CardContent>
-           </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Available Cages</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">{filteredAvailabilityData?.availableCages || 0}</div>
+              <p className="text-xs text-muted-foreground">
+                Ready for rental
+              </p>
+            </CardContent>
+          </Card>
 
-           <Card>
-             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-               <CardTitle className="text-sm font-medium">Active Rentals</CardTitle>
-               <Activity className="h-4 w-4 text-muted-foreground" />
-             </CardHeader>
-             <CardContent>
-               <div className="text-2xl font-bold text-blue-600">{filteredStats.activeRentals}</div>
-               <p className="text-xs text-muted-foreground">
-                 Currently active rentals
-               </p>
-             </CardContent>
-           </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Active Rentals</CardTitle>
+              <Activity className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-blue-600">{filteredStats.activeRentals}</div>
+              <p className="text-xs text-muted-foreground">
+                Currently active rentals
+              </p>
+            </CardContent>
+          </Card>
 
-           <Card>
-             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-               <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-               <DollarSign className="h-4 w-4 text-muted-foreground" />
-             </CardHeader>
-             <CardContent>
-               <div className="text-2xl font-bold text-emerald-600">
-                 {formatCurrency(filteredStats.totalRevenue)}
-               </div>
-               <p className="text-xs text-muted-foreground">
-                 {selectedEvent || selectedVenue || selectedMonth !== new Date().getMonth() || selectedYear !== new Date().getFullYear()
-                   ? 'From filtered rentals'
-                   : 'From all rentals'}
-               </p>
-             </CardContent>
-           </Card>
-         </div>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-emerald-600">
+                {formatCurrency(filteredStats.totalRevenue)}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {selectedEvent || selectedMonth !== new Date().getMonth() || selectedYear !== new Date().getFullYear()
+                  ? 'From filtered rentals'
+                  : 'From all rentals'}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
 
-                 {/* Rental Chart */}
-         <RentalChart
-           rentalsData={filteredRentals}
-           selectedMonth={selectedMonth}
-           selectedYear={selectedYear}
-         />
+        {/* Rental Chart */}
+        <RentalChart
+          rentalsData={filteredRentals}
+          selectedMonth={selectedMonth}
+          selectedYear={selectedYear}
+        />
 
-                 {/* Arena Breakdown */}
-         {filteredAvailabilityData?.arenaBreakdown && (
-           <Card>
-             <CardHeader>
-               <CardTitle className="text-lg">Arena Breakdown</CardTitle>
-               <CardDescription>
-                 Cage availability across different arenas
-                 {selectedVenue && ` - Filtered to ${selectedVenue}`}
-               </CardDescription>
-             </CardHeader>
-             <CardContent>
-               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                 {filteredAvailabilityData.arenaBreakdown.map((arena) => (
-                   <div key={arena.arena} className="p-4 border rounded-lg">
-                     <div className="flex items-center gap-2 mb-3">
-                       <Home className="h-4 w-4 text-blue-600" />
-                       <h4 className="font-medium text-sm">{arena.arena}</h4>
-                     </div>
-                     <div className="space-y-2">
-                       <div className="flex justify-between items-center">
-                         <span className="text-xs text-muted-foreground">Total:</span>
-                         <Badge variant="outline" className="text-xs">{arena.total}</Badge>
-                       </div>
-                       <div className="flex justify-between items-center">
-                         <span className="text-xs text-muted-foreground">Available:</span>
-                         <Badge variant="default" className="text-xs">{arena.available}</Badge>
-                       </div>
-                       <div className="flex justify-between items-center">
-                         <span className="text-xs text-muted-foreground">Rented:</span>
-                         <Badge variant="secondary" className="text-xs">{arena.rented}</Badge>
-                       </div>
-                       <div className="flex justify-between items-center">
-                         <span className="text-xs text-muted-foreground">Maintenance:</span>
-                         <Badge variant="destructive" className="text-xs">{arena.maintenance}</Badge>
-                       </div>
-                     </div>
-                   </div>
-                 ))}
-               </div>
-             </CardContent>
-           </Card>
-         )}
+        {/* Arena Breakdown */}
+        {filteredAvailabilityData?.arenaBreakdown && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Arena Breakdown</CardTitle>
+              <CardDescription>
+                Cage availability across different arenas
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {filteredAvailabilityData.arenaBreakdown.map((arena) => (
+                  <div key={arena.arena} className="p-4 border rounded-lg">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Home className="h-4 w-4 text-blue-600" />
+                      <h4 className="font-medium text-sm">{arena.arena}</h4>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs text-muted-foreground">Total:</span>
+                        <Badge variant="outline" className="text-xs">{arena.total}</Badge>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs text-muted-foreground">Available:</span>
+                        <Badge variant="default" className="text-xs">{arena.available}</Badge>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs text-muted-foreground">Rented:</span>
+                        <Badge variant="secondary" className="text-xs">{arena.rented}</Badge>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs text-muted-foreground">Maintenance:</span>
+                        <Badge variant="destructive" className="text-xs">{arena.maintenance}</Badge>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Dashboard Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

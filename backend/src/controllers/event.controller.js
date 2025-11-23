@@ -11,11 +11,12 @@ export const createEvent = async (req, res) => {
             eventType,
             noCockRequirements,
             registrationDeadline,
-            entranceFee
+            entranceFee,
+            cageRentalFee
         } = req.body;
 
         // Validate required fields based on event type
-        const basicRequiredFields = ['eventName', 'location', 'date', 'eventType', 'entranceFee'];
+        const basicRequiredFields = ['eventName', 'location', 'date', 'eventType', 'entranceFee', 'cageRentalFee'];
         const missingBasicFields = basicRequiredFields.filter(field => !req.body[field]);
 
         if (missingBasicFields.length > 0) {
@@ -68,6 +69,7 @@ export const createEvent = async (req, res) => {
             eventType,
             adminID: req.user._id,
             entranceFee: Number(entranceFee),
+            cageRentalFee: Number(cageRentalFee),
             registrationDeadline: registrationDeadline ? new Date(registrationDeadline) : null
         };
 
@@ -261,6 +263,7 @@ export const updateEvent = async (req, res) => {
         if (updateData.prize) updateData.prize = Number(updateData.prize);
         if (updateData.noCockRequirements) updateData.noCockRequirements = Number(updateData.noCockRequirements);
         if (updateData.entranceFee) updateData.entranceFee = Number(updateData.entranceFee);
+        if (updateData.cageRentalFee) updateData.cageRentalFee = Number(updateData.cageRentalFee);
 
         // For regular events, remove the fields that are not required
         if (eventType === 'regular') {

@@ -108,8 +108,9 @@ export const createCageRental = async (req, res) => {
             rentedCageIds.includes(cage._id.toString())
         );
 
-        // Calculate total price (20 PHP per cage)
-        const totalPrice = quantity * 20;
+        // Calculate total price using event's cageRentalFee
+        const rentalFeePerCage = event.cageRentalFee || 20; // Default to 20 if not set
+        const totalPrice = quantity * rentalFeePerCage;
 
         // Create new cage rental
         const newCageRental = new CageRental({
@@ -352,7 +353,10 @@ export const updateCageRental = async (req, res) => {
             // Select new cages
             const selectedCages = trulyAvailableCages.slice(0, updateData.quantity);
             updateData.cages = selectedCages.map(cage => ({ cageNo: cage._id }));
-            updateData.totalPrice = updateData.quantity * 20;
+            // Get event to use its cageRentalFee
+            const eventForUpdate = await Event.findById(updateData.eventID || cageRental.eventID);
+            const rentalFeePerCage = eventForUpdate?.cageRentalFee || 20; // Default to 20 if not set
+            updateData.totalPrice = updateData.quantity * rentalFeePerCage;
 
             // Restore old cages to active status
             const oldCageIds = cageRental.cages.map(cage => cage.cageNo);
@@ -697,7 +701,7 @@ export const getOverdueRentals = async (req, res) => {
 // Get available cages for a specific date
 export const getAvailableCages = async (req, res) => {
     try {
-        const { date, arena } = req.query;
+        const { date, arena, excludeRentalId } = req.query;
 
         if (!date) {
             return res.status(400).json({
@@ -716,6 +720,11 @@ export const getAvailableCages = async (req, res) => {
             },
             paymentStatus: { $ne: 'cancelled' }
         };
+
+        // Exclude current rental if editing (so its cages show as available)
+        if (excludeRentalId) {
+            rentalFilter._id = { $ne: excludeRentalId };
+        }
 
         // Add arena filter if specified
         if (arena) {

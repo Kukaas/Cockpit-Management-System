@@ -45,7 +45,7 @@ const Rentals = () => {
     nameOfRenter: '',
     contactNumber: '',
     eventID: '',
-    paymentStatus: 'paid',
+    paymentStatus: 'unpaid',
     selectedCageIds: []
   })
 
@@ -166,7 +166,7 @@ const Rentals = () => {
       nameOfRenter: '',
       contactNumber: '',
       eventID: selectedEvent?._id || '',
-      paymentStatus: 'paid',
+      paymentStatus: 'unpaid',
       selectedCageIds: []
     })
   }
@@ -205,8 +205,9 @@ const Rentals = () => {
       return
     }
 
-    // Calculate total price based on quantity (20 PHP per cage)
-    const totalPrice = parseInt(rentalFormData.quantity) * 20
+    // Calculate total price based on event's cageRentalFee
+    const rentalFeePerCage = selectedEvent?.cageRentalFee || 20 // Default to 20 if not set
+    const totalPrice = parseInt(rentalFormData.quantity) * rentalFeePerCage
 
     const rentalData = {
       ...rentalFormData,
@@ -235,7 +236,7 @@ const Rentals = () => {
       nameOfRenter: rental.nameOfRenter,
       contactNumber: rental.contactNumber || '',
       eventID: rental.eventID?._id || selectedEvent?._id || '',
-      paymentStatus: rental.paymentStatus || 'paid',
+      paymentStatus: rental.paymentStatus || 'unpaid',
       selectedCageIds: rental.cages?.map(cage => cage.cageNo?._id || cage.cageNo) || []
     })
     setEditRentalDialogOpen(true)
@@ -435,6 +436,7 @@ const Rentals = () => {
         isPending={updateRentalMutation.isPending}
         isEdit={true}
         eventId={eventId}
+        rentalData={selectedRental}
       />
 
       {/* Delete Rental Confirmation Dialog */}

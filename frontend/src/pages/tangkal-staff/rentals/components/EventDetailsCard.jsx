@@ -70,10 +70,10 @@ const EventDetailsCard = ({ event, formatDate, formatCurrency }) => {
             </p>
           </div>
           <div className="space-y-1">
-            <p className="text-sm font-medium text-muted-foreground">Max Capacity</p>
+            <p className="text-sm font-medium text-muted-foreground">Cage Rental Fee</p>
             <p className="flex items-center gap-1">
-              <Building className="h-4 w-4" />
-              {event.maxCapacity} people
+              <DollarSign className="h-4 w-4 text-green-600" />
+              {formatCurrency(event.cageRentalFee || 20)} per cage
             </p>
           </div>
         </div>
@@ -99,8 +99,8 @@ const EventDetailsCard = ({ event, formatDate, formatCurrency }) => {
             <Badge
               variant={
                 event.status === 'active' ? 'default' :
-                event.status === 'completed' ? 'secondary' :
-                event.status === 'cancelled' ? 'destructive' : 'outline'
+                  event.status === 'completed' ? 'secondary' :
+                    event.status === 'cancelled' ? 'destructive' : 'outline'
               }
               className="capitalize"
             >
@@ -126,17 +126,6 @@ const EventDetailsCard = ({ event, formatDate, formatCurrency }) => {
               <p className="flex items-center gap-1">
                 <DollarSign className="h-4 w-4 text-green-600" />
                 {formatCurrency(event.prize)}
-              </p>
-            </div>
-          )}
-
-          {/* Show Max Participants for derby events */}
-          {event.eventType === 'derby' && event.maxParticipants && (
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground">Max Participants</p>
-              <p className="flex items-center gap-1">
-                <Users className="h-4 w-4" />
-                {event.maxParticipants} participants
               </p>
             </div>
           )}
