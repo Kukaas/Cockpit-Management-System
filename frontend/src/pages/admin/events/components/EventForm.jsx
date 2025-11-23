@@ -205,20 +205,6 @@ const EventForm = ({
           </>
         )}
 
-        {/* Public Toggle */}
-        <div className="space-y-2">
-          <Label htmlFor={isEdit ? "editIsPublic" : "isPublic"} className="text-sm font-medium">
-            Public Event
-          </Label>
-          <NativeSelect
-            id={isEdit ? "editIsPublic" : "isPublic"}
-            value={formData.isPublic.toString()}
-            onChange={(e) => onInputChange('isPublic', e.target.value === 'true')}
-          >
-            <option value="true">Yes</option>
-            <option value="false">No</option>
-          </NativeSelect>
-        </div>
       </div>
     </CustomAlertDialog>
   )

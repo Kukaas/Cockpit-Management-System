@@ -33,8 +33,7 @@ const Events = () => {
     maxParticipants: '',
     registrationDeadline: '',
     maxCapacity: '',
-    entranceFee: '',
-    isPublic: true
+    entranceFee: ''
   })
   const [editFormData, setEditFormData] = useState({
     eventName: '',
@@ -46,8 +45,7 @@ const Events = () => {
     maxParticipants: '',
     registrationDeadline: '',
     maxCapacity: '',
-    entranceFee: '',
-    isPublic: true
+    entranceFee: ''
   })
 
   // Fetch events with general hook
@@ -266,8 +264,7 @@ const Events = () => {
       maxParticipants: '',
       registrationDeadline: '',
       maxCapacity: '',
-      entranceFee: '',
-      isPublic: true
+      entranceFee: ''
     })
   }
 
@@ -282,8 +279,7 @@ const Events = () => {
       maxParticipants: '',
       registrationDeadline: '',
       maxCapacity: '',
-      entranceFee: '',
-      isPublic: true
+      entranceFee: ''
     })
   }
 
@@ -303,12 +299,12 @@ const Events = () => {
     deleteEventMutation.mutate({ id: selectedEvent._id })
   }
 
-    const handleStatusChange = (eventId, newStatus, currentStatus) => {
+  const handleStatusChange = (eventId, newStatus, currentStatus) => {
     if (newStatus === currentStatus) return
 
     // Validation: Prevent reverting from completed or cancelled status
     if ((currentStatus === 'completed' || currentStatus === 'cancelled') &&
-        newStatus === 'active') {
+      newStatus === 'active') {
       toast.error(`Cannot change status from ${currentStatus} back to ${newStatus}`)
       return
     }
@@ -373,8 +369,7 @@ const Events = () => {
       maxParticipants: event.maxParticipants ? event.maxParticipants.toString() : '',
       registrationDeadline: event.registrationDeadline ? new Date(event.registrationDeadline).toISOString().slice(0, 16) : '',
       maxCapacity: event.maxCapacity ? event.maxCapacity.toString() : '',
-      entranceFee: event.entranceFee ? event.entranceFee.toString() : '',
-      isPublic: event.isPublic !== undefined ? event.isPublic : true
+      entranceFee: event.entranceFee ? event.entranceFee.toString() : ''
     })
     setEditEventDialogOpen(true)
   }

@@ -13,8 +13,7 @@ export const createEvent = async (req, res) => {
             maxParticipants,
             registrationDeadline,
             maxCapacity,
-            entranceFee,
-            isPublic
+            entranceFee
         } = req.body;
 
         // Validate required fields based on event type
@@ -73,8 +72,7 @@ export const createEvent = async (req, res) => {
             maxCapacity: Number(maxCapacity),
             entranceFee: Number(entranceFee),
             maxParticipants: maxParticipants ? Number(maxParticipants) : null,
-            registrationDeadline: registrationDeadline ? new Date(registrationDeadline) : null,
-            isPublic: isPublic !== undefined ? isPublic : true
+            registrationDeadline: registrationDeadline ? new Date(registrationDeadline) : null
         };
 
         // Only add prize and noCockRequirements for derby events
@@ -120,11 +118,6 @@ export const getAllEvents = async (req, res) => {
 
         // Build filter object
         const filter = {};
-
-        // Role-based filtering
-        if (req.user.role !== 'admin') {
-            filter.isPublic = true;
-        }
 
         if (status) {
             filter.status = status;
@@ -177,14 +170,6 @@ export const getEventById = async (req, res) => {
             return res.status(404).json({
                 success: false,
                 message: 'Event not found'
-            });
-        }
-
-        // Check if user can access this event
-        if (!event.isPublic && req.user.role !== 'admin' && event.adminID._id.toString() !== req.user._id.toString()) {
-            return res.status(403).json({
-                success: false,
-                message: 'Access denied'
             });
         }
 
@@ -458,8 +443,7 @@ export const getUpcomingEvents = async (req, res) => {
     try {
         const events = await Event.find({
             date: { $gt: new Date() },
-            status: 'active',
-            isPublic: true
+            status: 'active'
         })
             .populate('adminID', 'firstName lastName username')
             .sort({ createdAt: -1 });

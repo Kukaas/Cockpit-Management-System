@@ -67,10 +67,6 @@ const eventSchema = new mongoose.Schema({
         required: true,
         min: 0,
         default: 100
-    },
-    isPublic: {
-        type: Boolean,
-        default: true
     }
 }, {
     timestamps: true
