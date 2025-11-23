@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import CustomAlertDialog from '@/components/custom/CustomAlertDialog'
 import InputField from '@/components/custom/InputField'
@@ -16,6 +16,30 @@ const EntranceForm = ({
   isPending,
   isEdit = false
 }) => {
+  // Handle Enter key to submit form when dialog is open
+  useEffect(() => {
+    if (!open) return
+
+    const handleKeyDown = (event) => {
+      // Only trigger on Enter key and when form is not pending
+      if (event.key === 'Enter' && !isPending) {
+        // Prevent default form submission behavior
+        event.preventDefault()
+        // Only submit if we have a valid count
+        if (formData.count && formData.count >= 1) {
+          onSubmit()
+        }
+      }
+    }
+
+    // Add event listener
+    window.addEventListener('keydown', handleKeyDown)
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [open, isPending, formData.count, onSubmit])
   return (
     <CustomAlertDialog
       open={open}
