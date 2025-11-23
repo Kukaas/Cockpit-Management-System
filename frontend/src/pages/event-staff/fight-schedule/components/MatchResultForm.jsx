@@ -368,10 +368,10 @@ const MatchResultForm = ({
                     onClick={() => handleWinnerSelection(participant._id)}
                     className={`w-full justify-start h-auto py-3 px-4 ${isSelected
                       ? isMeron
-                        ? 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600'
+                        ? 'bg-red-600 hover:bg-red-700 text-white border-red-600'
                         : isWala
-                          ? 'bg-gray-600 hover:bg-gray-700 text-white border-gray-600'
-                          : 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600'
+                          ? 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600'
+                          : 'bg-red-600 hover:bg-red-700 text-white border-red-600'
                       : 'hover:bg-gray-50'
                       }`}
                   >
@@ -380,9 +380,9 @@ const MatchResultForm = ({
                         <span className={`text-xs font-semibold uppercase ${isSelected
                           ? 'text-white opacity-90'
                           : isMeron
-                            ? 'text-blue-600'
+                            ? 'text-red-600'
                             : isWala
-                              ? 'text-gray-600'
+                              ? 'text-blue-600'
                               : 'text-gray-500'
                           }`}>
                           {position}
@@ -402,7 +402,7 @@ const MatchResultForm = ({
                 variant={formData.winnerParticipantID === 'draw' ? "default" : "outline"}
                 onClick={() => handleWinnerSelection('draw')}
                 className={`w-full justify-start h-auto py-3 px-4 ${formData.winnerParticipantID === 'draw'
-                  ? 'bg-yellow-600 hover:bg-yellow-700 text-white border-yellow-600'
+                  ? 'bg-lime-600 hover:bg-lime-700 text-white border-lime-600'
                   : 'hover:bg-gray-50'
                   }`}
               >
@@ -416,7 +416,7 @@ const MatchResultForm = ({
                 variant={formData.winnerParticipantID === 'cancelled' ? "default" : "outline"}
                 onClick={() => handleWinnerSelection('cancelled')}
                 className={`w-full justify-start h-auto py-3 px-4 ${formData.winnerParticipantID === 'cancelled'
-                  ? 'bg-red-600 hover:bg-red-700 text-white border-red-600'
+                  ? 'bg-gray-600 hover:bg-gray-700 text-white border-gray-600'
                   : 'hover:bg-gray-50'
                   }`}
               >

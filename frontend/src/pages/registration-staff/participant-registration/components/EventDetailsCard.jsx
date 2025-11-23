@@ -69,13 +69,13 @@ const EventDetailsCard = ({ event, formatDate, formatCurrency }) => {
               {formatDate(event.date)}
             </p>
           </div>
-          <div className="space-y-1">
+          {/* <div className="space-y-1">
             <p className="text-sm font-medium text-muted-foreground">Max Capacity</p>
             <p className="flex items-center gap-1">
               <Building className="h-4 w-4" />
               {event.maxCapacity} people
             </p>
-          </div>
+          </div> */}
         </div>
         <Separator className="my-4" />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

@@ -96,17 +96,6 @@ export const createFightColumns = (formatCurrency, formatDate, handleEditClick, 
                 <Trophy className="h-4 w-4" />
               </Button>
             )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation()
-                handleDeleteClick(row)
-              }}
-              className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
           </>
         )}
         <Button
@@ -174,73 +163,6 @@ export const createMatchResultColumns = (formatCurrency, formatDate, handleEditC
         </Badge>
       </div>
     )
-  },
-  {
-    key: 'totalBetPool',
-    label: 'Total Bet Pool',
-    sortable: true,
-    filterable: false,
-    render: (value) => (
-      <div className="flex items-center gap-1">
-        <Target className="h-4 w-4 text-green-600" />
-        <span className="font-medium">{formatCurrency(value)}</span>
-      </div>
-    )
-  },
-  {
-    key: 'payouts',
-    label: 'Payout Info',
-    sortable: false,
-    filterable: false,
-    render: (value, row) => {
-      // Compute net winnings from row.participantBets (exclude winner's own stake)
-      const bets = row.participantBets || []
-      const meron = bets.find(b => b.position === 'Meron')
-      const wala = bets.find(b => b.position === 'Wala')
-      const meronAmt = meron?.betAmount || 0
-      const walaAmt = wala?.betAmount || 0
-      const opponentContribution = Math.min(meronAmt, walaAmt)
-      const winnerIsMeron = row.betWinner === 'Meron'
-      const outsideBets = Math.max(0, meronAmt - walaAmt)
-      const winnerBetAmt = winnerIsMeron ? meronAmt : row.betWinner === 'Wala' ? walaAmt : 0
-      const winnerPlazada = winnerBetAmt * 0.10
-
-      const meronNet = winnerIsMeron ? Math.max(0, opponentContribution + outsideBets - winnerPlazada) : 0
-      const walaNet = row.betWinner === 'Wala' ? Math.max(0, opponentContribution - winnerPlazada) : 0
-
-      if (row.betWinner === 'Meron') {
-        return (
-          <div className="space-y-1 text-sm">
-            <div className="flex items-center gap-1">
-              <Trophy className="h-3 w-3 text-yellow-600" />
-              <span className="text-green-600 font-medium">Meron: {formatCurrency(meronNet)}</span>
-            </div>
-          </div>
-        )
-      } else if (row.betWinner === 'Wala') {
-        return (
-          <div className="space-y-1 text-sm">
-            <div className="flex items-center gap-1">
-              <Trophy className="h-3 w-3 text-yellow-600" />
-              <span className="text-green-600 font-medium">Wala: {formatCurrency(walaNet)}</span>
-            </div>
-          </div>
-        )
-      } else if (row.betWinner === 'Draw') {
-        return (
-          <div className="space-y-1 text-sm">
-            <div className="text-muted-foreground">Draw - Bets returned</div>
-          </div>
-        )
-      } else if (row.betWinner === 'Cancelled') {
-        return (
-          <div className="space-y-1 text-sm">
-            <div className="text-muted-foreground">Cancelled - No settlement</div>
-          </div>
-        )
-      }
-      return null
-    }
   },
   // Only show match time for fastest kill events
   ...(eventType === 'fastest_kill' ? [
@@ -398,20 +320,4 @@ export const createChampionshipColumns = (formatCurrency) => [
       </Badge>
     )
   },
-  {
-    key: 'prize',
-    label: 'Prize',
-    sortable: false,
-    filterable: false,
-    render: (value, row) => {
-      if (!row.isChampion) return '-'
-
-      return (
-        <div className="text-center">
-          <div className="font-semibold text-green-600">{row.prizePercentage}%</div>
-          <div className="text-sm text-green-600">{formatCurrency(row.prizeAmount)}</div>
-        </div>
-      )
-    }
-  }
 ]

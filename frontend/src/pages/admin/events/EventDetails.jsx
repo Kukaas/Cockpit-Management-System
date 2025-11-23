@@ -469,15 +469,11 @@ const EventDetails = () => {
                     </div>
                     <div>
                       <h3 className="font-semibold text-lg text-gray-900">Betting Information</h3>
-                      <p className="text-sm text-gray-500">Bet amounts and payouts</p>
+                      <p className="text-sm text-gray-500">Bet amounts</p>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                    <div className="bg-gray-50 rounded-lg p-4 text-center">
-                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Bet Pool</label>
-                      <p className="mt-1 text-lg font-semibold text-blue-700">{formatCurrency(selectedItem.totalBetPool)}</p>
-                    </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                     <div className="bg-gray-50 rounded-lg p-4 text-center">
                       <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Plazada</label>
                       <p className="mt-1 text-lg font-semibold text-emerald-700">{formatCurrency(selectedItem.totalPlazada)}</p>
@@ -485,9 +481,10 @@ const EventDetails = () => {
                     <div className="bg-gray-50 rounded-lg p-4 text-center">
                       <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Bet Winner</label>
                       <div className="mt-1">
-                        <span className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${selectedItem.betWinner === 'Meron' ? 'bg-blue-100 text-blue-800' :
-                          selectedItem.betWinner === 'Wala' ? 'bg-gray-100 text-gray-800' :
-                            'bg-yellow-100 text-yellow-800'
+                        <span className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${selectedItem.betWinner === 'Meron' ? 'bg-red-100 text-red-800' :
+                          selectedItem.betWinner === 'Wala' ? 'bg-blue-100 text-blue-800' :
+                            selectedItem.betWinner === 'Draw' ? 'bg-lime-100 text-lime-800' :
+                              'bg-gray-100 text-gray-800'
                           }`}>
                           {selectedItem.betWinner}
                         </span>
@@ -618,40 +615,6 @@ const EventDetails = () => {
                   )}
                 </div>
 
-                {/* Payout Information */}
-                <div className="bg-white rounded-lg border border-gray-200 p-6">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                      <span className="text-purple-600 font-semibold text-lg">💰</span>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-lg text-gray-900">Payout Information</h3>
-                      <p className="text-sm text-gray-500">Financial details and payouts</p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <div className="bg-gray-50 rounded-lg p-6 text-center">
-                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Meron Payout</label>
-                      <p className="mt-2 text-xl font-semibold text-purple-700">{formatCurrency(selectedItem.payouts?.meronPayout || 0)}</p>
-                    </div>
-
-                    <div className="bg-gray-50 rounded-lg p-6 text-center">
-                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Wala Payout</label>
-                      <p className="mt-2 text-xl font-semibold text-purple-700">{formatCurrency(selectedItem.payouts?.walaPayout || 0)}</p>
-                    </div>
-
-                    <div className="bg-gray-50 rounded-lg p-6 text-center">
-                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Outside Bets</label>
-                      <p className="mt-2 text-xl font-semibold text-purple-700">{formatCurrency(selectedItem.payouts?.outsideBets || 0)}</p>
-                    </div>
-
-                    <div className="bg-gray-50 rounded-lg p-6 text-center">
-                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Plazada</label>
-                      <p className="mt-2 text-xl font-semibold text-emerald-700">{formatCurrency(selectedItem.totalPlazada || 0)}</p>
-                    </div>
-                  </div>
-                </div>
               </div>
             )}
           </div>

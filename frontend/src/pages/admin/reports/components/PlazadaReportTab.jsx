@@ -19,7 +19,6 @@ const PlazadaReportTab = ({ event, formatCurrency, formatDate }) => {
   // Calculate totals
   const totalPlazada = matchResults.reduce((sum, result) => sum + (result.totalPlazada || 0), 0)
   const totalMatches = matchResults.length
-  const totalBetPool = matchResults.reduce((sum, result) => sum + (result.totalBetPool || 0), 0)
   const meronWins = matchResults.filter(r => r.betWinner === 'Meron').length
   const walaWins = matchResults.filter(r => r.betWinner === 'Wala').length
   const draws = matchResults.filter(r => r.betWinner === 'Draw').length
@@ -135,10 +134,6 @@ const PlazadaReportTab = ({ event, formatCurrency, formatDate }) => {
               <span>${formatCurrency(totalPlazada)}</span>
             </div>
             <div class="summary-row">
-              <span class="summary-label">Total Bet Pool:</span>
-              <span>${formatCurrency(totalBetPool)}</span>
-            </div>
-            <div class="summary-row">
               <span class="summary-label">Meron Wins:</span>
               <span>${meronWins}</span>
             </div>
@@ -158,7 +153,6 @@ const PlazadaReportTab = ({ event, formatCurrency, formatDate }) => {
                 <th>No.</th>
                 <th>Fight #</th>
                 <th>Bet Winner</th>
-                <th>Total Bet Pool</th>
                 <th>Plazada Collected</th>
                 <th>Winner</th>
                 <th>Loser</th>
@@ -174,7 +168,6 @@ const PlazadaReportTab = ({ event, formatCurrency, formatDate }) => {
                   <td>${index + 1}</td>
                   <td>#${result.matchID?.fightNumber || 'N/A'}</td>
                   <td>${result.betWinner || 'N/A'}</td>
-                  <td class="text-right">${formatCurrency(result.totalBetPool || 0)}</td>
                   <td class="text-right">${formatCurrency(result.totalPlazada || 0)}</td>
                   <td>${winnerName}</td>
                   <td>${loserName}</td>
@@ -186,7 +179,6 @@ const PlazadaReportTab = ({ event, formatCurrency, formatDate }) => {
             <tfoot>
               <tr>
                 <td colspan="3" style="text-align: right; font-weight: bold;">Total:</td>
-                <td class="text-right" style="font-weight: bold;">${formatCurrency(totalBetPool)}</td>
                 <td class="text-right" style="font-weight: bold;">${formatCurrency(totalPlazada)}</td>
                 <td colspan="3"></td>
               </tr>

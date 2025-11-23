@@ -241,9 +241,6 @@ const FastestKillWinnersTab = ({ eventId, eventType, formatCurrency }) => {
             render: (value) => (
                 <div className="flex flex-col">
                     <span className="font-medium">{value?.participantName || 'N/A'}</span>
-                    <span className="text-xs text-muted-foreground">
-                        Entry #{value?.entryNo || 'N/A'}
-                    </span>
                 </div>
             )
         },
@@ -267,50 +264,7 @@ const FastestKillWinnersTab = ({ eventId, eventType, formatCurrency }) => {
                 )
             }
         },
-        {
-            key: 'prizeAmount',
-            label: 'Prize Amount',
-            sortable: true,
-            filterable: false,
-            render: (value, row) => (
-                <div className="flex items-center gap-2">
-                    {isEditing ? (
-                        <div className="flex items-center gap-2">
-                            <Input
-                                type="number"
-                                value={editingPrizes[row._id] !== undefined ? editingPrizes[row._id] : value}
-                                onChange={(e) => handlePrizeEdit(row._id, e.target.value)}
-                                className="w-24 h-8"
-                                min="0"
-                                step="0.01"
-                                placeholder="0.00"
-                            />
-                            <span className="text-sm text-muted-foreground">PHP</span>
-                        </div>
-                    ) : (
-                        <div className="flex items-center gap-1">
-                            <DollarSign className="h-4 w-4 text-green-600" />
-                            <span className="font-semibold text-green-700">
-                                {formatCurrency(value)}
-                            </span>
-                        </div>
-                    )}
-                </div>
-            )
-        },
-        {
-            key: 'prizePercentage',
-            label: 'Share',
-            sortable: true,
-            filterable: false,
-            render: (value) => (
-                <span className="text-sm text-muted-foreground">{value}%</span>
-            )
-        }
     ]
-
-    const totalDistributed = prizeDistribution.reduce((sum, result) => sum + result.prizeAmount, 0)
-    const remainingPrize = prizePool - totalDistributed
 
     return (
         <div className="space-y-6">
@@ -326,7 +280,7 @@ const FastestKillWinnersTab = ({ eventId, eventType, formatCurrency }) => {
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="text-center p-4 bg-yellow-50 rounded-lg">
                             <div className="text-2xl font-bold text-yellow-600">{fastestKillResultsCount}</div>
                             <div className="text-sm text-yellow-600">Total Winners</div>
@@ -335,61 +289,7 @@ const FastestKillWinnersTab = ({ eventId, eventType, formatCurrency }) => {
                             <div className="text-2xl font-bold text-green-600">{formatCurrency(prizePool)}</div>
                             <div className="text-sm text-green-600">Total Prize Pool</div>
                         </div>
-                        <div className="text-center p-4 bg-blue-50 rounded-lg">
-                            <div className="text-2xl font-bold text-blue-600">{formatCurrency(totalDistributed)}</div>
-                            <div className="text-sm text-blue-600">Distributed</div>
-                        </div>
-                        <div className="text-center p-4 bg-purple-50 rounded-lg">
-                            <div className="text-2xl font-bold text-purple-600">{formatCurrency(remainingPrize)}</div>
-                            <div className="text-sm text-purple-600">Remaining</div>
-                        </div>
                     </div>
-                </CardContent>
-            </Card>
-
-            {/* Prize Distribution Controls */}
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <DollarSign className="h-5 w-5 text-green-600" />
-                            Prize Distribution
-                        </div>
-                        <div className="flex gap-2">
-                            {!isEditing ? (
-                                <Button onClick={() => setIsEditing(true)} variant="outline" size="sm">
-                                    <Edit className="h-4 w-4 mr-2" />
-                                    Edit Prizes
-                                </Button>
-                            ) : (
-                                <>
-                                    <Button onClick={handleSavePrizes} size="sm" disabled={updatePrizeDistributionMutation.isPending}>
-                                        <Save className="h-4 w-4 mr-2" />
-                                        {updatePrizeDistributionMutation.isPending ? 'Saving...' : 'Save'}
-                                    </Button>
-                                    <Button onClick={handleCancelEdit} variant="outline" size="sm">
-                                        <X className="h-4 w-4 mr-2" />
-                                        Cancel
-                                    </Button>
-                                </>
-                            )}
-                        </div>
-                    </CardTitle>
-                    <CardDescription>
-                        {isEditing
-                            ? "Edit prize amounts for each winner. Total cannot exceed the prize pool."
-                            : "Set up prize distribution for fastest kill winners"
-                        }
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    {remainingPrize < 0 && (
-                        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                            <p className="text-red-700 text-sm">
-                                ⚠️ Total prize distribution exceeds prize pool by {formatCurrency(Math.abs(remainingPrize))}
-                            </p>
-                        </div>
-                    )}
                 </CardContent>
             </Card>
 
@@ -456,12 +356,6 @@ const FastestKillWinnersTab = ({ eventId, eventType, formatCurrency }) => {
                                                     const seconds = (winner.matchTime % 60).toFixed(2)
                                                     return minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`
                                                 })()}
-                                            </span>
-                                        </div>
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-sm text-muted-foreground">Prize:</span>
-                                            <span className="font-bold text-lg text-green-700">
-                                                {formatCurrency(winner.prizeAmount)}
                                             </span>
                                         </div>
                                     </div>

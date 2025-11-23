@@ -160,18 +160,6 @@ export const createMatchResultColumns = (formatCurrency, formatDate, handleViewD
     )
   },
   {
-    key: 'totalBetPool',
-    label: 'Total Bet Pool',
-    sortable: true,
-    filterable: false,
-    render: (value) => (
-      <div className="flex items-center gap-1">
-        <Target className="h-4 w-4 text-green-600" />
-        <span className="font-medium">{formatCurrency(value)}</span>
-      </div>
-    )
-  },
-  {
     key: 'totalPlazada',
     label: 'Total Plazada',
     sortable: true,

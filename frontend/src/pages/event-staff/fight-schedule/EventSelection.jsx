@@ -91,13 +91,6 @@ const StaffEventSelection = () => {
     {
       key: 'status',
       label: 'Status',
-      sortable: true,
-      filterable: true,
-      filterOptions: ['Active', 'Completed'],
-      filterValueMap: {
-        'Active': 'active',
-        'Completed': 'completed',
-      },
       render: (value) => (
         <Badge
           variant={
@@ -179,7 +172,7 @@ const StaffEventSelection = () => {
 
   return (
     <PageLayout
-      title="Fight Schedule Management"
+      title="Betting Management"
       description="Select an event to manage fight schedules and match results"
       headerButton={
         <Button variant="outline" onClick={() => navigate('/bet-staff')}>

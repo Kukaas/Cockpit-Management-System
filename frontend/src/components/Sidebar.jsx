@@ -114,7 +114,7 @@ const SidebarComponent = () => {
 					base: [
 						...baseItems,
 						{
-							label: 'Fight Schedule',
+							label: 'Betting Management',
 							path: '/bet-staff/fight-schedule',
 							icon: <Swords className="size-4" />
 						}
