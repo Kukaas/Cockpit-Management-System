@@ -32,7 +32,7 @@ const CageAvailability = () => {
     arena: 'Buenavista Cockpit Arena',
     status: 'active',
     bulkCount: '1'
-  })
+  })  
 
   // Fetch cage availability records
   const { data: cagesData = [], refetch: refetchCages } = useGetAll('/cage-availability')

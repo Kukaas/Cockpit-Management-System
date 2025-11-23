@@ -78,7 +78,7 @@ const TangkalDashboard = () => {
 
   // Get events for filter
   const events = eventsData || []
-  const venues = ['Buenavista Cockpit Arena', 'Mogpog Cockpit Arena', 'Boac Cockpit Arena']
+  const venues = ['Buenavista Cockpit Arena']
 
   // Month options
   const months = [

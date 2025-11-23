@@ -291,8 +291,6 @@ const EventSelection = () => {
               >
                 <option value="">All Venues</option>
                 <option value="Buenavista Cockpit Arena">Buenavista Cockpit Arena</option>
-                <option value="Mogpog Cockpit Arena">Mogpog Cockpit Arena</option>
-                <option value="Boac Cockpit Arena">Boac Cockpit Arena</option>
               </NativeSelect>
             </div>
             <div className="flex items-end">

@@ -22,8 +22,6 @@ const CageAvailabilityForm = ({
 }) => {
   const arenaOptions = [
     'Buenavista Cockpit Arena',
-    'Mogpog Cockpit Arena',
-    'Boac Cockpit Arena'
   ]
 
   const statusOptions = [

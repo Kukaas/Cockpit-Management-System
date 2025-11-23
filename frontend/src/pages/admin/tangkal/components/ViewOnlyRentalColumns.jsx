@@ -37,9 +37,6 @@ export const createViewOnlyRentalColumns = (formatCurrency, formatDate, handleVi
   {
     key: 'arena',
     label: 'Arena',
-    sortable: true,
-    filterable: true,
-    filterOptions: ['Buenavista Cockpit Arena', 'Mogpog Cockpit Arena', 'Boac Cockpit Arena'],
     render: (value) => (
       <div className="flex items-center gap-1">
         <MapPin className="h-4 w-4 text-blue-600" />
