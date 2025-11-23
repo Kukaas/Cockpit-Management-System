@@ -16,10 +16,16 @@ export const useGetAll = (endpoint, options = {}) => {
   return useApiQuery(
     [endpoint],
     async () => {
+      if (!endpoint) {
+        return []
+      }
       const response = await api.get(endpoint)
       return response.data.data || response.data || []
     },
-    options
+    {
+      enabled: !!endpoint && (options.enabled !== false),
+      ...options,
+    }
   )
 }
 

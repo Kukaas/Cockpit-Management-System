@@ -87,6 +87,13 @@ const DetailsDialog = ({
                     <p className="mt-1 text-sm text-gray-900">{participant.email}</p>
                   </div>
                 )}
+
+                {participant.entryFee && participant.entryFee > 0 && (
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Entry Fee</label>
+                    <p className="mt-1 text-sm font-medium text-gray-900">{formatCurrency(participant.entryFee)}</p>
+                  </div>
+                )}
               </div>
             </div>
           ))}

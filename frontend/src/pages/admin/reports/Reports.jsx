@@ -110,7 +110,7 @@ const Reports = () => {
     return (
         <PageLayout
             title="Reports"
-            description="View financial reports for events - Rentals, Entrances, and Plazada"
+            description="View financial reports for events - Rentals, Entrances, Plazada, and Entry Fees"
             headerButton={
                 <Button variant="outline" onClick={() => navigate('/admin')}>
                     Back to Dashboard

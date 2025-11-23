@@ -58,6 +58,12 @@ const eventSchema = new mongoose.Schema({
         min: 0,
         default: 100
     },
+    entryFee: {
+        type: Number,
+        required: false,
+        min: 0,
+        default: null
+    },
     cageRentalFee: {
         type: Number,
         required: true,

@@ -56,6 +56,7 @@ const AdminDashboard = () => {
   const { data: matchResults = [] } = useGetAll('/match-results')
   const { data: cageRentals = [] } = useGetAll('/cage-rentals')
   const { data: entrances = [] } = useGetAll('/entrances')
+  const { data: participants = [] } = useGetAll('/participants')
 
   // Filter data based on selected filters
   const filteredEvents = events.filter(event => {
@@ -90,6 +91,13 @@ const AdminDashboard = () => {
     const entranceDate = new Date(entrance.createdAt)
     const matchesMonth = entranceDate.getMonth() === selectedMonth
     const matchesYear = entranceDate.getFullYear() === selectedYear
+    return matchesMonth && matchesYear
+  })
+
+  const filteredParticipants = participants.filter(participant => {
+    const eventDate = new Date(participant.eventID?.date)
+    const matchesMonth = eventDate.getMonth() === selectedMonth
+    const matchesYear = eventDate.getFullYear() === selectedYear
     return matchesMonth && matchesYear
   })
 
@@ -131,6 +139,10 @@ const AdminDashboard = () => {
     entranceRecords: filteredEntrances.length,
     // Calculate entrance revenue using dynamic entrance fees
     totalEntranceRevenue: filteredEntrances.reduce((sum, entrance) => sum + ((entrance.count || 0) * (entrance.eventID?.entranceFee || 0)), 0),
+
+    // Entry Fee Statistics
+    totalEntryFee: filteredParticipants.reduce((sum, participant) => sum + (participant.entryFee || 0), 0),
+    participantsWithEntryFee: filteredParticipants.filter(p => p.entryFee && p.entryFee > 0).length,
   }
 
   // Month options
@@ -169,7 +181,7 @@ const AdminDashboard = () => {
 
   // Generate chart data with time range filtering
   const generateRevenueData = () => {
-    if (!filteredMatchResults.length && !filteredCageRentals.length && !filteredEntrances.length) return []
+    if (!filteredMatchResults.length && !filteredCageRentals.length && !filteredEntrances.length && !filteredParticipants.length) return []
 
     const groupedByDate = {}
 
@@ -177,7 +189,7 @@ const AdminDashboard = () => {
     filteredMatchResults.forEach(result => {
       const date = new Date(result.createdAt).toISOString().split('T')[0]
       if (!groupedByDate[date]) {
-        groupedByDate[date] = { date, plazada: 0, rentals: 0, entrances: 0 }
+        groupedByDate[date] = { date, plazada: 0, rentals: 0, entrances: 0, entryFees: 0 }
       }
       groupedByDate[date].plazada += result.totalPlazada || 0
     })
@@ -186,7 +198,7 @@ const AdminDashboard = () => {
     filteredCageRentals.forEach(rental => {
       const date = new Date(rental.date).toISOString().split('T')[0]
       if (!groupedByDate[date]) {
-        groupedByDate[date] = { date, plazada: 0, rentals: 0, entrances: 0 }
+        groupedByDate[date] = { date, plazada: 0, rentals: 0, entrances: 0, entryFees: 0 }
       }
       groupedByDate[date].rentals += rental.totalPrice || 0
     })
@@ -195,10 +207,19 @@ const AdminDashboard = () => {
     filteredEntrances.forEach(entrance => {
       const date = new Date(entrance.createdAt).toISOString().split('T')[0]
       if (!groupedByDate[date]) {
-        groupedByDate[date] = { date, plazada: 0, rentals: 0, entrances: 0 }
+        groupedByDate[date] = { date, plazada: 0, rentals: 0, entrances: 0, entryFees: 0 }
       }
-      const entranceRevenue = (entrance.count || 0) * 50 // 50 PHP per entrance
+      const entranceRevenue = (entrance.count || 0) * (entrance.eventID?.entranceFee || 0)
       groupedByDate[date].entrances += entranceRevenue
+    })
+
+    // Add entry fee data
+    filteredParticipants.forEach(participant => {
+      const date = new Date(participant.createdAt || participant.registrationDate).toISOString().split('T')[0]
+      if (!groupedByDate[date]) {
+        groupedByDate[date] = { date, plazada: 0, rentals: 0, entrances: 0, entryFees: 0 }
+      }
+      groupedByDate[date].entryFees += participant.entryFee || 0
     })
 
     let allData = Object.values(groupedByDate).sort((a, b) => new Date(a.date) - new Date(b.date))
@@ -239,6 +260,10 @@ const AdminDashboard = () => {
     entrances: {
       label: "Entrances",
       color: "var(--chart-3)",
+    },
+    entryFees: {
+      label: "Entry Fees",
+      color: "var(--chart-4)",
     },
   }
 
@@ -385,10 +410,10 @@ const AdminDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-emerald-600">
-                {formatCurrency(stats.totalPlazada + stats.totalRentalRevenue + stats.totalEntranceRevenue)}
+                {formatCurrency(stats.totalPlazada + stats.totalRentalRevenue + stats.totalEntranceRevenue + stats.totalEntryFee)}
               </div>
               <p className="text-xs text-muted-foreground">
-                Plazada: {formatCurrency(stats.totalPlazada)} | Rentals: {formatCurrency(stats.totalRentalRevenue)} | Entrances: {formatCurrency(stats.totalEntranceRevenue)}
+                Plazada: {formatCurrency(stats.totalPlazada)} | Rentals: {formatCurrency(stats.totalRentalRevenue)} | Entrances: {formatCurrency(stats.totalEntranceRevenue)} | Entry Fees: {formatCurrency(stats.totalEntryFee)}
               </p>
             </CardContent>
           </Card>
@@ -404,7 +429,7 @@ const AdminDashboard = () => {
                 Revenue Overview
               </CardTitle>
               <CardDescription>
-                Plazada, rental, and entrance revenue over time
+                Plazada, rental, entrance, and entry fee revenue over time
               </CardDescription>
             </div>
             <Select value={timeRange} onValueChange={setTimeRange}>
@@ -469,6 +494,18 @@ const AdminDashboard = () => {
                         <stop
                           offset="95%"
                           stopColor="var(--color-entrances)"
+                          stopOpacity={0.1}
+                        />
+                      </linearGradient>
+                      <linearGradient id="fillEntryFees" x1="0" y1="0" x2="0" y2="1">
+                        <stop
+                          offset="5%"
+                          stopColor="var(--color-entryFees)"
+                          stopOpacity={0.8}
+                        />
+                        <stop
+                          offset="95%"
+                          stopColor="var(--color-entryFees)"
                           stopOpacity={0.1}
                         />
                       </linearGradient>
@@ -543,6 +580,16 @@ const AdminDashboard = () => {
                       strokeWidth={2.5}
                       connectNulls={true}
                       name="Entrances"
+                    />
+                    <Area
+                      dataKey="entryFees"
+                      type="monotone"
+                      fill="url(#fillEntryFees)"
+                      fillOpacity={0.6}
+                      stroke="var(--color-entryFees)"
+                      strokeWidth={2.5}
+                      connectNulls={true}
+                      name="Entry Fees"
                     />
                     <ChartLegend content={<ChartLegendContent />} />
                   </AreaChart>

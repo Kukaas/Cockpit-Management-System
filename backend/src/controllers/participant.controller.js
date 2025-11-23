@@ -49,13 +49,25 @@ export const registerParticipant = async (req, res) => {
       return res.status(400).json({ message: 'Participant is already registered for this event' });
     }
 
-
+    // Validate entryFee - required if event has entryFee
+    if (event.entryFee && event.entryFee > 0) {
+      if (!entryFee || entryFee === '' || isNaN(entryFee) || Number(entryFee) < 0) {
+        return res.status(400).json({
+          message: `Entry fee is required for this event. Expected amount: ${event.entryFee}`
+        });
+      }
+      if (Number(entryFee) !== event.entryFee) {
+        return res.status(400).json({
+          message: `Entry fee must be exactly ${event.entryFee}. Provided: ${entryFee}`
+        });
+      }
+    }
 
     const participant = new Participant({
       participantName,
       contactNumber,
       address,
-      entryFee: entryFee || 0,
+      entryFee: entryFee ? Number(entryFee) : 0,
       eventID,
       registeredBy
     });

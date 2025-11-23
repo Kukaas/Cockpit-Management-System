@@ -12,6 +12,7 @@ export const createEvent = async (req, res) => {
             noCockRequirements,
             registrationDeadline,
             entranceFee,
+            entryFee,
             cageRentalFee
         } = req.body;
 
@@ -28,7 +29,7 @@ export const createEvent = async (req, res) => {
 
         // Additional required fields for derby events
         if (eventType === 'derby') {
-            const additionalRequiredFields = ['prize', 'noCockRequirements', 'maxParticipants', 'registrationDeadline'];
+            const additionalRequiredFields = ['prize', 'noCockRequirements', 'registrationDeadline'];
             const missingAdditionalFields = additionalRequiredFields.filter(field => !req.body[field]);
 
             if (missingAdditionalFields.length > 0) {
@@ -72,6 +73,14 @@ export const createEvent = async (req, res) => {
             cageRentalFee: Number(cageRentalFee),
             registrationDeadline: registrationDeadline ? new Date(registrationDeadline) : null
         };
+
+        // Add entryFee if provided (optional)
+        if (entryFee !== undefined && entryFee !== null && entryFee !== '') {
+            eventData.entryFee = Number(entryFee);
+        } else {
+            // Explicitly set to null if not provided
+            eventData.entryFee = null;
+        }
 
         // Only add prize and noCockRequirements for derby events
         if (eventType === 'derby') {
@@ -264,6 +273,15 @@ export const updateEvent = async (req, res) => {
         if (updateData.noCockRequirements) updateData.noCockRequirements = Number(updateData.noCockRequirements);
         if (updateData.entranceFee) updateData.entranceFee = Number(updateData.entranceFee);
         if (updateData.cageRentalFee) updateData.cageRentalFee = Number(updateData.cageRentalFee);
+
+        // Handle entryFee - can be set, updated, or removed (set to null)
+        if (updateData.entryFee !== undefined) {
+            if (updateData.entryFee === '' || updateData.entryFee === null) {
+                updateData.entryFee = null;
+            } else {
+                updateData.entryFee = Number(updateData.entryFee);
+            }
+        }
 
         // For regular events, remove the fields that are not required
         if (eventType === 'regular') {

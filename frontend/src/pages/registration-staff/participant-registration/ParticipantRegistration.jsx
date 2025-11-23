@@ -52,6 +52,7 @@ const ParticipantRegistration = () => {
     participantName: '',
     contactNumber: '',
     address: '',
+    entryFee: '',
     cockProfiles: [{ legbandNumber: '', weight: '' }]
   })
 
@@ -255,6 +256,7 @@ const ParticipantRegistration = () => {
       participantName: '',
       contactNumber: '',
       address: '',
+      entryFee: selectedEvent?.entryFee && selectedEvent.entryFee > 0 ? selectedEvent.entryFee.toString() : '',
       cockProfiles: [{ legbandNumber: '', weight: '' }]
     })
   }
@@ -289,11 +291,28 @@ const ParticipantRegistration = () => {
       return
     }
 
+    // Validate entryFee if event has it
+    if (selectedEvent?.entryFee && selectedEvent.entryFee > 0) {
+      if (!participantFormData.entryFee || participantFormData.entryFee === '') {
+        toast.error(`Entry fee is required for this event (${selectedEvent.entryFee} PHP)`)
+        return
+      }
+      if (Number(participantFormData.entryFee) !== selectedEvent.entryFee) {
+        toast.error(`Entry fee must be exactly ${selectedEvent.entryFee} PHP`)
+        return
+      }
+    }
+
     const participantData = {
       participantName: participantFormData.participantName,
       contactNumber: participantFormData.contactNumber,
       address: participantFormData.address,
       eventID: eventId
+    }
+
+    // Add entryFee if provided
+    if (participantFormData.entryFee) {
+      participantData.entryFee = Number(participantFormData.entryFee)
     }
 
     createParticipantMutation.mutate(participantData)
@@ -308,6 +327,18 @@ const ParticipantRegistration = () => {
     if (missingFields.length > 0) {
       toast.error(`Please fill in all required fields: ${missingFields.join(', ')}`)
       return
+    }
+
+    // Validate entryFee if event has it
+    if (selectedEvent?.entryFee && selectedEvent.entryFee > 0) {
+      if (!participantFormData.entryFee || participantFormData.entryFee === '') {
+        toast.error(`Entry fee is required for this event (${selectedEvent.entryFee} PHP)`)
+        return
+      }
+      if (Number(participantFormData.entryFee) !== selectedEvent.entryFee) {
+        toast.error(`Entry fee must be exactly ${selectedEvent.entryFee} PHP`)
+        return
+      }
     }
 
     // Validate cock profiles
@@ -327,7 +358,26 @@ const ParticipantRegistration = () => {
       }
     }
 
+    // Validate cock requirements for derby events BEFORE creating participant
+    if (selectedEvent?.eventType === 'derby' && selectedEvent?.noCockRequirements && selectedEvent.noCockRequirements > 0) {
+      const cockProfilesCount = participantFormData.cockProfiles.length
+
+      // Check if exceeds the requirement
+      if (cockProfilesCount > selectedEvent.noCockRequirements) {
+        toast.error(`Cock requirement exceeded: This event requires exactly ${selectedEvent.noCockRequirements} cock(s) per participant. You are registering ${cockProfilesCount} cock(s). Maximum allowed: ${selectedEvent.noCockRequirements} cock(s).`)
+        return
+      }
+
+      // Check if requirement not yet met
+      if (cockProfilesCount < selectedEvent.noCockRequirements) {
+        toast.error(`Cock requirement not met: This event requires exactly ${selectedEvent.noCockRequirements} cock(s) per participant. You are registering ${cockProfilesCount} cock(s). Please register exactly ${selectedEvent.noCockRequirements} cock(s).`)
+        return
+      }
+    }
+
     setIsCreatingCombined(true)
+    let createdParticipantId = null
+
     try {
       // Step 1: Create participant
       const participantData = {
@@ -337,13 +387,18 @@ const ParticipantRegistration = () => {
         eventID: eventId
       }
 
+      // Add entryFee if provided
+      if (participantFormData.entryFee) {
+        participantData.entryFee = Number(participantFormData.entryFee)
+      }
+
       const participantResponse = await api.post('/participants', participantData)
-      const newParticipantId = participantResponse.data.data._id
+      createdParticipantId = participantResponse.data.data._id
 
       // Step 2: Create cock profiles for the new participant
       const bulkData = {
         eventID: eventId,
-        participantID: newParticipantId,
+        participantID: createdParticipantId,
         cockProfiles: participantFormData.cockProfiles.map(profile => ({
           legband: profile.legbandNumber, // Map legbandNumber to legband
           weight: profile.weight ? parseFloat(profile.weight) : undefined
@@ -360,6 +415,17 @@ const ParticipantRegistration = () => {
     } catch (error) {
       const errorMessage = error?.response?.data?.message || 'Failed to register participant and cock profiles'
       toast.error(errorMessage)
+
+      // If participant was created but cock profile creation failed, delete the participant
+      if (createdParticipantId) {
+        try {
+          await api.delete(`/participants/${createdParticipantId}`)
+          console.log('Participant deleted due to cock profile creation failure')
+        } catch (deleteError) {
+          console.error('Failed to delete participant after cock profile creation failure:', deleteError)
+          toast.error('Participant was created but cock profiles failed. Please delete the participant manually.')
+        }
+      }
     } finally {
       setIsCreatingCombined(false)
     }
@@ -831,6 +897,7 @@ const ParticipantRegistration = () => {
         participantColumns={participantColumns}
         cockProfileColumns={cockProfileColumns}
         onAddParticipant={() => setAddCombinedDialogOpen(true)}
+        onAddCockProfile={() => setAddCockProfileDialogOpen(true)}
         isEventCompleted={isEventCompleted}
         registrationDeadlinePassed={registrationDeadlinePassed}
         fights={fightsData}
@@ -851,6 +918,7 @@ const ParticipantRegistration = () => {
         onCancel={() => setAddCombinedDialogOpen(false)}
         isPending={isCreatingCombined}
         eventId={eventId}
+        event={selectedEvent}
       />
 
       {/* Add Cock Profile Dialog (for existing participants) */}
@@ -882,6 +950,7 @@ const ParticipantRegistration = () => {
         eventId={eventId}
         isEdit={true}
         participantData={selectedParticipant}
+        event={selectedEvent}
       />
 
       {/* Delete Participant Confirmation Dialog */}
@@ -1017,6 +1086,12 @@ const ParticipantRegistration = () => {
                       <p className="text-sm font-medium text-gray-600 mb-1">Registration Date</p>
                       <p className="text-gray-900">{formatDate(selectedItem.registrationDate)}</p>
                     </div>
+                    {selectedItem.entryFee && selectedItem.entryFee > 0 && (
+                      <div>
+                        <p className="text-sm font-medium text-gray-600 mb-1">Entry Fee</p>
+                        <p className="text-gray-900 font-medium">{formatCurrency(selectedItem.entryFee)}</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

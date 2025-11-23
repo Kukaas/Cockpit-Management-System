@@ -2,7 +2,7 @@ import PageLayout from '@/layouts/PageLayout'
 import React, { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Users, Target, Filter, Award, Activity } from 'lucide-react'
+import { Users, Target, Filter, Award, Activity, DollarSign } from 'lucide-react'
 import { useGetAll } from '@/hooks/useApiQueries'
 import NativeSelect from '@/components/custom/NativeSelect'
 import { RegistrationChart } from './components/RegistrationChart'
@@ -11,7 +11,6 @@ const RegistrationDashboard = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth())
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const [selectedEvent, setSelectedEvent] = useState('')
-  const [selectedVenue, setSelectedVenue] = useState('')
 
   // Fetch data with filters
   const { data: participantsData } = useGetAll('/participants')
@@ -24,9 +23,8 @@ const RegistrationDashboard = () => {
     const matchesMonth = eventDate.getMonth() === selectedMonth
     const matchesYear = eventDate.getFullYear() === selectedYear
     const matchesEvent = !selectedEvent || participant.eventID?._id === selectedEvent
-    const matchesVenue = !selectedVenue || participant.eventID?.location === selectedVenue
 
-    return matchesMonth && matchesYear && matchesEvent && matchesVenue
+    return matchesMonth && matchesYear && matchesEvent
   }) || []
 
   const filteredCockProfiles = cockProfilesData?.filter(profile => {
@@ -34,9 +32,8 @@ const RegistrationDashboard = () => {
     const matchesMonth = eventDate.getMonth() === selectedMonth
     const matchesYear = eventDate.getFullYear() === selectedYear
     const matchesEvent = !selectedEvent || profile.eventID?._id === selectedEvent
-    const matchesVenue = !selectedVenue || profile.eventID?.location === selectedVenue
 
-    return matchesMonth && matchesYear && matchesEvent && matchesVenue
+    return matchesMonth && matchesYear && matchesEvent
   }) || []
 
   // Calculate filtered statistics
@@ -50,11 +47,10 @@ const RegistrationDashboard = () => {
     foughtCockProfiles: filteredCockProfiles.filter(c => c.status === 'fought').length,
     scheduledCockProfiles: filteredCockProfiles.filter(c => c.status === 'scheduled').length,
     derbyEvents: filteredCockProfiles.filter(c => c.eventID?.eventType === 'derby').length,
-    regularEvents: filteredCockProfiles.filter(c => c.eventID?.eventType === 'regular').length
+    regularEvents: filteredCockProfiles.filter(c => c.eventID?.eventType === 'regular').length,
+    totalEntryFee: filteredParticipants.reduce((sum, participant) => sum + (participant.entryFee || 0), 0)
   }
 
-  // Get unique venues from events
-  const venues = eventsData ? [...new Set(eventsData.map(event => event.location).filter(Boolean))] : []
 
   // Month options
   const months = [
@@ -84,12 +80,18 @@ const RegistrationDashboard = () => {
     })
   }
 
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-PH', {
+      style: 'currency',
+      currency: 'PHP'
+    }).format(amount)
+  }
+
   // Reset filters
   const resetFilters = () => {
     setSelectedMonth(new Date().getMonth())
     setSelectedYear(new Date().getFullYear())
     setSelectedEvent('')
-    setSelectedVenue('')
   }
 
   return (
@@ -111,11 +113,11 @@ const RegistrationDashboard = () => {
               </Button>
             </div>
             <CardDescription>
-              Filter dashboard data by month, year, event, and venue
+              Filter dashboard data by month, year, and event
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Month</label>
                 <NativeSelect
@@ -158,22 +160,23 @@ const RegistrationDashboard = () => {
                   ))}
                 </NativeSelect>
               </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Venue</label>
-                <NativeSelect
-                  value={selectedVenue}
-                  onChange={(e) => setSelectedVenue(e.target.value)}
-                >
-                  <option value="">All Venues</option>
-                  {venues.map((venue) => (
-                    <option key={venue} value={venue}>
-                      {venue}
-                    </option>
-                  ))}
-                </NativeSelect>
-              </div>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Entry Fee Statistics */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Entry Fee Collected</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-600">
+              {formatCurrency(filteredStats.totalEntryFee)}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              From {filteredStats.totalParticipants} participants
+            </p>
           </CardContent>
         </Card>
 

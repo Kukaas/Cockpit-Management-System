@@ -40,7 +40,7 @@ export const createCockProfile = async (req, res) => {
       const currentCount = await CockProfile.countDocuments({ eventID, participantID });
       if (currentCount >= event.noCockRequirements) {
         return res.status(400).json({
-          message: `Limit reached: Participant may register up to ${event.noCockRequirements} cocks for this event`
+          message: `Limit reached: Participant may register up to ${event.noCockRequirements} cock(s) for this event. Currently registered: ${currentCount}`
         });
       }
     }
@@ -134,13 +134,30 @@ export const createBulkCockProfiles = async (req, res) => {
       }
     }
 
-    // Enforce per-participant cock limit for derby events
+    // Enforce per-participant cock requirement for derby events
     if (event.eventType === 'derby' && typeof event.noCockRequirements === 'number' && event.noCockRequirements > 0) {
       const currentCount = await CockProfile.countDocuments({ eventID, participantID });
       const newTotal = currentCount + cockProfiles.length;
+
+      // Check if exceeds the requirement
       if (newTotal > event.noCockRequirements) {
         return res.status(400).json({
-          message: `Limit exceeded: Participant may register up to ${event.noCockRequirements} cocks for this event. Currently registered: ${currentCount}, attempting to add: ${cockProfiles.length}`
+          message: `Cock requirement exceeded: This event requires exactly ${event.noCockRequirements} cock(s) per participant. Currently registered: ${currentCount}, attempting to add: ${cockProfiles.length}. Total would be: ${newTotal}. Maximum allowed: ${event.noCockRequirements} cock(s).`
+        });
+      }
+
+      // Check if requirement not yet met
+      // For new registrations (currentCount === 0), must register exactly the required number
+      if (currentCount === 0 && cockProfiles.length < event.noCockRequirements) {
+        return res.status(400).json({
+          message: `Cock requirement not met: This event requires exactly ${event.noCockRequirements} cock(s) per participant. You are registering ${cockProfiles.length} cock(s). Please register exactly ${event.noCockRequirements} cock(s).`
+        });
+      }
+
+      // If participant already has some cocks, check if adding these would meet the requirement
+      if (currentCount > 0 && newTotal < event.noCockRequirements) {
+        return res.status(400).json({
+          message: `Cock requirement not met: This event requires exactly ${event.noCockRequirements} cock(s) per participant. Currently registered: ${currentCount}, attempting to add: ${cockProfiles.length}. Total would be: ${newTotal}. Please register ${event.noCockRequirements - currentCount} more cock(s) to meet the requirement.`
         });
       }
     }

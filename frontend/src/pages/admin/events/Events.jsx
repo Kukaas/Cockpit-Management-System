@@ -32,6 +32,7 @@ const Events = () => {
     noCockRequirements: '',
     registrationDeadline: '',
     entranceFee: '',
+    entryFee: '',
     cageRentalFee: ''
   })
   const [editFormData, setEditFormData] = useState({
@@ -43,6 +44,7 @@ const Events = () => {
     noCockRequirements: '',
     registrationDeadline: '',
     entranceFee: '',
+    entryFee: '',
     cageRentalFee: ''
   })
 
@@ -169,6 +171,9 @@ const Events = () => {
 
     // Validate numeric fields
     const numericFields = ['entranceFee', 'cageRentalFee']
+    if (formData.entryFee) {
+      numericFields.push('entryFee')
+    }
     if (formData.eventType === 'derby') {
       numericFields.push('prize', 'noCockRequirements')
     }
@@ -177,7 +182,7 @@ const Events = () => {
     }
 
     for (const field of numericFields) {
-      if (isNaN(formData[field]) || Number(formData[field]) < 0) {
+      if (formData[field] && (isNaN(formData[field]) || Number(formData[field]) < 0)) {
         toast.error(`${field} must be a valid positive number`)
         return
       }
@@ -185,6 +190,13 @@ const Events = () => {
 
     // Prepare data for create - remove fields that shouldn't be sent for regular events
     const createData = { ...formData }
+
+    // Handle entryFee - convert to number if provided, otherwise set to null
+    if (createData.entryFee && createData.entryFee !== '') {
+      createData.entryFee = Number(createData.entryFee)
+    } else {
+      createData.entryFee = null
+    }
 
     // For regular events, remove the fields that are not required
     if (formData.eventType === 'regular') {
@@ -239,6 +251,9 @@ const Events = () => {
 
     // Validate numeric fields
     const numericFields = ['entranceFee', 'cageRentalFee']
+    if (editFormData.entryFee) {
+      numericFields.push('entryFee')
+    }
     if (editFormData.eventType === 'derby') {
       numericFields.push('prize', 'noCockRequirements')
     }
@@ -247,7 +262,7 @@ const Events = () => {
     }
 
     for (const field of numericFields) {
-      if (isNaN(editFormData[field]) || Number(editFormData[field]) < 0) {
+      if (editFormData[field] && (isNaN(editFormData[field]) || Number(editFormData[field]) < 0)) {
         toast.error(`${field} must be a valid positive number`)
         return
       }
@@ -255,6 +270,13 @@ const Events = () => {
 
     // Prepare data for update - remove fields that shouldn't be sent for regular events
     const updateData = { ...editFormData }
+
+    // Handle entryFee - convert to number if provided, otherwise set to null
+    if (updateData.entryFee && updateData.entryFee !== '') {
+      updateData.entryFee = Number(updateData.entryFee)
+    } else {
+      updateData.entryFee = null
+    }
 
     // For regular events, remove the fields that are not required
     if (editFormData.eventType === 'regular') {
@@ -286,7 +308,8 @@ const Events = () => {
       eventType: '',
       noCockRequirements: '',
       registrationDeadline: '',
-      entranceFee: ''
+      entranceFee: '',
+      entryFee: ''
     })
   }
 
@@ -299,7 +322,8 @@ const Events = () => {
       eventType: '',
       noCockRequirements: '',
       registrationDeadline: '',
-      entranceFee: ''
+      entranceFee: '',
+      entryFee: ''
     })
   }
 
@@ -388,6 +412,7 @@ const Events = () => {
       noCockRequirements: event.noCockRequirements ? event.noCockRequirements.toString() : '',
       registrationDeadline: event.registrationDeadline ? new Date(event.registrationDeadline).toISOString().slice(0, 16) : '',
       entranceFee: event.entranceFee ? event.entranceFee.toString() : '',
+      entryFee: event.entryFee ? event.entryFee.toString() : '',
       cageRentalFee: event.cageRentalFee ? event.cageRentalFee.toString() : ''
     })
     setEditEventDialogOpen(true)

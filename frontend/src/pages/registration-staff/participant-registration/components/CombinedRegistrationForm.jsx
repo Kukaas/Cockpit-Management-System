@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import CustomAlertDialog from '@/components/custom/CustomAlertDialog'
 import InputField from '@/components/custom/InputField'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, DollarSign } from 'lucide-react'
 import { useGetById, useGetAll } from '@/hooks/useApiQueries'
 
 const CombinedRegistrationForm = ({
@@ -18,22 +18,33 @@ const CombinedRegistrationForm = ({
   isPending,
   eventId,
   isEdit = false,
-  participantData = null // For edit mode - the participant being edited
+  participantData = null, // For edit mode - the participant being edited
+  event = null // Pass event as prop to avoid duplicate fetching
 }) => {
   const [cockProfiles, setCockProfiles] = useState([{ legbandNumber: '', weight: '' }])
+  const entryFeeSetRef = useRef(false)
 
-  // Fetch event details to check event type
-  const { data: event } = useGetById('/events', eventId)
+  // Fetch event details to check event type (fallback if not passed as prop)
+  const { data: fetchedEvent } = useGetById('/events', eventId, {
+    enabled: !!eventId && !event
+  })
+
+  // Use passed event prop if available, otherwise use fetched event
+  const eventData = event || fetchedEvent
 
   // Fetch existing cock profiles to determine next entry number
-  const { data: cockProfilesData = [] } = useGetAll(`/cock-profiles?eventID=${eventId}`)
+  const { data: cockProfilesData = [] } = useGetAll(
+    eventId ? `/cock-profiles?eventID=${eventId}` : null,
+    { enabled: !!eventId }
+  )
   const existingCockProfiles = cockProfilesData || []
 
   // Fetch participant's cock profiles for edit mode
   const { data: participantCockProfilesData = [] } = useGetAll(
-    isEdit && participantData?._id
+    isEdit && participantData?._id && eventId
       ? `/cock-profiles?eventID=${eventId}&participantID=${participantData._id}`
-      : null
+      : null,
+    { enabled: !!(isEdit && participantData?._id && eventId) }
   )
   const participantCockProfiles = participantCockProfilesData || []
 
@@ -45,6 +56,9 @@ const CombinedRegistrationForm = ({
   // Reset form when dialog opens/closes
   useEffect(() => {
     if (open) {
+      // Reset the ref when dialog opens
+      entryFeeSetRef.current = false
+
       if (isEdit && participantData && participantCockProfiles.length > 0) {
         // Load existing cock profiles for edit mode
         const existingProfiles = participantCockProfiles.map(cp => ({
@@ -57,8 +71,24 @@ const CombinedRegistrationForm = ({
       } else {
         setCockProfiles([{ legbandNumber: '', weight: '' }])
       }
+    } else {
+      // Reset ref when dialog closes
+      entryFeeSetRef.current = false
     }
   }, [open, isEdit, participantData, participantCockProfiles.length])
+
+  // Set default entryFee from event if available (separate effect to avoid infinite loop)
+  useEffect(() => {
+    if (open && !isEdit && eventData?.entryFee && eventData.entryFee > 0 && !entryFeeSetRef.current) {
+      const entryFeeValue = eventData.entryFee.toString()
+      // Only set if the current value is different
+      if (formData.entryFee !== entryFeeValue) {
+        onInputChange('entryFee', entryFeeValue)
+        entryFeeSetRef.current = true
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, isEdit, eventData?.entryFee])
 
   // Update formData when cockProfiles changes
   useEffect(() => {
@@ -144,6 +174,24 @@ const CombinedRegistrationForm = ({
             placeholder="Enter address"
             required
           />
+
+          {/* Entry Fee - Required if event has entryFee (Read-only) */}
+          {eventData?.entryFee && eventData.entryFee > 0 && (
+            <InputField
+              id="entryFee"
+              label={`Entry Fee (PHP) *`}
+              icon={DollarSign}
+              type="number"
+              value={formData.entryFee || eventData.entryFee.toString()}
+              onChange={(e) => onInputChange('entryFee', e.target.value)}
+              placeholder={`Entry fee: ${eventData.entryFee} PHP`}
+              min="0"
+              step="0.01"
+              required
+              disabled
+              className="bg-muted cursor-not-allowed"
+            />
+          )}
         </div>
 
         {/* Cock Profile Information Form */}
@@ -192,7 +240,7 @@ const CombinedRegistrationForm = ({
               </div>
 
               {/* Derby Event Fields */}
-              {event?.eventType === 'derby' && (
+              {eventData?.eventType === 'derby' && (
                 <>
                   <InputField
                     id={`legbandNumber-${index}`}

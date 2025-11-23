@@ -1,9 +1,10 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Building2, Users, DollarSign } from 'lucide-react'
+import { Building2, Users, DollarSign, Ticket } from 'lucide-react'
 import RentalsReportTab from './RentalsReportTab'
 import EntrancesReportTab from './EntrancesReportTab'
 import PlazadaReportTab from './PlazadaReportTab'
+import EntryFeesReportTab from './EntryFeesReportTab'
 
 const ReportTabs = ({
     activeTab,
@@ -12,9 +13,19 @@ const ReportTabs = ({
     formatCurrency,
     formatDate
 }) => {
+    // Check if event has entry fee
+    const hasEntryFee = event?.entryFee && event.entryFee > 0
+
+    // If active tab is entry-fees but event doesn't have entry fee, switch to rentals
+    useEffect(() => {
+        if (activeTab === 'entry-fees' && !hasEntryFee) {
+            setActiveTab('rentals')
+        }
+    }, [activeTab, hasEntryFee, setActiveTab])
+
     return (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className={`grid w-full ${hasEntryFee ? 'grid-cols-4' : 'grid-cols-3'}`}>
                 <TabsTrigger value="rentals" className="flex items-center gap-2">
                     <Building2 className="h-4 w-4" />
                     Rentals
@@ -27,6 +38,12 @@ const ReportTabs = ({
                     <DollarSign className="h-4 w-4" />
                     Plazada
                 </TabsTrigger>
+                {hasEntryFee && (
+                    <TabsTrigger value="entry-fees" className="flex items-center gap-2">
+                        <Ticket className="h-4 w-4" />
+                        Entry Fees
+                    </TabsTrigger>
+                )}
             </TabsList>
 
             <TabsContent value="rentals" className="space-y-4">
@@ -52,6 +69,16 @@ const ReportTabs = ({
                     formatDate={formatDate}
                 />
             </TabsContent>
+
+            {hasEntryFee && (
+                <TabsContent value="entry-fees" className="space-y-4">
+                    <EntryFeesReportTab
+                        event={event}
+                        formatCurrency={formatCurrency}
+                        formatDate={formatDate}
+                    />
+                </TabsContent>
+            )}
         </Tabs>
     )
 }

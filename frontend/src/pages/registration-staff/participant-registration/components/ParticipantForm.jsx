@@ -2,6 +2,7 @@ import React from 'react'
 import { Button } from '@/components/ui/button'
 import CustomAlertDialog from '@/components/custom/CustomAlertDialog'
 import InputField from '@/components/custom/InputField'
+import { DollarSign } from 'lucide-react'
 
 const ParticipantForm = ({
   open,
@@ -13,7 +14,8 @@ const ParticipantForm = ({
   onSubmit,
   onCancel,
   isPending,
-  isEdit = false
+  isEdit = false,
+  event = null
 }) => {
   return (
     <CustomAlertDialog
@@ -62,6 +64,24 @@ const ParticipantForm = ({
             placeholder="Enter address"
             required
           />
+
+          {/* Entry Fee - Required if event has entryFee (Read-only) */}
+          {event?.entryFee && event.entryFee > 0 && (
+            <InputField
+              id={isEdit ? "editEntryFee" : "entryFee"}
+              label={`Entry Fee (PHP) *`}
+              icon={DollarSign}
+              type="number"
+              value={formData.entryFee || event.entryFee.toString()}
+              onChange={(e) => onInputChange('entryFee', e.target.value)}
+              placeholder={`Entry fee: ${event.entryFee} PHP`}
+              min="0"
+              step="0.01"
+              required
+              disabled
+              className="bg-muted cursor-not-allowed"
+            />
+          )}
         </div>
       </div>
     </CustomAlertDialog>

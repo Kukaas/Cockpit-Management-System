@@ -99,8 +99,8 @@ const EventDetailsCard = ({ event, formatDate, formatCurrency }) => {
             <Badge
               variant={
                 event.status === 'active' ? 'default' :
-                event.status === 'completed' ? 'secondary' :
-                event.status === 'cancelled' ? 'destructive' : 'outline'
+                  event.status === 'completed' ? 'secondary' :
+                    event.status === 'cancelled' ? 'destructive' : 'outline'
               }
               className="capitalize"
             >
@@ -148,6 +148,17 @@ const EventDetailsCard = ({ event, formatDate, formatCurrency }) => {
               <p className="flex items-center gap-1">
                 <Clock className="h-4 w-4" />
                 {formatDate(event.registrationDeadline)}
+              </p>
+            </div>
+          )}
+
+          {/* Entry Fee - Optional */}
+          {event.entryFee && event.entryFee > 0 && (
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground">Entry Fee</p>
+              <p className="flex items-center gap-1">
+                <DollarSign className="h-4 w-4 text-blue-600" />
+                <span className="font-semibold text-blue-700">{formatCurrency(event.entryFee)}</span>
               </p>
             </div>
           )}
