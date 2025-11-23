@@ -116,7 +116,7 @@ export const getAllParticipants = async (req, res) => {
     }
 
     const participants = await Participant.find(query)
-      .populate('eventID', 'eventName date location')
+      .populate('eventID', 'eventName date location eventType')
       .populate('registeredBy', 'username')
       .sort({ registrationDate: -1 });
 
@@ -133,7 +133,7 @@ export const getParticipantById = async (req, res) => {
   try {
     const { id } = req.params;
     const participant = await Participant.findById(id)
-      .populate('eventID', 'eventName date location')
+      .populate('eventID', 'eventName date location eventType')
       .populate('registeredBy', 'username');
 
     if (!participant) {
@@ -270,7 +270,7 @@ export const getParticipantsByEvent = async (req, res) => {
     }
 
     const participants = await Participant.find(query)
-      .populate('eventID', 'eventName date location')
+      .populate('eventID', 'eventName date location eventType')
       .populate('registeredBy', 'username')
       .sort({ registrationDate: -1 });
 

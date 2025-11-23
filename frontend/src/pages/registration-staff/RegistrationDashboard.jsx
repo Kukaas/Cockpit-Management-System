@@ -10,30 +10,49 @@ import { RegistrationChart } from './components/RegistrationChart'
 const RegistrationDashboard = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth())
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
-  const [selectedEvent, setSelectedEvent] = useState('')
+  const [selectedEventType, setSelectedEventType] = useState('')
 
   // Fetch data with filters
   const { data: participantsData } = useGetAll('/participants')
   const { data: cockProfilesData } = useGetAll('/cock-profiles')
-  const { data: eventsData } = useGetAll('/events?status=active')
 
   // Filter data based on selected filters
   const filteredParticipants = participantsData?.filter(participant => {
-    const eventDate = new Date(participant.eventID?.date)
+    // Check if eventID exists and is populated
+    if (!participant.eventID) return false
+
+    // Handle both object and string ID cases
+    const event = typeof participant.eventID === 'object' ? participant.eventID : null
+    if (!event || !event.date) return false
+
+    const eventDate = new Date(event.date)
+    // Check if date is valid
+    if (isNaN(eventDate.getTime())) return false
+
     const matchesMonth = eventDate.getMonth() === selectedMonth
     const matchesYear = eventDate.getFullYear() === selectedYear
-    const matchesEvent = !selectedEvent || participant.eventID?._id === selectedEvent
+    const matchesEventType = !selectedEventType || event.eventType === selectedEventType
 
-    return matchesMonth && matchesYear && matchesEvent
+    return matchesMonth && matchesYear && matchesEventType
   }) || []
 
   const filteredCockProfiles = cockProfilesData?.filter(profile => {
-    const eventDate = new Date(profile.eventID?.date)
+    // Check if eventID exists and is populated
+    if (!profile.eventID) return false
+
+    // Handle both object and string ID cases
+    const event = typeof profile.eventID === 'object' ? profile.eventID : null
+    if (!event || !event.date) return false
+
+    const eventDate = new Date(event.date)
+    // Check if date is valid
+    if (isNaN(eventDate.getTime())) return false
+
     const matchesMonth = eventDate.getMonth() === selectedMonth
     const matchesYear = eventDate.getFullYear() === selectedYear
-    const matchesEvent = !selectedEvent || profile.eventID?._id === selectedEvent
+    const matchesEventType = !selectedEventType || event.eventType === selectedEventType
 
-    return matchesMonth && matchesYear && matchesEvent
+    return matchesMonth && matchesYear && matchesEventType
   }) || []
 
   // Calculate filtered statistics
@@ -72,13 +91,13 @@ const RegistrationDashboard = () => {
   const currentYear = new Date().getFullYear()
   const years = [currentYear - 2, currentYear - 1, currentYear, currentYear + 1]
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    })
-  }
+  // Event type options based on event model
+  const eventTypes = [
+    { value: '', label: 'All Event Types' },
+    { value: 'regular', label: 'Regular' },
+    { value: 'derby', label: 'Derby' },
+    { value: 'fastest_kill', label: 'Fastest Kill' }
+  ]
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-PH', {
@@ -91,13 +110,13 @@ const RegistrationDashboard = () => {
   const resetFilters = () => {
     setSelectedMonth(new Date().getMonth())
     setSelectedYear(new Date().getFullYear())
-    setSelectedEvent('')
+    setSelectedEventType('')
   }
 
   return (
     <PageLayout
       title="Registration Staff Dashboard"
-      description="Manage participant registrations and cock profiles"
+      description="Manage participant registrations, cock profiles and fight schedules"
     >
       <div className="space-y-6">
         {/* Filters Section */}
@@ -113,7 +132,7 @@ const RegistrationDashboard = () => {
               </Button>
             </div>
             <CardDescription>
-              Filter dashboard data by month, year, and event
+              Filter dashboard data by month, year, and event type
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -147,15 +166,14 @@ const RegistrationDashboard = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Event</label>
+                <label className="text-sm font-medium">Event Type</label>
                 <NativeSelect
-                  value={selectedEvent}
-                  onChange={(e) => setSelectedEvent(e.target.value)}
+                  value={selectedEventType}
+                  onChange={(e) => setSelectedEventType(e.target.value)}
                 >
-                  <option value="">All Events</option>
-                  {eventsData?.map((event) => (
-                    <option key={event._id} value={event._id}>
-                      {event.eventName} - {formatDate(event.date)}
+                  {eventTypes.map((type) => (
+                    <option key={type.value} value={type.value}>
+                      {type.label}
                     </option>
                   ))}
                 </NativeSelect>
