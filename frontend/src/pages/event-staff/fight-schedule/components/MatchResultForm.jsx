@@ -71,15 +71,22 @@ const MatchResultForm = ({
 
     if (!participantBet || !otherBet) return null
 
-    // Use saved position if available (from edit mode)
-    if (participantBet.position) return participantBet.position
+    // Check if both bets have valid amounts (not empty strings)
+    const betAmount1 = participantBet.betAmount === '' ? null : (participantBet.betAmount || 0)
+    const betAmount2 = otherBet.betAmount === '' ? null : (otherBet.betAmount || 0)
 
-    // Calculate from bet amounts if position not saved
-    const betAmount1 = participantBet.betAmount || 0
-    const betAmount2 = otherBet.betAmount || 0
+    // Return null if either bet amount is empty
+    if (betAmount1 === null || betAmount2 === null) return null
 
+    // Always calculate from current bet amounts to ensure correctness
+    // Meron has the higher bet, Wala has the lower bet
     if (betAmount1 > betAmount2) return 'Meron'
     if (betAmount1 < betAmount2) return 'Wala'
+
+    // If amounts are equal, use saved position if available, otherwise return null
+    if (betAmount1 === betAmount2 && participantBet.position) {
+      return participantBet.position
+    }
 
     return null
   }
@@ -90,18 +97,28 @@ const MatchResultForm = ({
 
     const [bet1, bet2] = participantBets
 
+    // Check if both bets have valid amounts (not empty strings)
+    const bet1Amount = bet1.betAmount === '' ? null : (bet1.betAmount || 0)
+    const bet2Amount = bet2.betAmount === '' ? null : (bet2.betAmount || 0)
+
+    // Return null if either bet amount is empty
+    if (bet1Amount === null || bet2Amount === null) return null
+
     // Use saved position if available (from edit mode), otherwise calculate from bet amounts
     let meronBet, walaBet
-    if (bet1.position === 'Meron' || bet2.position === 'Wala') {
+    if (bet1.position === 'Meron' || bet2.position === 'Meron') {
+      // If position is saved, use it
       meronBet = bet1.position === 'Meron' ? bet1 : bet2
+      walaBet = bet1.position === 'Meron' ? bet2 : bet1
+    } else if (bet1.position === 'Wala' || bet2.position === 'Wala') {
+      // If position is saved, use it
       walaBet = bet1.position === 'Wala' ? bet1 : bet2
-    } else if (bet1.position === 'Wala' || bet2.position === 'Meron') {
-      meronBet = bet1.position === 'Meron' ? bet1 : bet2
-      walaBet = bet1.position === 'Wala' ? bet1 : bet2
+      meronBet = bet1.position === 'Wala' ? bet2 : bet1
     } else {
       // Calculate from bet amounts if position not saved
-      meronBet = bet1.betAmount > bet2.betAmount ? bet1 : bet2
-      walaBet = bet1.betAmount > bet2.betAmount ? bet2 : bet1
+      // Meron has the higher bet, Wala has the lower bet
+      meronBet = bet1Amount > bet2Amount ? bet1 : bet2
+      walaBet = bet1Amount > bet2Amount ? bet2 : bet1
     }
 
     const gap = Math.max(0, (meronBet.betAmount || 0) - (walaBet.betAmount || 0)) // Outside bets only exist when Meron > Wala
@@ -303,7 +320,9 @@ const MatchResultForm = ({
                       return betParticipantId === participantId || betParticipantId?.toString() === participantId?.toString()
                     })
 
-                    const newBetAmount = parseFloat(e.target.value) || 0
+                    // Allow empty string, only convert to number when value exists
+                    const inputValue = e.target.value
+                    const newBetAmount = inputValue === '' ? '' : (parseFloat(inputValue) || 0)
                     const betData = {
                       participantID: participant._id,
                       betAmount: newBetAmount,
@@ -316,19 +335,42 @@ const MatchResultForm = ({
                       newBets.push(betData)
                     }
 
-                    // Calculate position if not already set (when both bets are entered)
-                    if (newBets.length === 2 && newBets.every(bet => bet.betAmount > 0)) {
-                      const [bet1, bet2] = newBets
-                      // Only calculate if position not already saved
-                      if (!bet1.position && !bet2.position) {
-                        if (bet1.betAmount > bet2.betAmount) {
-                          bet1.position = 'Meron'
-                          bet2.position = 'Wala'
-                        } else if (bet2.betAmount > bet1.betAmount) {
-                          bet2.position = 'Meron'
-                          bet1.position = 'Wala'
-                        }
+                    // Always recalculate position from current bet amounts (when both bets are entered)
+                    // Meron has the higher bet, Wala has the lower bet
+                    // Only calculate if both bets have valid numbers (not empty strings)
+                    const validBets = newBets.filter(bet => bet.betAmount !== '' && bet.betAmount > 0)
+                    if (validBets.length === 2) {
+                      const [bet1, bet2] = validBets
+                      // Always recalculate to ensure positions match current bet amounts
+                      if (bet1.betAmount > bet2.betAmount) {
+                        bet1.position = 'Meron'
+                        bet2.position = 'Wala'
+                      } else if (bet2.betAmount > bet1.betAmount) {
+                        bet2.position = 'Meron'
+                        bet1.position = 'Wala'
+                      } else {
+                        // If amounts are equal, clear positions
+                        bet1.position = undefined
+                        bet2.position = undefined
                       }
+                      // Update positions in the full newBets array
+                      newBets.forEach(bet => {
+                        const validBet = validBets.find(vb => {
+                          const betId = bet?.participantID?._id || bet?.participantID
+                          const validBetId = vb?.participantID?._id || vb?.participantID
+                          return betId === validBetId || betId?.toString() === validBetId?.toString()
+                        })
+                        if (validBet) {
+                          bet.position = validBet.position
+                        } else {
+                          bet.position = undefined
+                        }
+                      })
+                    } else {
+                      // Clear positions if not both bets are valid
+                      newBets.forEach(bet => {
+                        bet.position = undefined
+                      })
                     }
 
                     onInputChange('participantBets', newBets)
