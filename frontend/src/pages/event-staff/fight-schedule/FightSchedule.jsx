@@ -69,6 +69,9 @@ const FightSchedule = () => {
   // Fetch match results for this event
   const { data: resultsData = [], refetch: refetchResults } = useGetAll(`/match-results/event/${eventId}`)
 
+  // Calculate total plazada for this event from match results
+  const totalPlazada = resultsData?.reduce((sum, result) => sum + (result.totalPlazada || 0), 0) || 0
+
   // Fetch available participants and their active cock profiles for this event
   const { data: availableData = {} } = useGetAll(`/fight-schedules/event/${eventId}/available-participants`)
   const participantsData = availableData.participants || []
@@ -441,6 +444,7 @@ const FightSchedule = () => {
         event={event}
         formatDate={formatDate}
         formatCurrency={formatCurrency}
+        totalPlazada={totalPlazada}
       />
 
       {/* Fight and Results Tabs */}

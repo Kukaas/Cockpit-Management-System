@@ -2,9 +2,9 @@ import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { Calendar, MapPin, DollarSign, Users, Clock, Award, Building } from 'lucide-react'
+import { Calendar, MapPin, DollarSign, Users, Clock, Award, Building, TrendingUp } from 'lucide-react'
 
-const EventDetailsCard = ({ event, formatDate, formatCurrency }) => {
+const EventDetailsCard = ({ event, formatDate, formatCurrency, totalPlazada = 0 }) => {
   // Helper function to get badge variant based on event type
   const getEventTypeBadgeVariant = (eventType) => {
     switch (eventType) {
@@ -78,7 +78,7 @@ const EventDetailsCard = ({ event, formatDate, formatCurrency }) => {
           </div> */}
         </div>
         <Separator className="my-4" />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Event Type with proper styling */}
           <div className="space-y-1">
             <p className="text-sm font-medium text-muted-foreground">Event Type</p>
@@ -106,6 +106,15 @@ const EventDetailsCard = ({ event, formatDate, formatCurrency }) => {
             >
               {event.status}
             </Badge>
+          </div>
+
+          {/* Total Plazada */}
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-muted-foreground">Total Plazada</p>
+            <p className="flex items-center gap-1">
+              <TrendingUp className="h-4 w-4 text-emerald-600" />
+              <span className="font-semibold text-emerald-700">{formatCurrency(totalPlazada)}</span>
+            </p>
           </div>
 
           {/* Show Cock Requirements only for derby events */}

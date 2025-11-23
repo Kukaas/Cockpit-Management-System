@@ -31,6 +31,9 @@ const AdminFightSchedule = () => {
   // Fetch match results for this event
   const { data: resultsData = [] } = useGetAll(`/match-results/event/${eventId}`)
 
+  // Calculate total plazada for this event from match results
+  const totalPlazada = resultsData?.reduce((sum, result) => sum + (result.totalPlazada || 0), 0) || 0
+
   // Format functions
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -95,6 +98,7 @@ const AdminFightSchedule = () => {
         event={event}
         formatDate={formatDate}
         formatCurrency={formatCurrency}
+        totalPlazada={totalPlazada}
       />
 
       {/* Fight and Results Tabs */}
