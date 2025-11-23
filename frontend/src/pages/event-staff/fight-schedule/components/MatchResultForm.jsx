@@ -372,7 +372,11 @@ const MatchResultForm = ({
                         : isWala
                           ? 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600'
                           : 'bg-red-600 hover:bg-red-700 text-white border-red-600'
-                      : 'hover:bg-gray-50'
+                      : isMeron
+                        ? 'hover:bg-red-50 border-red-600 text-red-700'
+                        : isWala
+                          ? 'hover:bg-blue-50 border-blue-600 text-blue-700'
+                          : 'hover:bg-gray-50 border-gray-300'
                       }`}
                   >
                     <div className="flex flex-col items-start w-full gap-1">
@@ -403,7 +407,7 @@ const MatchResultForm = ({
                 onClick={() => handleWinnerSelection('draw')}
                 className={`w-full justify-start h-auto py-3 px-4 ${formData.winnerParticipantID === 'draw'
                   ? 'bg-lime-600 hover:bg-lime-700 text-white border-lime-600'
-                  : 'hover:bg-gray-50'
+                  : 'hover:bg-lime-50 border-lime-600 text-lime-700'
                   }`}
               >
                 <div className="flex flex-col items-start w-full">
@@ -417,7 +421,7 @@ const MatchResultForm = ({
                 onClick={() => handleWinnerSelection('cancelled')}
                 className={`w-full justify-start h-auto py-3 px-4 ${formData.winnerParticipantID === 'cancelled'
                   ? 'bg-gray-600 hover:bg-gray-700 text-white border-gray-600'
-                  : 'hover:bg-gray-50'
+                  : 'hover:bg-gray-50 border-gray-600 text-gray-700'
                   }`}
               >
                 <div className="flex flex-col items-start w-full">
