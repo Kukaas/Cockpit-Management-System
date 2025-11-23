@@ -188,7 +188,7 @@ export const createCockProfileColumns = (handleEditClick, handleDeleteClick, han
         >
           <Eye className="h-4 w-4" />
         </Button>
-        <Button
+        {/* <Button
           variant="ghost"
           size="sm"
           onClick={(e) => {
@@ -211,7 +211,7 @@ export const createCockProfileColumns = (handleEditClick, handleDeleteClick, han
           disabled={isEventCompleted}
         >
           <Trash2 className="h-4 w-4" />
-        </Button>
+        </Button> */}
       </div>
     )
   }

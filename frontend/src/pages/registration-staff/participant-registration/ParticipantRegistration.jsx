@@ -14,6 +14,7 @@ import CustomAlertDialog from '@/components/custom/CustomAlertDialog'
 import EventDetailsCard from './components/EventDetailsCard'
 import ParticipantForm from './components/ParticipantForm'
 import CockProfileForm from './components/CockProfileForm'
+import CombinedRegistrationForm from './components/CombinedRegistrationForm'
 import DataTabs from './components/DataTabs'
 import { createParticipantColumns, createCockProfileColumns } from './components/TableColumns'
 import FightForm from '@/pages/event-staff/fight-schedule/components/FightForm'
@@ -29,8 +30,9 @@ const ParticipantRegistration = () => {
 
   // Dialog states
   const [addParticipantDialogOpen, setAddParticipantDialogOpen] = useState(false)
+  const [addCombinedDialogOpen, setAddCombinedDialogOpen] = useState(false)
   const [addCockProfileDialogOpen, setAddCockProfileDialogOpen] = useState(false)
-  const [editParticipantDialogOpen, setEditParticipantDialogOpen] = useState(false)
+  const [editCombinedDialogOpen, setEditCombinedDialogOpen] = useState(false)
   const [editCockProfileDialogOpen, setEditCockProfileDialogOpen] = useState(false)
   const [deleteParticipantDialogOpen, setDeleteParticipantDialogOpen] = useState(false)
   const [deleteCockProfileDialogOpen, setDeleteCockProfileDialogOpen] = useState(false)
@@ -49,7 +51,8 @@ const ParticipantRegistration = () => {
   const [participantFormData, setParticipantFormData] = useState({
     participantName: '',
     contactNumber: '',
-    address: ''
+    address: '',
+    cockProfiles: [{ legbandNumber: '', weight: '' }]
   })
 
   const [cockProfileFormData, setCockProfileFormData] = useState({
@@ -57,6 +60,7 @@ const ParticipantRegistration = () => {
     cockProfiles: [{ legbandNumber: '', weight: '' }]
   })
   const [isCreatingBulk, setIsCreatingBulk] = useState(false)
+  const [isCreatingCombined, setIsCreatingCombined] = useState(false)
 
   const [fightFormData, setFightFormData] = useState({
     participant1: '',
@@ -250,7 +254,8 @@ const ParticipantRegistration = () => {
     setParticipantFormData({
       participantName: '',
       contactNumber: '',
-      address: ''
+      address: '',
+      cockProfiles: [{ legbandNumber: '', weight: '' }]
     })
   }
 
@@ -285,11 +290,79 @@ const ParticipantRegistration = () => {
     }
 
     const participantData = {
-      ...participantFormData,
+      participantName: participantFormData.participantName,
+      contactNumber: participantFormData.contactNumber,
+      address: participantFormData.address,
       eventID: eventId
     }
 
     createParticipantMutation.mutate(participantData)
+  }
+
+  // Combined handler: Create participant first, then cock profiles
+  const handleAddCombined = async () => {
+    // Validate participant fields
+    const requiredFields = ['participantName', 'contactNumber', 'address']
+    const missingFields = requiredFields.filter(field => !participantFormData[field])
+
+    if (missingFields.length > 0) {
+      toast.error(`Please fill in all required fields: ${missingFields.join(', ')}`)
+      return
+    }
+
+    // Validate cock profiles
+    if (!participantFormData.cockProfiles || participantFormData.cockProfiles.length === 0) {
+      toast.error('Please add at least one cock profile')
+      return
+    }
+
+    // For derby events, validate legbandNumber and weight for each profile
+    if (selectedEvent?.eventType === 'derby') {
+      for (let i = 0; i < participantFormData.cockProfiles.length; i++) {
+        const profile = participantFormData.cockProfiles[i]
+        if (!profile.legbandNumber || !profile.weight) {
+          toast.error(`Please fill in legband number and weight for cock profile ${i + 1}`)
+          return
+        }
+      }
+    }
+
+    setIsCreatingCombined(true)
+    try {
+      // Step 1: Create participant
+      const participantData = {
+        participantName: participantFormData.participantName,
+        contactNumber: participantFormData.contactNumber,
+        address: participantFormData.address,
+        eventID: eventId
+      }
+
+      const participantResponse = await api.post('/participants', participantData)
+      const newParticipantId = participantResponse.data.data._id
+
+      // Step 2: Create cock profiles for the new participant
+      const bulkData = {
+        eventID: eventId,
+        participantID: newParticipantId,
+        cockProfiles: participantFormData.cockProfiles.map(profile => ({
+          legband: profile.legbandNumber, // Map legbandNumber to legband
+          weight: profile.weight ? parseFloat(profile.weight) : undefined
+        }))
+      }
+
+      const cockProfilesResponse = await api.post('/cock-profiles/bulk', bulkData)
+
+      toast.success(`Successfully registered participant and ${cockProfilesResponse.data.data.length} cock profile(s)`)
+      setAddCombinedDialogOpen(false)
+      resetParticipantForm()
+      refetchParticipants()
+      refetchCockProfiles()
+    } catch (error) {
+      const errorMessage = error?.response?.data?.message || 'Failed to register participant and cock profiles'
+      toast.error(errorMessage)
+    } finally {
+      setIsCreatingCombined(false)
+    }
   }
 
   const handleAddCockProfile = async () => {
@@ -354,13 +427,109 @@ const ParticipantRegistration = () => {
     }
 
     const participantData = {
-      ...participantFormData
+      participantName: participantFormData.participantName,
+      contactNumber: participantFormData.contactNumber,
+      address: participantFormData.address
     }
 
     updateParticipantMutation.mutate({
       id: selectedParticipant._id,
       data: participantData
     })
+  }
+
+  // Combined edit handler: Update participant and handle cock profiles
+  const handleEditCombined = async () => {
+    if (!selectedParticipant) return
+
+    // Validate participant fields
+    const requiredFields = ['participantName', 'contactNumber', 'address']
+    const missingFields = requiredFields.filter(field => !participantFormData[field])
+
+    if (missingFields.length > 0) {
+      toast.error(`Please fill in all required fields: ${missingFields.join(', ')}`)
+      return
+    }
+
+    // Validate cock profiles
+    if (!participantFormData.cockProfiles || participantFormData.cockProfiles.length === 0) {
+      toast.error('Please add at least one cock profile')
+      return
+    }
+
+    // For derby events, validate legbandNumber and weight for each profile
+    if (selectedEvent?.eventType === 'derby') {
+      for (let i = 0; i < participantFormData.cockProfiles.length; i++) {
+        const profile = participantFormData.cockProfiles[i]
+        if (!profile.legbandNumber || !profile.weight) {
+          toast.error(`Please fill in legband number and weight for cock profile ${i + 1}`)
+          return
+        }
+      }
+    }
+
+    try {
+      setIsCreatingCombined(true)
+
+      // Step 1: Update participant
+      const participantData = {
+        participantName: participantFormData.participantName,
+        contactNumber: participantFormData.contactNumber,
+        address: participantFormData.address
+      }
+
+      await api.put(`/participants/${selectedParticipant._id}`, participantData)
+
+      // Step 2: Get existing cock profiles for this participant
+      const existingProfilesResponse = await api.get(`/cock-profiles/participant/${selectedParticipant._id}?eventID=${eventId}`)
+      const existingProfiles = existingProfilesResponse.data.data || []
+      const existingProfileIds = existingProfiles.map(p => p._id)
+
+      // Step 3: Separate profiles into update, create, and delete
+      const profilesToUpdate = participantFormData.cockProfiles.filter(p => p._id)
+      const profilesToCreate = participantFormData.cockProfiles.filter(p => !p._id)
+      const profilesToDelete = existingProfileIds.filter(id =>
+        !profilesToUpdate.some(p => p._id === id)
+      )
+
+      // Step 4: Update existing profiles
+      for (const profile of profilesToUpdate) {
+        const updateData = {
+          legband: profile.legbandNumber,
+          weight: profile.weight ? parseFloat(profile.weight) : undefined
+        }
+        await api.put(`/cock-profiles/${profile._id}`, updateData)
+      }
+
+      // Step 5: Create new profiles
+      if (profilesToCreate.length > 0) {
+        const bulkData = {
+          eventID: eventId,
+          participantID: selectedParticipant._id,
+          cockProfiles: profilesToCreate.map(profile => ({
+            legband: profile.legbandNumber,
+            weight: profile.weight ? parseFloat(profile.weight) : undefined
+          }))
+        }
+        await api.post('/cock-profiles/bulk', bulkData)
+      }
+
+      // Step 6: Delete removed profiles
+      for (const profileId of profilesToDelete) {
+        await api.delete(`/cock-profiles/${profileId}`)
+      }
+
+      toast.success('Successfully updated participant and cock profiles')
+      setEditCombinedDialogOpen(false)
+      resetParticipantForm()
+      refetchParticipants()
+      refetchCockProfiles()
+    } catch (error) {
+      const errorMessage = error?.response?.data?.message || 'Failed to update participant and cock profiles'
+      toast.error(errorMessage)
+    } finally {
+      setIsCreatingCombined(false)
+    }
   }
 
   const handleEditCockProfile = async () => {
@@ -414,9 +583,10 @@ const ParticipantRegistration = () => {
     setParticipantFormData({
       participantName: participant.participantName,
       contactNumber: participant.contactNumber,
-      address: participant.address
+      address: participant.address,
+      cockProfiles: [] // Will be loaded by the form
     })
-    setEditParticipantDialogOpen(true)
+    setEditCombinedDialogOpen(true)
   }
 
   const handleEditCockProfileClick = (cockProfile) => {
@@ -660,8 +830,7 @@ const ParticipantRegistration = () => {
         cockProfiles={cockProfiles}
         participantColumns={participantColumns}
         cockProfileColumns={cockProfileColumns}
-        onAddParticipant={() => setAddParticipantDialogOpen(true)}
-        onAddCockProfile={() => setAddCockProfileDialogOpen(true)}
+        onAddParticipant={() => setAddCombinedDialogOpen(true)}
         isEventCompleted={isEventCompleted}
         registrationDeadlinePassed={registrationDeadlinePassed}
         fights={fightsData}
@@ -670,21 +839,21 @@ const ParticipantRegistration = () => {
         eventStatus={selectedEvent?.status}
       />
 
-      {/* Add Participant Dialog */}
-      <ParticipantForm
-        open={addParticipantDialogOpen}
-        onOpenChange={setAddParticipantDialogOpen}
-        title="Register New Participant"
-        description="Add a new participant for this event"
+      {/* Add Combined Registration Dialog */}
+      <CombinedRegistrationForm
+        open={addCombinedDialogOpen}
+        onOpenChange={setAddCombinedDialogOpen}
+        title="Register Participant & Cock Profiles"
+        description="Register a new participant and add their cock profiles in one step"
         formData={participantFormData}
         onInputChange={handleParticipantInputChange}
-        onSubmit={handleAddParticipant}
-        onCancel={() => setAddParticipantDialogOpen(false)}
-        isPending={createParticipantMutation.isPending}
-        isEdit={false}
+        onSubmit={handleAddCombined}
+        onCancel={() => setAddCombinedDialogOpen(false)}
+        isPending={isCreatingCombined}
+        eventId={eventId}
       />
 
-      {/* Add Cock Profile Dialog */}
+      {/* Add Cock Profile Dialog (for existing participants) */}
       <CockProfileForm
         open={addCockProfileDialogOpen}
         onOpenChange={setAddCockProfileDialogOpen}
@@ -699,33 +868,20 @@ const ParticipantRegistration = () => {
         eventId={eventId}
       />
 
-      {/* Edit Participant Dialog */}
-      <ParticipantForm
-        open={editParticipantDialogOpen}
-        onOpenChange={setEditParticipantDialogOpen}
-        title="Edit Participant"
-        description="Update participant information"
+      {/* Edit Combined Registration Dialog */}
+      <CombinedRegistrationForm
+        open={editCombinedDialogOpen}
+        onOpenChange={setEditCombinedDialogOpen}
+        title="Edit Participant & Cock Profiles"
+        description="Update participant information and manage their cock profiles"
         formData={participantFormData}
         onInputChange={handleParticipantInputChange}
-        onSubmit={handleEditParticipant}
-        onCancel={() => setEditParticipantDialogOpen(false)}
-        isPending={updateParticipantMutation.isPending}
-        isEdit={true}
-      />
-
-      {/* Edit Cock Profile Dialog */}
-      <CockProfileForm
-        open={editCockProfileDialogOpen}
-        onOpenChange={setEditCockProfileDialogOpen}
-        title="Edit Cock Profile"
-        description="Update cock profile information"
-        formData={cockProfileFormData}
-        onInputChange={handleCockProfileInputChange}
-        onSubmit={handleEditCockProfile}
-        onCancel={() => setEditCockProfileDialogOpen(false)}
-        isPending={updateCockProfileMutation.isPending}
-        isEdit={true}
+        onSubmit={handleEditCombined}
+        onCancel={() => setEditCombinedDialogOpen(false)}
+        isPending={isCreatingCombined}
         eventId={eventId}
+        isEdit={true}
+        participantData={selectedParticipant}
       />
 
       {/* Delete Participant Confirmation Dialog */}

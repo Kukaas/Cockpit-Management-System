@@ -214,13 +214,18 @@ export const createBulkCockProfiles = async (req, res) => {
 // Get all cock profiles (with filtering)
 export const getAllCockProfiles = async (req, res) => {
   try {
-    const { eventID, isActive, status, search } = req.query;
+    const { eventID, participantID, isActive, status, search } = req.query;
 
     let query = {};
 
     // Filter by event
     if (eventID) {
       query.eventID = eventID;
+    }
+
+    // Filter by participant
+    if (participantID) {
+      query.participantID = participantID;
     }
 
     // Filter by active status

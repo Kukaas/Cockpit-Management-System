@@ -12,7 +12,6 @@ const DataTabs = ({
   participantColumns,
   cockProfileColumns,
   onAddParticipant,
-  onAddCockProfile,
   isEventCompleted = false,
   registrationDeadlinePassed = false,
   // Fight Schedule props
@@ -46,7 +45,7 @@ const DataTabs = ({
           <h3 className="text-lg font-semibold">Registered Participants</h3>
           <Button onClick={onAddParticipant} disabled={isEventCompleted || registrationDeadlinePassed}>
             <Plus className="h-4 w-4 mr-2" />
-            Add Participant
+            Register
           </Button>
         </div>
         <DataTable
@@ -63,12 +62,6 @@ const DataTabs = ({
       </TabsContent>
 
       <TabsContent value="cock-profiles" className="space-y-4">
-        <div className="flex justify-end items-center">
-          <Button onClick={onAddCockProfile} disabled={isEventCompleted || registrationDeadlinePassed}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Cock Profile
-          </Button>
-        </div>
         <DataTable
           data={cockProfiles}
           columns={cockProfileColumns}

@@ -9,6 +9,7 @@ export const registerParticipant = async (req, res) => {
       participantName,
       contactNumber,
       address,
+      entryFee,
       eventID,
       isExistingParticipant = false
     } = req.body;
@@ -54,6 +55,7 @@ export const registerParticipant = async (req, res) => {
       participantName,
       contactNumber,
       address,
+      entryFee: entryFee || 0,
       eventID,
       registeredBy
     });
@@ -139,7 +141,8 @@ export const updateParticipant = async (req, res) => {
     const {
       participantName,
       contactNumber,
-      address
+      address,
+      entryFee
     } = req.body;
 
     const participant = await Participant.findById(id);
@@ -172,7 +175,8 @@ export const updateParticipant = async (req, res) => {
       {
         participantName,
         contactNumber,
-        address
+        address,
+        entryFee: entryFee !== undefined ? entryFee : participant.entryFee
       },
       { new: true, runValidators: true }
     ).populate([
@@ -217,15 +221,15 @@ export const deleteParticipant = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // First find the participant to get their name
+    // First find the participant
     const participant = await Participant.findById(id);
     if (!participant) {
       return res.status(404).json({ message: 'Participant not found' });
     }
 
-    // Delete all cock profiles associated with this participant's name
+    // Delete all cock profiles associated with this participant
     const deletedCockProfiles = await CockProfile.deleteMany({
-      ownerName: participant.participantName
+      participantID: id
     });
 
     // Delete the participant
