@@ -192,14 +192,6 @@ const AdminEventTabs = ({
       <TabsContent value="participants" className="space-y-4">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold">Registered Participants</h3>
-          <Button
-            onClick={handlePrintParticipants}
-            variant="outline"
-            className="flex items-center gap-2"
-          >
-            <Printer className="h-4 w-4" />
-            Print Participants
-          </Button>
         </div>
         <DataTable
           data={participants}
