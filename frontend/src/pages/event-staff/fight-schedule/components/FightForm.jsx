@@ -169,7 +169,7 @@ const FightForm = ({
                   return (
                     <option key={cockId} value={cockId}>
                       {event?.eventType === 'derby'
-                        ? `${cock.legband || 'N/A'} - ${cock.weight || 'N/A'}kg`
+                        ? `${cock.legband || 'N/A'} - ${cock.weight || 'N/A'} g`
                         : `${cock.entryNo || 'N/A'}`
                       }
                     </option>
@@ -205,7 +205,7 @@ const FightForm = ({
                   return (
                     <option key={cockId} value={cockId}>
                       {event?.eventType === 'derby'
-                        ? `${cock.legband || 'N/A'} - ${cock.weight || 'N/A'}kg`
+                        ? `${cock.legband || 'N/A'} - ${cock.weight || 'N/A'} g`
                         : `${cock.entryNo || 'N/A'}`
                       }
                     </option>

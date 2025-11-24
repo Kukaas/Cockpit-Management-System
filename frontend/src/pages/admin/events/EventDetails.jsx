@@ -243,7 +243,7 @@ const EventDetails = () => {
                         </div>
                         <div>
                           <p className="text-sm font-medium text-gray-600 mb-1">Weight</p>
-                          <p className="font-medium text-gray-900">{selectedItem.weight ? `${selectedItem.weight} kg` : 'N/A'}</p>
+                          <p className="font-medium text-gray-900">{selectedItem.weight ? `${selectedItem.weight} g` : 'N/A'}</p>
                         </div>
                       </>
                     )}
@@ -409,7 +409,7 @@ const EventDetails = () => {
 
                               <div>
                                 <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Weight</label>
-                                <p className="mt-1 text-sm text-gray-900">{cock.weight ? `${cock.weight}kg` : 'N/A'}</p>
+                                <p className="mt-1 text-sm text-gray-900">{cock.weight ? `${cock.weight} g` : 'N/A'}</p>
                               </div>
                             </>
                           )}
@@ -578,7 +578,7 @@ const EventDetails = () => {
 
                               <div>
                                 <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Weight</label>
-                                <p className="mt-1 text-sm text-gray-900">{selectedItem.resultMatch?.winnerCockProfileID?.weight ? `${selectedItem.resultMatch?.winnerCockProfileID?.weight}kg` : 'N/A'}</p>
+                                <p className="mt-1 text-sm text-gray-900">{selectedItem.resultMatch?.winnerCockProfileID?.weight ? `${selectedItem.resultMatch?.winnerCockProfileID?.weight} g` : 'N/A'}</p>
                               </div>
                             </>
                           )}
@@ -611,7 +611,7 @@ const EventDetails = () => {
 
                               <div>
                                 <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Weight</label>
-                                <p className="mt-1 text-sm text-gray-900">{selectedItem.resultMatch?.loserCockProfileID?.weight ? `${selectedItem.resultMatch?.loserCockProfileID?.weight}kg` : 'N/A'}</p>
+                                <p className="mt-1 text-sm text-gray-900">{selectedItem.resultMatch?.loserCockProfileID?.weight ? `${selectedItem.resultMatch?.loserCockProfileID?.weight} g` : 'N/A'}</p>
                               </div>
                             </>
                           )}

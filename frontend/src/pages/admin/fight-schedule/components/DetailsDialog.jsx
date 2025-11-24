@@ -139,7 +139,7 @@ const DetailsDialog = ({
 
                     <div>
                       <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Weight</label>
-                      <p className="mt-1 text-sm text-gray-900">{cock.weight ? `${cock.weight}kg` : 'N/A'}</p>
+                      <p className="mt-1 text-sm text-gray-900">{cock.weight ? `${cock.weight} g` : 'N/A'}</p>
                     </div>
                   </>
                 )}

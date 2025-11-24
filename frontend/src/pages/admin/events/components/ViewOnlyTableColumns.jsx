@@ -87,10 +87,10 @@ export const createViewOnlyCockProfileColumns = (handleViewDetails, eventType = 
     },
     {
       key: 'weight',
-      label: 'Weight (kg)',
+      label: 'Weight (grams)',
       sortable: true,
       filterable: false,
-      render: (value) => value ? `${value} kg` : 'N/A'
+      render: (value) => value ? `${value} g` : 'N/A'
     }
   ] : []),
   {

@@ -38,8 +38,8 @@ const cockProfileSchema = new mongoose.Schema({
       // This will be validated in the controller based on event type
       return false; // We'll handle this in the controller
     },
-    min: 0.01,
-    max: 10.0
+    min: 10, // Minimum 10 grams
+    max: 10000 // Maximum 10000 grams (10 kg)
   },
 
   isActive: {

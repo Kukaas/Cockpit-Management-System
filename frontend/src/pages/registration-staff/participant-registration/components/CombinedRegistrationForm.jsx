@@ -252,14 +252,14 @@ const CombinedRegistrationForm = ({
                   />
                   <InputField
                     id={`weight-${index}`}
-                    label="Weight (kg) *"
+                    label="Weight (grams) *"
                     type="number"
                     value={profile.weight}
                     onChange={(e) => handleCockProfileInputChange(index, 'weight', e.target.value)}
-                    placeholder="Enter weight in kg (e.g., 2.24)"
-                    min="0.01"
-                    max="10.0"
-                    step="0.01"
+                    placeholder="Enter weight in grams (e.g., 2240)"
+                    min="10"
+                    max="10000"
+                    step="1"
                     required
                   />
                 </>

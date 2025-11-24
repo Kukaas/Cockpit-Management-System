@@ -44,7 +44,7 @@ export const createFightColumns = (formatCurrency, formatDate, handleViewDetails
             <Trophy className="h-3 w-3 text-purple-600" />
             <span>
               #{cock.entryNo}
-              {eventType === 'derby' && ` - ${cock.legband} (${cock.weight}kg)`}
+              {eventType === 'derby' && ` - ${cock.legband} (${cock.weight} g)`}
             </span>
           </div>
         ))}
