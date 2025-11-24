@@ -96,7 +96,8 @@ const RegistrationDashboard = () => {
     { value: '', label: 'All Event Types' },
     { value: 'regular', label: 'Regular' },
     { value: 'derby', label: 'Derby' },
-    { value: 'fastest_kill', label: 'Fastest Kill' }
+    { value: 'fastest_kill', label: 'Fastest Kill' },
+    { value: 'hits_ulutan', label: 'Hits Ulutan' }
   ]
 
   const formatCurrency = (amount) => {

@@ -195,9 +195,11 @@ const TangkalDashboard = () => {
                   onChange={(e) => setSelectedEventType(e.target.value)}
                 >
                   <option value="">All Types</option>
-                  <option value="regular">Regular</option>
-                  <option value="derby">Derby</option>
-                  <option value="fastest_kill">Fastest Kill</option>
+                  {eventTypes.map((type) => (
+                    <option key={type.value} value={type.value}>
+                      {type.label}
+                    </option>
+                  ))}
                 </NativeSelect>
               </div>
             </div>

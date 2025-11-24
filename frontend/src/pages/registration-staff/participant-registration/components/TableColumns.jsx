@@ -28,28 +28,6 @@ export const createParticipantColumns = (handleEditClick, handleDeleteClick, han
       </div>
     )
   },
-
-  {
-    key: 'status',
-    label: 'Status',
-    sortable: true,
-    filterable: true,
-    filterOptions: ['registered', 'confirmed', 'withdrawn', 'disqualified'],
-    render: (value) => (
-      <div className="flex items-center gap-2">
-        <Badge
-          variant={
-            value === 'confirmed' ? 'default' :
-              value === 'withdrawn' ? 'destructive' :
-                value === 'disqualified' ? 'secondary' : 'outline'
-          }
-          className="text-xs capitalize"
-        >
-          {value}
-        </Badge>
-      </div>
-    )
-  },
   {
     key: 'actions',
     label: 'Actions',
@@ -157,7 +135,12 @@ export const createCockProfileColumns = (handleEditClick, handleDeleteClick, han
     label: 'Fight Status',
     sortable: true,
     filterable: true,
-    filterOptions: ['available', 'scheduled', 'fought'],
+    filterOptions: ['Available', 'Scheduled', 'Fought'],
+    filterValueMap: {
+      'Available': 'available',
+      'Scheduled': 'scheduled',
+      'Fought': 'fought'
+    },
     render: (value) => (
       <div className="flex items-center gap-2">
         <Badge

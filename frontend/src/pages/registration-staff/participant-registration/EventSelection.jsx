@@ -70,45 +70,25 @@ const EventSelection = () => {
       label: 'Type',
       sortable: true,
       filterable: true,
-      filterOptions: ['Regular', 'Special', 'Championship', 'Exhibition'],
+      filterOptions: ['Regular', 'Derby', 'Fastest Kill', 'Hits Ulutan'],
       filterValueMap: {
         'Regular': 'regular',
-        'Special': 'special',
-        'Championship': 'championship',
-        'Exhibition': 'exhibition'
+        'Derby': 'derby',
+        'Fastest Kill': 'fastest_kill',
+        'Hits Ulutan': 'hits_ulutan'
       },
-      render: (value) => {
-        // Helper function to get event type icon
-        const getEventTypeIcon = (eventType) => {
-          switch (eventType) {
-            case 'championship':
-              return <Award className="h-3 w-3" />
-            case 'special':
-              return <Target className="h-3 w-3" />
-            case 'exhibition':
-              return <Info className="h-3 w-3" />
-            case 'regular':
-            default:
-              return <Calendar className="h-3 w-3" />
+      render: (value) => (
+        <Badge
+          variant={
+            value === 'derby' ? 'default' :
+              value === 'fastest_kill' ? 'secondary' :
+              'outline'
           }
-        }
-
-        return (
-          <div className="flex items-center gap-2">
-            {getEventTypeIcon(value)}
-            <Badge
-              variant={
-                value === 'championship' ? 'destructive' :
-                  value === 'special' ? 'default' :
-                    value === 'exhibition' ? 'secondary' : 'outline'
-              }
-              className="text-xs capitalize"
-            >
-              {value}
-            </Badge>
-          </div>
-        )
-      }
+          className="text-xs capitalize"
+        >
+          {value}
+        </Badge>
+      )
     },
     {
       key: 'status',
