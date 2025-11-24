@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Plus, Trophy, Users } from 'lucide-react'
+import { ArrowLeft, Plus, Trophy, Users, Printer } from 'lucide-react'
 import PageLayout from '@/layouts/PageLayout'
 import { toast } from 'sonner'
 import { useGetAll, useGetById } from '@/hooks/useApiQueries'
@@ -19,6 +19,7 @@ import DetailsDialog from './components/DetailsDialog'
 import ChampionshipTab from './components/ChampionshipTab'
 import FastestKillWinnersTab from './components/FastestKillWinnersTab'
 import { createFightColumns, createMatchResultColumns } from './components/TableColumns'
+import { printFightSchedule } from '@/lib/printFightSchedule'
 
 const FightSchedule = () => {
   const { eventId } = useParams()
@@ -408,6 +409,15 @@ const FightSchedule = () => {
     event?.eventType
   )
 
+  // Print functionality
+  const handlePrintFightSchedule = () => {
+    printFightSchedule({
+      event,
+      fightSchedules: fightsData,
+      formatDate
+    })
+  }
+
   if (eventLoading) {
     return (
       <PageLayout title="Loading..." description="Loading event details...">
@@ -457,6 +467,7 @@ const FightSchedule = () => {
         resultColumns={resultColumns}
         eventType={event.eventType}
         eventStatus={event.status}
+        onPrintFightSchedule={handlePrintFightSchedule}
       />
 
       {/* Championship Tab Content for Derby Events */}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Printer } from 'lucide-react'
 import PageLayout from '@/layouts/PageLayout'
 import { toast } from 'sonner'
 import { useGetAll, useGetById } from '@/hooks/useApiQueries'
@@ -19,6 +19,7 @@ import DataTabs from './components/DataTabs'
 import { createParticipantColumns, createCockProfileColumns } from './components/TableColumns'
 import FightForm from '@/pages/event-staff/fight-schedule/components/FightForm'
 import { createFightColumns } from '@/pages/event-staff/fight-schedule/components/TableColumns'
+import { printFightSchedule } from '@/lib/printFightSchedule'
 
 const ParticipantRegistration = () => {
   const { eventId } = useParams()
@@ -809,6 +810,15 @@ const ParticipantRegistration = () => {
     false // Hide "Add Result" button for registration staff
   )
 
+  // Print functionality for fight schedules
+  const handlePrintFightSchedule = () => {
+    printFightSchedule({
+      event: selectedEvent,
+      fightSchedules: fightsData,
+      formatDate
+    })
+  }
+
   if (eventLoading) {
     return (
       <PageLayout title="Loading..." description="Loading event details...">
@@ -904,6 +914,9 @@ const ParticipantRegistration = () => {
         fightColumns={fightColumns}
         onAddFight={() => setAddFightDialogOpen(true)}
         eventStatus={selectedEvent?.status}
+        onPrintFightSchedule={handlePrintFightSchedule}
+        event={selectedEvent}
+        formatDate={formatDate}
       />
 
       {/* Add Combined Registration Dialog */}

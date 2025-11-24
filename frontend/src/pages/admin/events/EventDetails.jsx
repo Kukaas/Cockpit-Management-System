@@ -154,6 +154,7 @@ const EventDetails = () => {
         matchResultColumns={matchResultColumns}
         event={selectedEvent}
         formatCurrency={formatCurrency}
+        formatDate={formatDate}
       />
 
       {/* Detail View Dialog */}

@@ -5,6 +5,7 @@ import { UserPlus, Feather, Swords, Trophy, Printer, Zap } from 'lucide-react'
 import DataTable from '@/components/custom/DataTable'
 import ChampionshipTab from '../../fight-schedule/components/ChampionshipTab'
 import FastestKillWinnersTab from '../../fight-schedule/components/FastestKillWinnersTab'
+import { printFightSchedule } from '@/lib/printFightSchedule'
 
 const AdminEventTabs = ({
   activeTab,
@@ -18,7 +19,8 @@ const AdminEventTabs = ({
   matchResults = [],
   matchResultColumns,
   event = null,
-  formatCurrency
+  formatCurrency,
+  formatDate
 }) => {
   // Print functionality for participants
   const handlePrintParticipants = () => {
@@ -141,6 +143,16 @@ const AdminEventTabs = ({
     printWindow.print()
     printWindow.close()
   }
+
+  // Print functionality for fight schedules
+  const handlePrintFightSchedule = () => {
+    printFightSchedule({
+      event,
+      fightSchedules,
+      formatDate
+    })
+  }
+
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
       <TabsList className={`grid w-full ${event?.eventType === 'derby' ? 'grid-cols-5' :
@@ -217,6 +229,17 @@ const AdminEventTabs = ({
       </TabsContent>
 
       <TabsContent value="fight-schedules" className="space-y-4">
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-semibold">Fight Schedules</h3>
+          <Button
+            onClick={handlePrintFightSchedule}
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            <Printer className="h-4 w-4" />
+            Print Schedule
+          </Button>
+        </div>
         <DataTable
           data={fightSchedules}
           columns={fightScheduleColumns}

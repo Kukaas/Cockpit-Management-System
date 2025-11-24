@@ -1,7 +1,7 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { UserPlus, Feather, Plus, Swords } from 'lucide-react'
+import { UserPlus, Feather, Plus, Swords, Printer } from 'lucide-react'
 import DataTable from '@/components/custom/DataTable'
 
 const DataTabs = ({
@@ -19,7 +19,10 @@ const DataTabs = ({
   fights = [],
   fightColumns = [],
   onAddFight = () => { },
-  eventStatus = 'active'
+  eventStatus = 'active',
+  onPrintFightSchedule,
+  event,
+  formatDate
 }) => {
   // Check if event is completed or cancelled
   const isEventDisabled = eventStatus === 'completed' || eventStatus === 'cancelled'
@@ -82,15 +85,27 @@ const DataTabs = ({
       </TabsContent>
 
       <TabsContent value="fight-schedule" className="space-y-4">
-        <div className="flex justify-end items-center">
-          <Button
-            onClick={onAddFight}
-            disabled={isEventDisabled}
-            title={isEventDisabled ? "Cannot schedule fights for completed/cancelled events" : "Schedule a new fight"}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Schedule Fight
-          </Button>
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-semibold">Fight Schedule</h3>
+          <div className="flex gap-2">
+            {onPrintFightSchedule && (
+              <Button
+                variant="outline"
+                onClick={onPrintFightSchedule}
+              >
+                <Printer className="h-4 w-4 mr-2" />
+                Print Schedule
+              </Button>
+            )}
+            <Button
+              onClick={onAddFight}
+              disabled={isEventDisabled}
+              title={isEventDisabled ? "Cannot schedule fights for completed/cancelled events" : "Schedule a new fight"}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Schedule Fight
+            </Button>
+          </div>
         </div>
         <DataTable
           data={fights}
