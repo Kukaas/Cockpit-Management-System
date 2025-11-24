@@ -966,6 +966,20 @@ const ParticipantRegistration = () => {
         isEdit={false}
         eventId={eventId}
       />
+      {/* Edit Cock Profile Dialog */}
+      <CockProfileForm
+        open={editCockProfileDialogOpen}
+        onOpenChange={setEditCockProfileDialogOpen}
+        title="Edit Cock Profile"
+        description="Update cock profile details"
+        formData={cockProfileFormData}
+        onInputChange={handleCockProfileInputChange}
+        onSubmit={handleEditCockProfile}
+        onCancel={() => setEditCockProfileDialogOpen(false)}
+        isPending={updateCockProfileMutation.isPending}
+        isEdit={true}
+        eventId={eventId}
+      />
 
       {/* Edit Combined Registration Dialog */}
       <CombinedRegistrationForm
