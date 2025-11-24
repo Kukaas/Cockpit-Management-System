@@ -62,15 +62,19 @@ const EventSelection = () => {
       label: 'Type',
       sortable: true,
       filterable: true,
-      filterOptions: ['Regular', 'Derby'],
+      filterOptions: ['Regular', 'Derby', 'Fastest Kill', 'Hits Ulutan'],
       filterValueMap: {
         'Regular': 'regular',
-        'Derby': 'derby'
+        'Derby': 'derby',
+        'Fastest Kill': 'fastest_kill',
+        'Hits Ulutan': 'hits_ulutan'
       },
       render: (value) => (
         <Badge
           variant={
-            value === 'derby' ? 'default' : 'outline'
+            value === 'derby' ? 'default' :
+              value === 'fastest_kill' ? 'secondary' :
+                value === 'hits_ulutan' ? 'default' : 'outline'
           }
           className="text-xs capitalize"
         >

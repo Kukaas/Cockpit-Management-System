@@ -105,6 +105,9 @@ const EventSelection = () => {
     setSelectedStatus('')
   }
 
+  // Supported event types for filter and display
+  const eventTypes = ['regular', 'derby', 'hits_ulutan', 'fastest_kill']
+
   // Create table columns
   const columns = [
     {
@@ -139,11 +142,12 @@ const EventSelection = () => {
       label: 'Type',
       sortable: true,
       filterable: true,
-      filterOptions: ['Regular', 'Derby', 'Fastest Kill'  ],
+      filterOptions: ['Regular', 'Derby', 'Fastest Kill', 'Hits Ulutan'],
       filterValueMap: {
         'Regular': 'regular',
         'Derby': 'derby',
-        'Fastest Kill': 'fastest_kill'
+        'Fastest Kill': 'fastest_kill',
+        'Hits Ulutan': 'hits_ulutan'
       },
       render: (value) => (
         <Badge
@@ -152,7 +156,7 @@ const EventSelection = () => {
           }
           className="text-xs capitalize"
         >
-          {value}
+          {value === 'hits_ulutan' ? 'Hits Ulutan' : value === 'fastest_kill' ? 'Fastest Kill' : value}
         </Badge>
       )
     },
@@ -164,8 +168,8 @@ const EventSelection = () => {
         <Badge
           variant={
             value === 'active' ? 'default' :
-              value === 'completed' ? 'secondary' :
-                value === 'cancelled' ? 'destructive' : 'outline'
+              value === 'completed' ? 'secondary'
+                : 'outline'
           }
           className="text-xs capitalize"
         >
@@ -264,8 +268,15 @@ const EventSelection = () => {
                 onChange={(e) => setSelectedEventType(e.target.value)}
               >
                 <option value="">All Types</option>
-                <option value="regular">Regular</option>
-                <option value="derby">Derby</option>
+                {eventTypes.map((type) => (
+                  <option key={type} value={type}>
+                    {type === 'hits_ulutan'
+                      ? 'Hits Ulutan'
+                      : type === 'fastest_kill'
+                        ? 'Fastest Kill'
+                        : type.charAt(0).toUpperCase() + type.slice(1)}
+                  </option>
+                ))}
               </NativeSelect>
             </div>
             <div className="space-y-2">
@@ -277,7 +288,6 @@ const EventSelection = () => {
                 <option value="">All Status</option>
                 <option value="active">Active</option>
                 <option value="completed">Completed</option>
-                <option value="cancelled">Cancelled</option>
               </NativeSelect>
             </div>
             <div className="flex items-end">

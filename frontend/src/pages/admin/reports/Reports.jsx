@@ -63,11 +63,12 @@ const Reports = () => {
             label: 'Type',
             sortable: true,
             filterable: true,
-            filterOptions: ['Regular', 'Derby', 'Fastest Kill'],
+            filterOptions: ['Regular', 'Derby', 'Fastest Kill', 'Hits Ulutan'],
             filterValueMap: {
                 'Regular': 'regular',
                 'Derby': 'derby',
-                'Fastest Kill': 'fastest_kill'
+                'Fastest Kill': 'fastest_kill',
+                'Hits Ulutan': 'hits_ulutan'
             },
             render: (value) => (
                 <Badge

@@ -41,8 +41,8 @@ const EventSelection = () => {
       : 0
   }
 
-  // Get unique event types from events
-  const eventTypes = [...new Set(events.map(event => event.eventType).filter(Boolean))]
+  // Supported event types (static so filter options always appear)
+  const eventTypes = ['regular', 'derby', 'hits_ulutan', 'fastest_kill']
 
   // Month options
   const months = [
@@ -116,10 +116,12 @@ const EventSelection = () => {
       label: 'Type',
       sortable: true,
       filterable: true,
-      filterOptions: ['Regular', 'Derby'],
+      filterOptions: ['Regular', 'Derby', 'Fastest Kill', 'Hits Ulutan'],
       filterValueMap: {
         'Regular': 'regular',
-        'Derby': 'derby'
+        'Derby': 'derby',
+        'Fastest Kill': 'fastest_kill',
+        'Hits Ulutan': 'hits_ulutan'
       },
       render: (value) => (
         <Badge
@@ -235,7 +237,11 @@ const EventSelection = () => {
                   <option value="">All Types</option>
                   {eventTypes.map((type) => (
                     <option key={type} value={type}>
-                      {type.charAt(0).toUpperCase() + type.slice(1)}
+                      {type === 'hits_ulutan'
+                        ? 'Hits Ulutan'
+                        : type === 'fastest_kill'
+                          ? 'Fastest Kill'
+                          : type.charAt(0).toUpperCase() + type.slice(1)}
                     </option>
                   ))}
                 </NativeSelect>
