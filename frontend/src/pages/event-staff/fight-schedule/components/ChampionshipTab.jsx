@@ -17,7 +17,7 @@ const ChampionshipTab = ({ eventId, eventType, formatCurrency }) => {
     )
   }
 
-  if (!championshipData || eventType !== 'derby') {
+  if (!championshipData || (eventType !== 'derby' && eventType !== 'hits_ulutan')) {
     return (
       <div className="text-center py-8 text-muted-foreground">
         <Trophy className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
@@ -27,6 +27,7 @@ const ChampionshipTab = ({ eventId, eventType, formatCurrency }) => {
   }
 
   const { event, standings = [], totalMatches = 0, completedMatches = 0 } = championshipData
+  const winRequirement = event?.winRequirement || event?.noCockRequirements || 2
   const prizeDistribution = championshipData?.prizeDistribution || []
   const remainingMatches = championshipData?.remainingMatches || (totalMatches - completedMatches)
 
@@ -60,8 +61,8 @@ const ChampionshipTab = ({ eventId, eventType, formatCurrency }) => {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="text-center p-4 bg-blue-50 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">{event?.noCockRequirements || 0}</div>
-              <div className="text-sm text-blue-600">Cocks Required</div>
+              <div className="text-2xl font-bold text-blue-600">{winRequirement}</div>
+              <div className="text-sm text-blue-600">{eventType === 'hits_ulutan' ? 'Wins Required' : 'Cocks Required'}</div>
             </div>
             <div className="text-center p-4 bg-green-50 rounded-lg">
               <div className="text-2xl font-bold text-green-600">{standings?.filter(s => s.isChampion).length || 0}</div>
@@ -78,56 +79,6 @@ const ChampionshipTab = ({ eventId, eventType, formatCurrency }) => {
           </div>
         </CardContent>
       </Card>
-
-      {/* Prize Distribution Preview */}
-      {prizeDistribution && prizeDistribution.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-green-600" />
-              Prize Distribution
-            </CardTitle>
-            <CardDescription>
-              How the prize pool will be distributed among champions
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {prizeDistribution.map((champion, index) => (
-                <div key={champion.participant._id} className="p-4 border rounded-lg">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${
-                      index === 0 ? 'bg-yellow-500' :
-                      index === 1 ? 'bg-gray-400' :
-                      index === 2 ? 'bg-amber-600' : 'bg-blue-500'
-                    }`}>
-                      {index + 1}
-                    </div>
-                    <div>
-                      <div className="font-semibold">{champion.participant.participantName}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {champion.wins} wins / {champion.totalMatches} matches
-                      </div>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Prize Share:</span>
-                      <span className="font-semibold text-green-600">{champion.prizePercentage}%</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Amount:</span>
-                      <span className="font-bold text-lg text-green-700">
-                        {formatCurrency(champion.prizeAmount)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Championship Standings */}
       <Card>

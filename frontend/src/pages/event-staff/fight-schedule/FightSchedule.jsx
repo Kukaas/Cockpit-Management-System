@@ -470,8 +470,8 @@ const FightSchedule = () => {
         onPrintFightSchedule={handlePrintFightSchedule}
       />
 
-      {/* Championship Tab Content for Derby Events */}
-      {event.eventType === 'derby' && activeTab === 'championship' && (
+      {/* Championship Tab Content for Derby and Hits Ulutan Events */}
+      {(event.eventType === 'derby' || event.eventType === 'hits_ulutan') && activeTab === 'championship' && (
         <ChampionshipTab
           eventId={eventId}
           eventType={event.eventType}

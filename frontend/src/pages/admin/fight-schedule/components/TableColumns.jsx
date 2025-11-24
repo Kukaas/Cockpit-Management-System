@@ -44,7 +44,11 @@ export const createFightColumns = (formatCurrency, formatDate, handleViewDetails
             <Trophy className="h-3 w-3 text-purple-600" />
             <span>
               #{cock.entryNo}
-              {eventType === 'derby' && ` - ${cock.legband} (${cock.weight} g)`}
+              {((eventType === 'derby' || eventType === 'hits_ulutan') && cock.legband) &&
+                (eventType === 'derby'
+                  ? ` - ${cock.legband} (${cock.weight} g)`
+                  : ` - ${cock.legband}`)
+              }
             </span>
           </div>
         ))}

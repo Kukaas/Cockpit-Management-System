@@ -17,7 +17,7 @@ export const createCockProfile = async (req, res) => {
       return res.status(400).json({ message: 'Event is not active for registration' });
     }
 
-    // Check registration deadline for derby events
+    // Check registration deadline for derby events only
     if (event.eventType === 'derby' && event.registrationDeadline) {
       const currentTime = new Date();
       const deadline = new Date(event.registrationDeadline);
@@ -35,8 +35,8 @@ export const createCockProfile = async (req, res) => {
       }
     }
 
-    // Enforce per-participant cock limit for derby events
-    if (event.eventType === 'derby' && typeof event.noCockRequirements === 'number' && event.noCockRequirements > 0) {
+    // Enforce per-participant cock limit for derby and hits_ulutan events
+    if ((event.eventType === 'derby' || event.eventType === 'hits_ulutan') && typeof event.noCockRequirements === 'number' && event.noCockRequirements > 0) {
       const currentCount = await CockProfile.countDocuments({ eventID, participantID });
       if (currentCount >= event.noCockRequirements) {
         return res.status(400).json({
@@ -50,16 +50,18 @@ export const createCockProfile = async (req, res) => {
     const nextEntryNo = lastCockProfile ? lastCockProfile.entryNo + 1 : 1;
 
 
-    // For derby events, validate legband and weight
-    if (event.eventType === 'derby') {
+    // For derby and hits_ulutan events, validate legband (weight only required for derby)
+    if (event.eventType === 'derby' || event.eventType === 'hits_ulutan') {
       if (!legband) {
-        return res.status(400).json({ message: 'Legband is required for derby events' });
+        return res.status(400).json({ message: `Legband is required for ${event.eventType === 'derby' ? 'derby' : 'hits ulutan'} events` });
       }
-      if (!weight) {
+
+      // Weight is only required for derby events, not hits_ulutan
+      if (event.eventType === 'derby' && !weight) {
         return res.status(400).json({ message: 'Weight is required for derby events' });
       }
 
-      // Check if legband already exists for this event (only for derby events)
+      // Check if legband already exists for this event
       const existingLegband = await CockProfile.findOne({ eventID, legband });
       if (existingLegband) {
         return res.status(400).json({ message: 'Cock with this legband already exists for this event' });
@@ -73,10 +75,12 @@ export const createCockProfile = async (req, res) => {
       entryNo: nextEntryNo
     };
 
-    // Only add legband and weight for derby events
-    if (event.eventType === 'derby') {
+    // Add legband for derby and hits_ulutan events, weight only for derby
+    if (event.eventType === 'derby' || event.eventType === 'hits_ulutan') {
       cockProfileData.legband = legband;
-      cockProfileData.weight = parseFloat(weight);
+      if (event.eventType === 'derby' && weight) {
+        cockProfileData.weight = parseFloat(weight);
+      }
     }
 
 
@@ -116,7 +120,7 @@ export const createBulkCockProfiles = async (req, res) => {
       return res.status(400).json({ message: 'Event is not active for registration' });
     }
 
-    // Check registration deadline for derby events
+    // Check registration deadline for derby events only
     if (event.eventType === 'derby' && event.registrationDeadline) {
       const currentTime = new Date();
       const deadline = new Date(event.registrationDeadline);
@@ -134,8 +138,8 @@ export const createBulkCockProfiles = async (req, res) => {
       }
     }
 
-    // Enforce per-participant cock requirement for derby events
-    if (event.eventType === 'derby' && typeof event.noCockRequirements === 'number' && event.noCockRequirements > 0) {
+    // Enforce per-participant cock requirement for derby and hits_ulutan events
+    if ((event.eventType === 'derby' || event.eventType === 'hits_ulutan') && typeof event.noCockRequirements === 'number' && event.noCockRequirements > 0) {
       const currentCount = await CockProfile.countDocuments({ eventID, participantID });
       const newTotal = currentCount + cockProfiles.length;
 
@@ -173,12 +177,14 @@ export const createBulkCockProfiles = async (req, res) => {
     for (let i = 0; i < cockProfiles.length; i++) {
       const profile = cockProfiles[i];
 
-      // For derby events, validate legband and weight
-      if (event.eventType === 'derby') {
+      // For derby and hits_ulutan events, validate legband (weight only required for derby)
+      if (event.eventType === 'derby' || event.eventType === 'hits_ulutan') {
         if (!profile.legband) {
           return res.status(400).json({ message: `Legband is required for cock profile ${i + 1}` });
         }
-        if (!profile.weight) {
+
+        // Weight is only required for derby events, not hits_ulutan
+        if (event.eventType === 'derby' && !profile.weight) {
           return res.status(400).json({ message: `Weight is required for cock profile ${i + 1}` });
         }
 
@@ -201,10 +207,12 @@ export const createBulkCockProfiles = async (req, res) => {
         entryNo: nextEntryNo + i
       };
 
-      // Only add legband and weight for derby events
-      if (event.eventType === 'derby') {
+      // Add legband for derby and hits_ulutan events, weight only for derby
+      if (event.eventType === 'derby' || event.eventType === 'hits_ulutan') {
         cockProfileData.legband = profile.legband;
-        cockProfileData.weight = parseFloat(profile.weight);
+        if (event.eventType === 'derby' && profile.weight) {
+          cockProfileData.weight = parseFloat(profile.weight);
+        }
       }
 
       profilesToCreate.push(cockProfileData);
@@ -320,10 +328,10 @@ export const updateCockProfile = async (req, res) => {
       return res.status(404).json({ message: 'Event not found' });
     }
 
-    // Enforce per-participant cock limit for derby events (when changing participant or event)
+    // Enforce per-participant cock limit for derby and hits_ulutan events (when changing participant or event)
     const targetEventId = eventID || cockProfile.eventID;
     const targetParticipantId = participantID || cockProfile.participantID;
-    if (event.eventType === 'derby' && typeof event.noCockRequirements === 'number' && event.noCockRequirements > 0) {
+    if ((event.eventType === 'derby' || event.eventType === 'hits_ulutan') && typeof event.noCockRequirements === 'number' && event.noCockRequirements > 0) {
       const currentCount = await CockProfile.countDocuments({
         eventID: targetEventId,
         participantID: targetParticipantId,
@@ -336,12 +344,14 @@ export const updateCockProfile = async (req, res) => {
       }
     }
 
-    // For derby events, validate legband and weight
-    if (event.eventType === 'derby') {
+    // For derby and hits_ulutan events, validate legband (weight only required for derby)
+    if (event.eventType === 'derby' || event.eventType === 'hits_ulutan') {
       if (!legband) {
-        return res.status(400).json({ message: 'Legband is required for derby events' });
+        return res.status(400).json({ message: `Legband is required for ${event.eventType === 'derby' ? 'derby' : 'hits ulutan'} events` });
       }
-      if (!weight) {
+
+      // Weight is only required for derby events, not hits_ulutan
+      if (event.eventType === 'derby' && !weight) {
         return res.status(400).json({ message: 'Weight is required for derby events' });
       }
 
@@ -360,10 +370,15 @@ export const updateCockProfile = async (req, res) => {
 
     const updateData = { eventID, participantID, isActive };
 
-    // Only include legband and weight for derby events
-    if (event.eventType === 'derby') {
+    // Include legband for derby and hits_ulutan events, weight only for derby
+    if (event.eventType === 'derby' || event.eventType === 'hits_ulutan') {
       updateData.legband = legband;
-      updateData.weight = parseFloat(weight);
+      if (event.eventType === 'derby' && weight) {
+        updateData.weight = parseFloat(weight);
+      } else if (event.eventType === 'hits_ulutan') {
+        // Remove weight for hits_ulutan events
+        updateData.weight = undefined;
+      }
     } else {
       // For regular events, remove legband and weight if they exist
       updateData.legband = undefined;

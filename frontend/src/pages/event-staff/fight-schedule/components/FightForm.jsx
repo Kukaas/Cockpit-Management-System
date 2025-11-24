@@ -168,8 +168,10 @@ const FightForm = ({
                   const cockId = cock._id || cock
                   return (
                     <option key={cockId} value={cockId}>
-                      {event?.eventType === 'derby'
-                        ? `${cock.legband || 'N/A'} - ${cock.weight || 'N/A'} g`
+                      {(event?.eventType === 'derby' || event?.eventType === 'hits_ulutan')
+                        ? (event?.eventType === 'derby'
+                          ? `${cock.legband || 'N/A'} - ${cock.weight || 'N/A'} g`
+                          : `${cock.legband || 'N/A'}`)
                         : `${cock.entryNo || 'N/A'}`
                       }
                     </option>
@@ -204,8 +206,10 @@ const FightForm = ({
                   const cockId = cock._id || cock
                   return (
                     <option key={cockId} value={cockId}>
-                      {event?.eventType === 'derby'
-                        ? `${cock.legband || 'N/A'} - ${cock.weight || 'N/A'} g`
+                      {(event?.eventType === 'derby' || event?.eventType === 'hits_ulutan')
+                        ? (event?.eventType === 'derby'
+                          ? `${cock.legband || 'N/A'} - ${cock.weight || 'N/A'} g`
+                          : `${cock.legband || 'N/A'}`)
                         : `${cock.entryNo || 'N/A'}`
                       }
                     </option>

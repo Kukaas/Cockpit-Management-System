@@ -263,8 +263,8 @@ const CockProfileForm = ({
                   </div>
                 </div>
 
-                {/* Derby Event Fields */}
-                {event?.eventType === 'derby' && (
+                {/* Derby and Hits Ulutan Event Fields */}
+                {(event?.eventType === 'derby' || event?.eventType === 'hits_ulutan') && (
                   <>
                     <InputField
                       id={`legbandNumber-${index}`}
@@ -274,18 +274,21 @@ const CockProfileForm = ({
                       placeholder="Enter legband number"
                       required
                     />
-                    <InputField
-                      id={`weight-${index}`}
-                      label="Weight (grams) *"
-                      type="number"
-                      value={profile.weight}
-                      onChange={(e) => handleCockProfileInputChange(index, 'weight', e.target.value)}
-                      placeholder="Enter weight in grams (e.g., 2240)"
-                      min="10"
-                      max="10000"
-                      step="1"
-                      required
-                    />
+                    {/* Weight only required for derby events, not hits_ulutan */}
+                    {event?.eventType === 'derby' && (
+                      <InputField
+                        id={`weight-${index}`}
+                        label="Weight (grams) *"
+                        type="number"
+                        value={profile.weight}
+                        onChange={(e) => handleCockProfileInputChange(index, 'weight', e.target.value)}
+                        placeholder="Enter weight in grams (e.g., 2240)"
+                        min="10"
+                        max="10000"
+                        step="1"
+                        required
+                      />
+                    )}
                   </>
                 )}
               </div>
@@ -304,8 +307,8 @@ const CockProfileForm = ({
               </div>
             </div>
 
-            {/* Derby Event Fields */}
-            {event?.eventType === 'derby' && (
+            {/* Derby and Hits Ulutan Event Fields */}
+            {(event?.eventType === 'derby' || event?.eventType === 'hits_ulutan') && (
               <>
                 <InputField
                   id="editLegbandNumber"
@@ -315,18 +318,21 @@ const CockProfileForm = ({
                   placeholder="Enter legband number"
                   required
                 />
-                <InputField
-                  id="editWeight"
-                  label="Weight (grams) *"
-                  type="number"
-                  value={formData.weight}
-                  onChange={(e) => onInputChange('weight', e.target.value)}
-                  placeholder="Enter weight in grams (e.g., 2240)"
-                  min="10"
-                  max="10000"
-                  step="1"
-                  required
-                />
+                {/* Weight only required for derby events, not hits_ulutan */}
+                {event?.eventType === 'derby' && (
+                  <InputField
+                    id="editWeight"
+                    label="Weight (grams) *"
+                    type="number"
+                    value={formData.weight}
+                    onChange={(e) => onInputChange('weight', e.target.value)}
+                    placeholder="Enter weight in grams (e.g., 2240)"
+                    min="10"
+                    max="10000"
+                    step="1"
+                    required
+                  />
+                )}
               </>
             )}
           </div>

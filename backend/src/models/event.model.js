@@ -20,20 +20,20 @@ const eventSchema = new mongoose.Schema({
     prize: {
         type: Number,
         required: function () {
-            return this.eventType === 'derby';
+            return this.eventType === 'derby' || this.eventType === 'hits_ulutan';
         },
         min: 0
     },
     eventType: {
         type: String,
         required: true,
-        enum: ['regular', 'derby', 'fastest_kill'],
+        enum: ['regular', 'derby', 'fastest_kill', 'hits_ulutan'],
         default: 'regular'
     },
     noCockRequirements: {
         type: Number,
         required: function () {
-            return this.eventType === 'derby';
+            return this.eventType === 'derby' || this.eventType === 'hits_ulutan';
         },
         min: 0,
         max: 1000

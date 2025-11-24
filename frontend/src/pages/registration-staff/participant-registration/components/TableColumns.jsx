@@ -122,8 +122,8 @@ export const createCockProfileColumns = (handleEditClick, handleDeleteClick, han
       </div>
     )
   },
-  // Only include legbandNumber and weight columns for derby events
-  ...(eventType === 'derby' ? [
+  // Include legband column for derby and hits_ulutan events
+  ...((eventType === 'derby' || eventType === 'hits_ulutan') ? [
     {
       key: 'legband',
       label: 'Legband Number',
@@ -135,7 +135,10 @@ export const createCockProfileColumns = (handleEditClick, handleDeleteClick, han
           <span className="font-medium">{value || 'N/A'}</span>
         </div>
       )
-    },
+    }
+  ] : []),
+  // Include weight column only for derby events
+  ...(eventType === 'derby' ? [
     {
       key: 'weight',
       label: 'Weight',

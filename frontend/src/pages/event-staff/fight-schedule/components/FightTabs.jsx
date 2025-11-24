@@ -20,7 +20,7 @@ const FightTabs = ({
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-      <TabsList className={`grid w-full ${eventType === 'derby' ? 'grid-cols-3' :
+      <TabsList className={`grid w-full ${(eventType === 'derby' || eventType === 'hits_ulutan') ? 'grid-cols-3' :
         eventType === 'fastest_kill' ? 'grid-cols-3' :
           'grid-cols-2'
         }`}>
@@ -32,7 +32,7 @@ const FightTabs = ({
           <Trophy className="h-4 w-4" />
           Match Results ({results.length})
         </TabsTrigger>
-        {eventType === 'derby' && (
+        {(eventType === 'derby' || eventType === 'hits_ulutan') && (
           <TabsTrigger value="championship" className="flex items-center gap-2">
             <Award className="h-4 w-4" />
             Championship

@@ -21,6 +21,7 @@ const EventForm = ({
   // Check if this is a regular event (simplified form)
   const isRegularEvent = formData.eventType === 'regular'
   const isDerbyEvent = formData.eventType === 'derby'
+  const isHitsUlutanEvent = formData.eventType === 'hits_ulutan'
   const isFastestKillEvent = formData.eventType === 'fastest_kill'
 
   return (
@@ -57,6 +58,7 @@ const EventForm = ({
             <option value="">Select event type...</option>
             <option value="regular">Regular</option>
             <option value="derby">Derby</option>
+            <option value="hits_ulutan">Hits Ulutan</option>
             <option value="fastest_kill">Fastest Kill</option>
           </NativeSelect>
         </div>
@@ -141,19 +143,21 @@ const EventForm = ({
           required
         />
 
-        {/* Conditional fields - Only show for derby events */}
-        {isDerbyEvent && (
+        {/* Conditional fields - Only show for derby and hits_ulutan events */}
+        {(isDerbyEvent || isHitsUlutanEvent) && (
           <>
-            {/* Registration Deadline */}
-            <InputField
-              id={isEdit ? "editRegistrationDeadline" : "registrationDeadline"}
-              label="Registration Deadline *"
-              icon={Clock}
-              type="datetime-local"
-              value={formData.registrationDeadline}
-              onChange={(e) => onInputChange('registrationDeadline', e.target.value)}
-              required
-            />
+            {/* Registration Deadline - Only for derby events */}
+            {isDerbyEvent && (
+              <InputField
+                id={isEdit ? "editRegistrationDeadline" : "registrationDeadline"}
+                label="Registration Deadline *"
+                icon={Clock}
+                type="datetime-local"
+                value={formData.registrationDeadline}
+                onChange={(e) => onInputChange('registrationDeadline', e.target.value)}
+                required
+              />
+            )}
 
             <div className='grid grid-cols-2 gap-4'>
               {/* Prize Pool */}

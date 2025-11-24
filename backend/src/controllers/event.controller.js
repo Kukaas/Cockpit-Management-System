@@ -40,6 +40,19 @@ export const createEvent = async (req, res) => {
             }
         }
 
+        // Additional required fields for hits_ulutan events (no registrationDeadline)
+        if (eventType === 'hits_ulutan') {
+            const additionalRequiredFields = ['prize', 'noCockRequirements'];
+            const missingAdditionalFields = additionalRequiredFields.filter(field => !req.body[field]);
+
+            if (missingAdditionalFields.length > 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: `For hits ulutan events, missing required fields: ${missingAdditionalFields.join(', ')}`
+                });
+            }
+        }
+
         // Additional required fields for fastest_kill events
         if (eventType === 'fastest_kill') {
             const additionalRequiredFields = ['prize'];
@@ -82,8 +95,8 @@ export const createEvent = async (req, res) => {
             eventData.entryFee = null;
         }
 
-        // Only add prize and noCockRequirements for derby events
-        if (eventType === 'derby') {
+        // Only add prize and noCockRequirements for derby and hits_ulutan events
+        if (eventType === 'derby' || eventType === 'hits_ulutan') {
             eventData.prize = Number(prize);
             eventData.noCockRequirements = Number(noCockRequirements);
         }
@@ -240,6 +253,19 @@ export const updateEvent = async (req, res) => {
                 return res.status(400).json({
                     success: false,
                     message: `For derby events, missing required fields: ${missingAdditionalFields.join(', ')}`
+                });
+            }
+        }
+
+        // Additional required fields for hits_ulutan events (no registrationDeadline)
+        if (eventType === 'hits_ulutan') {
+            const additionalRequiredFields = ['prize', 'noCockRequirements'];
+            const missingAdditionalFields = additionalRequiredFields.filter(field => !updateData[field] && !event[field]);
+
+            if (missingAdditionalFields.length > 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: `For hits ulutan events, missing required fields: ${missingAdditionalFields.join(', ')}`
                 });
             }
         }

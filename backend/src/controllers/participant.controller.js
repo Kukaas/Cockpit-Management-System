@@ -24,7 +24,7 @@ export const registerParticipant = async (req, res) => {
       return res.status(400).json({ message: 'Event is not active for registration' });
     }
 
-    // Check registration deadline for derby events
+    // Check registration deadline for derby events only
     if (event.eventType === 'derby' && event.registrationDeadline) {
       const currentTime = new Date();
       const deadline = new Date(event.registrationDeadline);

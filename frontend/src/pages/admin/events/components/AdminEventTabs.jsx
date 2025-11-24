@@ -155,7 +155,7 @@ const AdminEventTabs = ({
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-      <TabsList className={`grid w-full ${event?.eventType === 'derby' ? 'grid-cols-5' :
+      <TabsList className={`grid w-full ${(event?.eventType === 'derby' || event?.eventType === 'hits_ulutan') ? 'grid-cols-5' :
         event?.eventType === 'fastest_kill' ? 'grid-cols-5' :
           'grid-cols-4'
         }`}>
@@ -175,7 +175,7 @@ const AdminEventTabs = ({
           <Trophy className="h-4 w-4" />
           Match Results ({matchResults.length})
         </TabsTrigger>
-        {event?.eventType === 'derby' && (
+        {(event?.eventType === 'derby' || event?.eventType === 'hits_ulutan') && (
           <TabsTrigger value="championship" className="flex items-center gap-2">
             <Trophy className="h-4 w-4" />
             Championship
@@ -259,7 +259,7 @@ const AdminEventTabs = ({
         />
       </TabsContent>
 
-      {event?.eventType === 'derby' && (
+      {(event?.eventType === 'derby' || event?.eventType === 'hits_ulutan') && (
         <TabsContent value="championship" className="space-y-4">
           <ChampionshipTab
             eventId={event?._id}

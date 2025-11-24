@@ -43,10 +43,11 @@ export const createEventColumns = (
       label: 'Type',
       sortable: true,
       filterable: true,
-      filterOptions: ['Regular', 'Derby', 'Fastest Kill'],
+      filterOptions: ['Regular', 'Derby', 'Hits Ulutan', 'Fastest Kill'],
       filterValueMap: {
         'Regular': 'regular',
         'Derby': 'derby',
+        'Hits Ulutan': 'hits_ulutan',
         'Fastest Kill': 'fastest_kill'
       },
       render: (value) => {
@@ -54,6 +55,7 @@ export const createEventColumns = (
         const getEventTypeIcon = (eventType) => {
           switch (eventType) {
             case 'derby':
+            case 'hits_ulutan':
               return <Award className="h-3 w-3" />
             case 'fastest_kill':
               return <Zap className="h-3 w-3" />
@@ -68,12 +70,12 @@ export const createEventColumns = (
             {getEventTypeIcon(value)}
             <Badge
               variant={
-                value === 'derby' ? 'default' :
+                value === 'derby' || value === 'hits_ulutan' ? 'default' :
                   value === 'fastest_kill' ? 'secondary' : 'outline'
               }
               className="text-xs capitalize"
             >
-              {value === 'fastest_kill' ? 'Fastest Kill' : value}
+              {value === 'fastest_kill' ? 'Fastest Kill' : value === 'hits_ulutan' ? 'Hits Ulutan' : value}
             </Badge>
           </div>
         )

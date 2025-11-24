@@ -129,18 +129,21 @@ const DetailsDialog = ({
                   <p className="mt-1 text-sm text-gray-900">#{cock.entryNo}</p>
                 </div>
 
-                {/* Legband Number and Weight - only shown for derby events */}
-                {event?.eventType === 'derby' && (
+                {/* Legband Number and Weight - shown for derby and hits_ulutan events */}
+                {(event?.eventType === 'derby' || event?.eventType === 'hits_ulutan') && (
                   <>
                     <div>
                       <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Legband Number</label>
                       <p className="mt-1 text-sm text-gray-900">{cock.legband || 'N/A'}</p>
                     </div>
 
-                    <div>
-                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Weight</label>
-                      <p className="mt-1 text-sm text-gray-900">{cock.weight ? `${cock.weight} g` : 'N/A'}</p>
-                    </div>
+                    {/* Weight only shown for derby events */}
+                    {event?.eventType === 'derby' && (
+                      <div>
+                        <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Weight</label>
+                        <p className="mt-1 text-sm text-gray-900">{cock.weight ? `${cock.weight} g` : 'N/A'}</p>
+                      </div>
+                    )}
                   </>
                 )}
               </div>
@@ -284,7 +287,7 @@ const DetailsDialog = ({
                   <p className="mt-1 text-sm text-gray-900">{result.resultMatch?.winnerParticipantID?.participantName}</p>
                 </div>
 
-                {event?.eventType === 'derby' && (
+                {(event?.eventType === 'derby' || event?.eventType === 'hits_ulutan') && (
                   <>
                     <div>
                       <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Entry Number</label>
@@ -317,7 +320,7 @@ const DetailsDialog = ({
                   <p className="mt-1 text-sm text-gray-900">{result.resultMatch?.loserParticipantID?.participantName}</p>
                 </div>
 
-                {event?.eventType === 'derby' && (
+                {(event?.eventType === 'derby' || event?.eventType === 'hits_ulutan') && (
                   <>
                     <div>
                       <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Entry Number</label>
@@ -341,8 +344,8 @@ const DetailsDialog = ({
         )}
       </div>
 
-      {/* Championship Progress for Derby Events */}
-      {event?.eventType === 'derby' && (
+      {/* Championship Progress for Derby and Hits Ulutan Events */}
+      {(event?.eventType === 'derby' || event?.eventType === 'hits_ulutan') && (
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <div className="p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg">
             <div className="flex items-center gap-3 mb-3">
@@ -352,7 +355,17 @@ const DetailsDialog = ({
               <h4 className="font-semibold text-yellow-800">Championship Progress</h4>
             </div>
             <div className="text-sm text-yellow-700">
-              <p>This match contributes to the derby championship. Participants need {event.noCockRequirements} wins to become champions.</p>
+              <p>This match contributes to the {event.eventType === 'derby' ? 'derby' : 'hits ulutan'} championship. Participants need {
+                (() => {
+                  if (event.eventType === 'hits_ulutan') {
+                    // Extract win requirement from event name or use noCockRequirements
+                    const eventName = event.eventName || '';
+                    const match = eventName.match(/(\d+)\s*[Hh]it/i);
+                    return match && match[1] ? parseInt(match[1], 10) : (event.noCockRequirements || 2);
+                  }
+                  return event.noCockRequirements || 2;
+                })()
+              } wins to become champions.</p>
               <p className="mt-2">
                 <strong>Winner:</strong> {result.resultMatch?.winnerParticipantID?.participantName} -
                 Check the Championship tab for current standings.

@@ -348,19 +348,24 @@ const ParticipantRegistration = () => {
       return
     }
 
-    // For derby events, validate legbandNumber and weight for each profile
-    if (selectedEvent?.eventType === 'derby') {
+    // For derby and hits_ulutan events, validate legbandNumber (weight only for derby)
+    if (selectedEvent?.eventType === 'derby' || selectedEvent?.eventType === 'hits_ulutan') {
       for (let i = 0; i < participantFormData.cockProfiles.length; i++) {
         const profile = participantFormData.cockProfiles[i]
-        if (!profile.legbandNumber || !profile.weight) {
-          toast.error(`Please fill in legband number and weight for cock profile ${i + 1}`)
+        if (!profile.legbandNumber) {
+          toast.error(`Please fill in legband number for cock profile ${i + 1}`)
+          return
+        }
+        // Weight only required for derby events
+        if (selectedEvent?.eventType === 'derby' && !profile.weight) {
+          toast.error(`Please fill in weight for cock profile ${i + 1}`)
           return
         }
       }
     }
 
-    // Validate cock requirements for derby events BEFORE creating participant
-    if (selectedEvent?.eventType === 'derby' && selectedEvent?.noCockRequirements && selectedEvent.noCockRequirements > 0) {
+    // Validate cock requirements for derby and hits_ulutan events BEFORE creating participant
+    if ((selectedEvent?.eventType === 'derby' || selectedEvent?.eventType === 'hits_ulutan') && selectedEvent?.noCockRequirements && selectedEvent.noCockRequirements > 0) {
       const cockProfilesCount = participantFormData.cockProfiles.length
 
       // Check if exceeds the requirement
@@ -447,10 +452,15 @@ const ParticipantRegistration = () => {
     for (let i = 0; i < cockProfileFormData.cockProfiles.length; i++) {
       const profile = cockProfileFormData.cockProfiles[i]
 
-      // For derby events, validate legbandNumber and weight for each profile
-      if (selectedEvent?.eventType === 'derby') {
-        if (!profile.legbandNumber || !profile.weight) {
-          toast.error(`Please fill in legband number and weight for cock profile ${i + 1}`)
+      // For derby and hits_ulutan events, validate legbandNumber (weight only for derby)
+      if (selectedEvent?.eventType === 'derby' || selectedEvent?.eventType === 'hits_ulutan') {
+        if (!profile.legbandNumber) {
+          toast.error(`Please fill in legband number for cock profile ${i + 1}`)
+          return
+        }
+        // Weight only required for derby events
+        if (selectedEvent?.eventType === 'derby' && !profile.weight) {
+          toast.error(`Please fill in weight for cock profile ${i + 1}`)
           return
         }
       }
@@ -524,12 +534,17 @@ const ParticipantRegistration = () => {
       return
     }
 
-    // For derby events, validate legbandNumber and weight for each profile
-    if (selectedEvent?.eventType === 'derby') {
+    // For derby and hits_ulutan events, validate legbandNumber (weight only for derby)
+    if (selectedEvent?.eventType === 'derby' || selectedEvent?.eventType === 'hits_ulutan') {
       for (let i = 0; i < participantFormData.cockProfiles.length; i++) {
         const profile = participantFormData.cockProfiles[i]
-        if (!profile.legbandNumber || !profile.weight) {
-          toast.error(`Please fill in legband number and weight for cock profile ${i + 1}`)
+        if (!profile.legbandNumber) {
+          toast.error(`Please fill in legband number for cock profile ${i + 1}`)
+          return
+        }
+        // Weight only required for derby events
+        if (selectedEvent?.eventType === 'derby' && !profile.weight) {
+          toast.error(`Please fill in weight for cock profile ${i + 1}`)
           return
         }
       }
@@ -610,13 +625,16 @@ const ParticipantRegistration = () => {
       return
     }
 
-    // For derby events, also require legbandNumber and weight
-    if (selectedEvent?.eventType === 'derby') {
-      const derbyRequiredFields = ['participantID', 'legbandNumber', 'weight']
-      const derbyMissingFields = derbyRequiredFields.filter(field => !cockProfileFormData[field])
+    // For derby and hits_ulutan events, also require legbandNumber (weight only for derby)
+    if (selectedEvent?.eventType === 'derby' || selectedEvent?.eventType === 'hits_ulutan') {
+      const requiredFields = ['participantID', 'legbandNumber']
+      if (selectedEvent?.eventType === 'derby') {
+        requiredFields.push('weight')
+      }
+      const missingFields = requiredFields.filter(field => !cockProfileFormData[field])
 
-      if (derbyMissingFields.length > 0) {
-        toast.error(`Please fill in all required fields: ${derbyMissingFields.join(', ')}`)
+      if (missingFields.length > 0) {
+        toast.error(`Please fill in all required fields: ${missingFields.join(', ')}`)
         return
       }
     }
@@ -759,7 +777,7 @@ const ParticipantRegistration = () => {
   // Check if event is completed or cancelled
   const isEventCompleted = selectedEvent?.status === 'completed' || selectedEvent?.status === 'cancelled'
 
-  // Check if registration deadline has passed for derby events
+  // Check if registration deadline has passed for derby events only
   const isRegistrationDeadlinePassed = () => {
     if (selectedEvent?.eventType === 'derby' && selectedEvent?.registrationDeadline) {
       const currentTime = new Date()
@@ -769,7 +787,7 @@ const ParticipantRegistration = () => {
     return false
   }
 
-  // Check if registration deadline is approaching (within 24 hours)
+  // Check if registration deadline is approaching (within 24 hours) for derby events only
   const isDeadlineApproaching = () => {
     if (selectedEvent?.eventType === 'derby' && selectedEvent?.registrationDeadline) {
       const currentTime = new Date()

@@ -239,8 +239,8 @@ const CombinedRegistrationForm = ({
                 </div>
               </div>
 
-              {/* Derby Event Fields */}
-              {eventData?.eventType === 'derby' && (
+              {/* Derby and Hits Ulutan Event Fields */}
+              {(eventData?.eventType === 'derby' || eventData?.eventType === 'hits_ulutan') && (
                 <>
                   <InputField
                     id={`legbandNumber-${index}`}
@@ -250,18 +250,21 @@ const CombinedRegistrationForm = ({
                     placeholder="Enter legband number"
                     required
                   />
-                  <InputField
-                    id={`weight-${index}`}
-                    label="Weight (grams) *"
-                    type="number"
-                    value={profile.weight}
-                    onChange={(e) => handleCockProfileInputChange(index, 'weight', e.target.value)}
-                    placeholder="Enter weight in grams (e.g., 2240)"
-                    min="10"
-                    max="10000"
-                    step="1"
-                    required
-                  />
+                  {/* Weight only required for derby events, not hits_ulutan */}
+                  {eventData?.eventType === 'derby' && (
+                    <InputField
+                      id={`weight-${index}`}
+                      label="Weight (grams) *"
+                      type="number"
+                      value={profile.weight}
+                      onChange={(e) => handleCockProfileInputChange(index, 'weight', e.target.value)}
+                      placeholder="Enter weight in grams (e.g., 2240)"
+                      min="10"
+                      max="10000"
+                      step="1"
+                      required
+                    />
+                  )}
                 </>
               )}
             </div>

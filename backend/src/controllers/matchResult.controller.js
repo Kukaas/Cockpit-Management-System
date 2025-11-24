@@ -584,29 +584,53 @@ export const getMatchStatistics = async (req, res) => {
   }
 };
 
-// Get derby championship standings
+// Helper function to extract win requirement from event name or use noCockRequirements
+const getWinRequirement = (event) => {
+  if (event.eventType === 'hits_ulutan') {
+    // Try to extract number from event name (e.g., "2Hit", "2 Hit", "3Hits", "3 Hits")
+    const eventName = event.eventName || '';
+    const match = eventName.match(/(\d+)\s*[Hh]it/i);
+    if (match && match[1]) {
+      return parseInt(match[1], 10);
+    }
+    // Fallback to noCockRequirements if not found in name
+    return event.noCockRequirements || 2;
+  }
+  // For derby, use noCockRequirements
+  return event.noCockRequirements || 2;
+};
+
+// Get derby and hits_ulutan championship standings
 export const getDerbyChampionshipStandings = async (req, res) => {
   try {
     const { eventID } = req.params;
 
-    // Get event details to check if it's a derby and get requirements
+    // Get event details to check if it's a derby or hits_ulutan and get requirements
     const event = await Event.findById(eventID);
     if (!event) {
       return res.status(404).json({ message: 'Event not found' });
     }
 
-    if (event.eventType !== 'derby') {
-      return res.status(400).json({ message: 'This endpoint is only for derby events' });
+    if (event.eventType !== 'derby' && event.eventType !== 'hits_ulutan') {
+      return res.status(400).json({ message: 'This endpoint is only for derby and hits ulutan events' });
     }
 
     // Get all match results for this event
     const fightSchedules = await FightSchedule.find({ eventID }).select('_id');
     const matchIDs = fightSchedules.map(f => f._id);
 
+    // Get win requirement (for hits_ulutan, extract from name or use noCockRequirements)
+    const winRequirement = getWinRequirement(event);
+
     if (matchIDs.length === 0) {
       return res.json({
         data: {
-          event: { eventName: event.eventName, noCockRequirements: event.noCockRequirements, prize: event.prize },
+          event: {
+            eventName: event.eventName,
+            noCockRequirements: event.noCockRequirements,
+            winRequirement: winRequirement,
+            prize: event.prize
+          },
           standings: [],
           totalMatches: 0,
           completedMatches: 0
@@ -646,8 +670,8 @@ export const getDerbyChampionshipStandings = async (req, res) => {
       const totalMatches = participantMatches[participantId] || 0;
       const losses = totalMatches - wins;
       const remainingCocks = event.noCockRequirements - totalMatches;
-      const isChampion = wins >= event.noCockRequirements;
-      const isEliminated = losses >= event.noCockRequirements;
+      const isChampion = wins >= winRequirement;
+      const isEliminated = losses >= winRequirement;
 
       return {
         participant: {
@@ -724,11 +748,29 @@ export const getDerbyChampionshipStandings = async (req, res) => {
     const totalMatches = matchIDs.length;
     const completedMatches = matchResults.length;
 
+    // Return response with win requirement
+    return res.json({
+      data: {
+        event: {
+          eventName: event.eventName,
+          noCockRequirements: event.noCockRequirements,
+          winRequirement: winRequirement,
+          prize: event.prize
+        },
+        standings,
+        prizeDistribution,
+        totalMatches,
+        completedMatches,
+        remainingMatches: totalMatches - completedMatches
+      }
+    });
+
     res.json({
       data: {
         event: {
           eventName: event.eventName,
           noCockRequirements: event.noCockRequirements,
+          winRequirement: winRequirement,
           prize: event.prize
         },
         standings,

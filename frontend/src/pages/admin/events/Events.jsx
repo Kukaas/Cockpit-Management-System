@@ -151,6 +151,17 @@ const Events = () => {
       }
     }
 
+    // Additional required fields for hits_ulutan events (no registrationDeadline)
+    if (formData.eventType === 'hits_ulutan') {
+      const additionalRequiredFields = ['prize', 'noCockRequirements']
+      const missingAdditionalFields = additionalRequiredFields.filter(field => !formData[field])
+
+      if (missingAdditionalFields.length > 0) {
+        toast.error(`For hits ulutan events, please fill in: ${missingAdditionalFields.join(', ')}`)
+        return
+      }
+    }
+
     // Additional required fields for fastest_kill events
     if (formData.eventType === 'fastest_kill') {
       const additionalRequiredFields = ['prize']
@@ -174,7 +185,7 @@ const Events = () => {
     if (formData.entryFee) {
       numericFields.push('entryFee')
     }
-    if (formData.eventType === 'derby') {
+    if (formData.eventType === 'derby' || formData.eventType === 'hits_ulutan') {
       numericFields.push('prize', 'noCockRequirements')
     }
     if (formData.eventType === 'fastest_kill') {
@@ -229,6 +240,17 @@ const Events = () => {
       }
     }
 
+    // Additional required fields for hits_ulutan events (no registrationDeadline)
+    if (editFormData.eventType === 'hits_ulutan') {
+      const additionalRequiredFields = ['prize', 'noCockRequirements']
+      const missingAdditionalFields = additionalRequiredFields.filter(field => !editFormData[field])
+
+      if (missingAdditionalFields.length > 0) {
+        toast.error(`For hits ulutan events, please fill in: ${missingAdditionalFields.join(', ')}`)
+        return
+      }
+    }
+
     // Additional required fields for fastest_kill events
     if (editFormData.eventType === 'fastest_kill') {
       const additionalRequiredFields = ['prize']
@@ -254,7 +276,7 @@ const Events = () => {
     if (editFormData.entryFee) {
       numericFields.push('entryFee')
     }
-    if (editFormData.eventType === 'derby') {
+    if (editFormData.eventType === 'derby' || editFormData.eventType === 'hits_ulutan') {
       numericFields.push('prize', 'noCockRequirements')
     }
     if (editFormData.eventType === 'fastest_kill') {
