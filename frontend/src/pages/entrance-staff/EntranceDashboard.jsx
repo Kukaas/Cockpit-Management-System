@@ -42,6 +42,14 @@ const EntranceDashboard = () => {
   // Get unique venues from events
   const venues = eventsData ? [...new Set(eventsData.map(event => event.location).filter(Boolean))] : []
 
+  // Event type options based on event model
+  const eventTypes = [
+    { value: '', label: 'All Event Types' },
+    { value: 'regular', label: 'Regular' },
+    { value: 'derby', label: 'Derby' },
+    { value: 'fastest_kill', label: 'Fastest Kill' },
+    { value: 'hits_ulutan', label: 'Hits Ulutan' }
+  ]
   // Month options
   const months = [
     { value: 0, label: 'January' },
@@ -135,10 +143,11 @@ const EntranceDashboard = () => {
                   value={selectedEventType}
                   onChange={(e) => setSelectedEventType(e.target.value)}
                 >
-                  <option value="">All Types</option>
-                  <option value="regular">Regular</option>
-                  <option value="derby">Derby</option>
-                  <option value="fastest_kill">Fastest Kill</option>
+                  {eventTypes.map((type) => (
+                    <option key={type.value} value={type.value}>
+                      {type.label}
+                    </option>
+                  ))}
                 </NativeSelect>
               </div>
             </div>

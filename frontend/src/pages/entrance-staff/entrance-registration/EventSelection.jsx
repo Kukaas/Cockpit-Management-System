@@ -74,11 +74,11 @@ const EventSelection = () => {
           variant={
             value === 'derby' ? 'default' :
               value === 'fastest_kill' ? 'secondary' :
-                value === 'hits_ulutan' ? 'default' : 'outline'
+                'outline'
           }
           className="text-xs capitalize"
         >
-          {value}
+          {value === 'hits_ulutan' ? 'Hits Ulutan' : value === 'fastest_kill' ? 'Fastest Kill' : value}
         </Badge>
       )
     },
@@ -91,7 +91,7 @@ const EventSelection = () => {
           variant={
             value === 'active' ? 'default' :
               value === 'completed' ? 'secondary' :
-                value === 'cancelled' ? 'destructive' : 'outline'
+                'outline'
           }
           className="text-xs capitalize"
         >
