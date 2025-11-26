@@ -153,6 +153,11 @@ const Rentals = () => {
   // Use the API data directly instead of local state
   const rentals = rentalsData || []
 
+  // Calculate total revenue (only paid rentals)
+  const totalRevenue = rentals
+    .filter(rental => rental.paymentStatus === 'paid')
+    .reduce((sum, rental) => sum + (rental.totalPrice || 0), 0)
+
   // Form handlers
   const handleRentalInputChange = (field, value) => {
     setRentalFormData(prev => ({ ...prev, [field]: value }))
@@ -378,6 +383,7 @@ const Rentals = () => {
         event={selectedEvent}
         formatDate={formatDate}
         formatCurrency={formatCurrency}
+        revenue={totalRevenue}
       />
 
       {/* Cage Rentals Section */}

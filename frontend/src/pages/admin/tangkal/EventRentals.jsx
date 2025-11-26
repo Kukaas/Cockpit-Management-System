@@ -8,7 +8,7 @@ import CustomAlertDialog from '@/components/custom/CustomAlertDialog'
 import DataTable from '@/components/custom/DataTable'
 
 // Import custom components
-import EventDetailsCard from '../../entrance-staff/entrance-registration/components/EventDetailsCard'
+import EventDetailsCard from '@/pages/tangkal-staff/rentals/components/EventDetailsCard'
 import { createViewOnlyRentalColumns } from './components/ViewOnlyRentalColumns'
 import DetailsDialog from '@/pages/tangkal-staff/rentals/components/DetailsDialog'
 
@@ -36,6 +36,11 @@ const EventRentals = () => {
 
   // Use the API data directly
   const rentals = rentalsData || []
+
+  // Calculate total revenue (only paid rentals)
+  const totalRevenue = rentals
+    .filter(rental => rental.paymentStatus === 'paid')
+    .reduce((sum, rental) => sum + (rental.totalPrice || 0), 0)
 
   // Format functions
   const formatDate = (dateString) => {
@@ -106,6 +111,7 @@ const EventRentals = () => {
         event={selectedEvent}
         formatDate={formatDate}
         formatCurrency={formatCurrency}
+        revenue={totalRevenue}
       />
 
       {/* Rentals Section */}
