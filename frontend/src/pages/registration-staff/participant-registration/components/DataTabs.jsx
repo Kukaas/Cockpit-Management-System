@@ -85,8 +85,7 @@ const DataTabs = ({
       </TabsContent>
 
       <TabsContent value="fight-schedule" className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold">Fight Schedule</h3>
+        <div className="flex justify-end items-center">
           <div className="flex gap-2">
             {onPrintFightSchedule && (
               <Button
@@ -113,7 +112,7 @@ const DataTabs = ({
           pageSize={10}
           searchable={true}
           filterable={true}
-          title="Fights Schedule"
+          title="Match List"
           loading={false}
           emptyMessage="No fights scheduled yet"
           className="shadow-sm"

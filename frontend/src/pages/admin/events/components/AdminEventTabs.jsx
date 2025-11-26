@@ -190,16 +190,13 @@ const AdminEventTabs = ({
       </TabsList>
 
       <TabsContent value="participants" className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold">Registered Participants</h3>
-        </div>
         <DataTable
           data={participants}
           columns={participantColumns}
           pageSize={10}
           searchable={true}
           filterable={true}
-          title="Participants"
+          title="Registered Participants"
           loading={false}
           emptyMessage="No participants registered yet"
           className="shadow-sm"
@@ -221,8 +218,7 @@ const AdminEventTabs = ({
       </TabsContent>
 
       <TabsContent value="fight-schedules" className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold">Fight Schedules</h3>
+        <div className="flex justify-end items-center">
           <Button
             onClick={handlePrintFightSchedule}
             variant="outline"
@@ -238,7 +234,7 @@ const AdminEventTabs = ({
           pageSize={10}
           searchable={true}
           filterable={true}
-          title="Fight Schedules"
+          title="Match List"
           loading={false}
           emptyMessage="No fight schedules created yet"
           className="shadow-sm"

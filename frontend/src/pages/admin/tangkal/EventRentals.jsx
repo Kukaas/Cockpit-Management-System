@@ -110,13 +110,6 @@ const EventRentals = () => {
 
       {/* Rentals Section */}
       <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold">Cage Rentals</h3>
-          <div className="text-sm text-muted-foreground">
-            {rentals.length} rental{rentals.length !== 1 ? 's' : ''} found
-          </div>
-        </div>
-
         <DataTable
           data={rentals}
           columns={rentalColumns}
