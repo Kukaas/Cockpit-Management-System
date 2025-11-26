@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Plus } from 'lucide-react'
+import { ArrowLeft, DollarSign, Plus } from 'lucide-react'
 import PageLayout from '@/layouts/PageLayout'
 import { toast } from 'sonner'
 import { useGetAll, useGetById } from '@/hooks/useApiQueries'
@@ -15,6 +15,7 @@ import RentalForm from './components/RentalForm'
 import DetailsDialog from './components/DetailsDialog'
 import EventDetailsCard from './components/EventDetailsCard'
 import { createRentalColumns } from './components/TableColumns'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 const Rentals = () => {
   const { eventId } = useParams()
@@ -383,8 +384,25 @@ const Rentals = () => {
         event={selectedEvent}
         formatDate={formatDate}
         formatCurrency={formatCurrency}
-        revenue={totalRevenue}
       />
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-1 gap-4 mb-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Rental Revenue</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">
+              {formatCurrency(totalRevenue)}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Total cage rental fees collected
+            </p>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Cage Rentals Section */}
       <div className="space-y-4">

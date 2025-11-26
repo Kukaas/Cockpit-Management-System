@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, DollarSign } from 'lucide-react'
 import PageLayout from '@/layouts/PageLayout'
 import { useGetById, useGetAll } from '@/hooks/useApiQueries'
 import CustomAlertDialog from '@/components/custom/CustomAlertDialog'
@@ -11,6 +11,7 @@ import DataTable from '@/components/custom/DataTable'
 import EventDetailsCard from '@/pages/tangkal-staff/rentals/components/EventDetailsCard'
 import { createViewOnlyRentalColumns } from './components/ViewOnlyRentalColumns'
 import DetailsDialog from '@/pages/tangkal-staff/rentals/components/DetailsDialog'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 const EventRentals = () => {
   const { eventId } = useParams()
@@ -111,8 +112,25 @@ const EventRentals = () => {
         event={selectedEvent}
         formatDate={formatDate}
         formatCurrency={formatCurrency}
-        revenue={totalRevenue}
       />
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-1 gap-4 mb-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Rental Revenue</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">
+              {formatCurrency(totalRevenue)}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Total cage rental fees collected
+            </p>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Rentals Section */}
       <div className="space-y-4">

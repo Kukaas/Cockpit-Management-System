@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Calendar, MapPin, DollarSign, Users, Clock, Award, Building } from 'lucide-react'
 
-const EventDetailsCard = ({ event, formatDate, formatCurrency, revenue }) => {
+const EventDetailsCard = ({ event, formatDate, formatCurrency }) => {
   // Helper function to get badge variant based on event type
   const getEventTypeBadgeVariant = (eventType) => {
     switch (eventType) {
@@ -51,7 +51,7 @@ const EventDetailsCard = ({ event, formatDate, formatCurrency, revenue }) => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="space-y-1">
             <p className="text-sm font-medium text-muted-foreground">Event Name</p>
             <p className="font-medium">{event.eventName}</p>
@@ -75,15 +75,6 @@ const EventDetailsCard = ({ event, formatDate, formatCurrency, revenue }) => {
             <p className="flex items-center gap-1">
               <DollarSign className="h-4 w-4 text-green-600" />
               {formatCurrency(event.cageRentalFee || 20)} per cage
-            </p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-sm font-medium text-muted-foreground">Total Revenue</p>
-            <p className="flex items-center gap-1">
-              <DollarSign className="h-4 w-4 text-green-600" />
-              <span className="font-bold text-green-700">
-                {revenue !== undefined ? formatCurrency(revenue) : 'N/A'}
-              </span>
             </p>
           </div>
         </div>

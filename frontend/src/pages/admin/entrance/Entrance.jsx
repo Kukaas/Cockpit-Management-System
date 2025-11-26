@@ -108,6 +108,7 @@ const Entrance = () => {
         event={selectedEvent}
         formatDate={formatDate}
         formatCurrency={formatCurrency}
+        revenue={totalRevenue}
       />
 
       {/* Summary Stats */}

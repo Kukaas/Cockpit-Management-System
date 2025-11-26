@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Plus, Printer } from 'lucide-react'
+import { ArrowLeft, DollarSign, Plus, Printer } from 'lucide-react'
 import PageLayout from '@/layouts/PageLayout'
 import { toast } from 'sonner'
 import { useGetAll, useGetById } from '@/hooks/useApiQueries'
@@ -15,6 +15,7 @@ import { printEntranceReport } from '@/lib/printEntranceReport'
 import EventDetailsCard from './components/EventDetailsCard'
 import EntranceForm from './components/EntranceForm'
 import { createEntranceColumns } from './components/TableColumns'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 const Entrance = () => {
   const { eventId } = useParams()
@@ -263,23 +264,21 @@ const Entrance = () => {
       />
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white p-4 rounded-lg border shadow-sm">
-          <h3 className="text-sm font-medium text-gray-600">Total Tally Records</h3>
-          <p className="text-2xl font-bold text-gray-900">{entrances.length}</p>
-        </div>
-        <div className="bg-white p-4 rounded-lg border shadow-sm">
-          <h3 className="text-sm font-medium text-gray-600">Total Entrances</h3>
-          <p className="text-2xl font-bold text-blue-600">{totalEntrances}</p>
-        </div>
-        <div className="bg-white p-4 rounded-lg border shadow-sm">
-          <h3 className="text-sm font-medium text-gray-600">Total Revenue</h3>
-          <p className="text-2xl font-bold text-green-600">{formatCurrency(totalRevenue)}</p>
-        </div>
-        <div className="bg-white p-4 rounded-lg border shadow-sm">
-          <h3 className="text-sm font-medium text-gray-600">Total Entrances</h3>
-          <p className="text-2xl font-bold text-blue-600">{totalEntrances}</p>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-1 gap-4 mb-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Entrance Revenue</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">
+              {formatCurrency(totalRevenue)}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Total entrance fee collected.
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Entrance Records Section */}
