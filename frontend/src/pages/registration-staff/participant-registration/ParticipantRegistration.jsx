@@ -84,7 +84,7 @@ const ParticipantRegistration = () => {
   const { data: fightsData = [], refetch: refetchFights } = useGetAll(`/fight-schedules/event/${eventId}`)
 
   // Fetch available participants and their active cock profiles for this event
-  const { data: availableData = {} } = useGetAll(`/fight-schedules/event/${eventId}/available-participants`)
+  const { data: availableData = {}, refetch: refetchAvailable } = useGetAll(`/fight-schedules/event/${eventId}/available-participants`)
   const participantsDataForFights = availableData.participants || []
   const cockProfilesDataForFights = availableData.cockProfiles || []
 
@@ -196,6 +196,7 @@ const ParticipantRegistration = () => {
       setAddFightDialogOpen(false)
       resetFightForm()
       refetchFights()
+      refetchAvailable()
     }
   })
 
@@ -209,6 +210,7 @@ const ParticipantRegistration = () => {
       setSelectedFight(null)
       resetFightForm()
       refetchFights()
+      refetchAvailable()
     }
   })
 
@@ -226,6 +228,7 @@ const ParticipantRegistration = () => {
         setDeleteFightDialogOpen(false)
         setSelectedFight(null)
         refetchFights()
+        refetchAvailable()
       }
     }
   )
