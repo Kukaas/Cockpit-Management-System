@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Eye } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { ArrowLeft, Eye, DollarSign } from 'lucide-react'
 import PageLayout from '@/layouts/PageLayout'
 import { useGetAll, useGetById } from '@/hooks/useApiQueries'
 import CustomAlertDialog from '@/components/custom/CustomAlertDialog'
@@ -36,6 +37,12 @@ const EventDetails = () => {
   // Fetch match results for this event
   const { data: matchResultsData = [] } = useGetAll(`/match-results/event/${eventId}`)
 
+  // Fetch entrance stats for revenue
+  const { data: entranceStatsData } = useGetAll(`/entrances/stats/${eventId}`)
+
+  // Fetch cage rentals for revenue
+  const { data: cageRentalsData = [] } = useGetAll(`/cage-rentals/event/${eventId}`)
+
   // Update state when data changes
   useEffect(() => {
     if (event && event._id && (!selectedEvent || selectedEvent._id !== event._id)) {
@@ -66,6 +73,14 @@ const EventDetails = () => {
       currency: 'PHP'
     }).format(amount)
   }
+
+  // Calculate revenues
+  const entryFeeRevenue = participants.reduce((sum, p) => sum + (p.entryFee || 0), 0)
+  const entranceRevenue = entranceStatsData?.summary?.totalRevenue || 0
+  const plazadaRevenue = matchResults.reduce((sum, mr) => sum + (mr.totalPlazada || 0), 0)
+  const rentalRevenue = cageRentalsData
+    .filter(rental => rental.paymentStatus === 'paid')
+    .reduce((sum, rental) => sum + (rental.totalPrice || 0), 0)
 
   // Handle view details
   const handleViewDetails = (item, type) => {
@@ -140,22 +155,85 @@ const EventDetails = () => {
         formatCurrency={formatCurrency}
       />
 
+      {/* Revenue Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Entry Fee Revenue</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">
+              {formatCurrency(entryFeeRevenue)}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Total entry fees collected
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Entrance Revenue</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">
+              {formatCurrency(entranceRevenue)}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Total entrance fees collected
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Plazada Revenue</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">
+              {formatCurrency(plazadaRevenue)}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Total plazada collected
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Rental Revenue</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">
+              {formatCurrency(rentalRevenue)}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Total cage rental fees collected
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Admin Event Tabs */}
-      <AdminEventTabs
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        participants={participants}
-        cockProfiles={cockProfiles}
-        participantColumns={participantColumns}
-        cockProfileColumns={cockProfileColumns}
-        fightSchedules={fightSchedules}
-        fightScheduleColumns={fightScheduleColumns}
-        matchResults={matchResults}
-        matchResultColumns={matchResultColumns}
-        event={selectedEvent}
-        formatCurrency={formatCurrency}
-        formatDate={formatDate}
-      />
+        <AdminEventTabs
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          participants={participants}
+          cockProfiles={cockProfiles}
+          participantColumns={participantColumns}
+          cockProfileColumns={cockProfileColumns}
+          fightSchedules={fightSchedules}
+          fightScheduleColumns={fightScheduleColumns}
+          matchResults={matchResults}
+          matchResultColumns={matchResultColumns}
+          event={selectedEvent}
+          formatCurrency={formatCurrency}
+          formatDate={formatDate}
+        />
 
       {/* Detail View Dialog */}
       <CustomAlertDialog
