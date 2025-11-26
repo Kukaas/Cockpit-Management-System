@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Calendar, MapPin, DollarSign, Users, Clock, Award, Building, TrendingUp } from 'lucide-react'
 
-const EventDetailsCard = ({ event, formatDate, formatCurrency, totalPlazada = 0 }) => {
+const EventDetailsCard = ({ event, formatDate, formatCurrency }) => {
   // Helper function to get badge variant based on event type
   const getEventTypeBadgeVariant = (eventType) => {
     switch (eventType) {
@@ -106,15 +106,6 @@ const EventDetailsCard = ({ event, formatDate, formatCurrency, totalPlazada = 0 
             >
               {event.status}
             </Badge>
-          </div>
-
-          {/* Total Plazada */}
-          <div className="space-y-1">
-            <p className="text-sm font-medium text-muted-foreground">Total Plazada</p>
-            <p className="flex items-center gap-1">
-              <TrendingUp className="h-4 w-4 text-emerald-600" />
-              <span className="font-semibold text-emerald-700">{formatCurrency(totalPlazada)}</span>
-            </p>
           </div>
 
           {/* Entry Fee - Optional */}

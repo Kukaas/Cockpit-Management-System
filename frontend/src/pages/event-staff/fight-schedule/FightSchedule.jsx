@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Plus, Trophy, Users, Printer } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { ArrowLeft, Plus, Trophy, Users, Printer, DollarSign } from 'lucide-react'
 import PageLayout from '@/layouts/PageLayout'
 import { toast } from 'sonner'
 import { useGetAll, useGetById } from '@/hooks/useApiQueries'
@@ -454,8 +455,25 @@ const FightSchedule = () => {
         event={event}
         formatDate={formatDate}
         formatCurrency={formatCurrency}
-        totalPlazada={totalPlazada}
       />
+
+      {/* Plazada Revenue Card */}
+      <div className="grid grid-cols-1 md:grid-cols-1 gap-4 mb-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Plazada Revenue</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">
+              {formatCurrency(totalPlazada)}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Total plazada collected from match results
+            </p>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Fight and Results Tabs */}
       <FightTabs
