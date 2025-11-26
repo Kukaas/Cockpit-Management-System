@@ -182,8 +182,8 @@ const EventSelection = () => {
         data={activeEvents}
         columns={columns}
         pageSize={10}
-        searchable={true}
-        filterable={true}
+        searchable={false}
+        filterable={false}
         title="Events"
         onRowClick={handleRowClick}
         loading={isLoading}

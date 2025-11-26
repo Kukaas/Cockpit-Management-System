@@ -86,6 +86,14 @@ const TangkalDashboard = () => {
   const currentYear = new Date().getFullYear()
   const years = [currentYear - 2, currentYear - 1, currentYear, currentYear + 1]
 
+  // Event type options
+  const eventTypes = [
+    { value: 'regular', label: 'Regular' },
+    { value: 'derby', label: 'Derby' },
+    { value: 'fastest_kill', label: 'Fastest Kill' },
+    { value: 'hits_ulutan', label: 'Hits Ulutan' }
+  ]
+
   const dashboardCards = [
     {
       title: 'Cage Availability',
