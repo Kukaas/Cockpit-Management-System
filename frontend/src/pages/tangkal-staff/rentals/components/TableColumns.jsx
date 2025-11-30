@@ -1,7 +1,7 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Edit, Trash2,  RotateCcw, Eye } from 'lucide-react'
+import { Edit, Trash2, RotateCcw, Eye } from 'lucide-react'
 
 export const createRentalColumns = (formatCurrency, formatDate, handleEditClick, handleDeleteClick, handleStatusChange, statusChangeMutation, handleRentalStatusChange, rentalStatusMutation, handleViewDetails) => [
   {
@@ -166,16 +166,10 @@ export const createRentalColumns = (formatCurrency, formatDate, handleEditClick,
               e.stopPropagation()
               handleEditClick(row)
             }}
-            disabled={isReturned}
-            className={`h-8 w-8 p-0 ${isReturned
-              ? 'text-gray-400 cursor-not-allowed'
-              : ''
-              }`}
-            title={isReturned ? 'Cannot edit returned rental' : 'Edit rental'}
           >
             <Edit className="h-4 w-4" />
           </Button>
-          <Button
+          {/* <Button
             variant="ghost"
             size="sm"
             onClick={(e) => {
@@ -190,7 +184,7 @@ export const createRentalColumns = (formatCurrency, formatDate, handleEditClick,
             title={isReturned ? 'Cannot delete returned rentals' : 'Delete rental'}
           >
             <Trash2 className="h-4 w-4" />
-          </Button>
+          </Button> */}
         </div>
       )
     }

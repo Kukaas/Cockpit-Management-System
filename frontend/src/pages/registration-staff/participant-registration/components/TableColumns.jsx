@@ -58,7 +58,7 @@ export const createParticipantColumns = (handleEditClick, handleDeleteClick, han
         >
           <Edit className="h-4 w-4" />
         </Button>
-        <Button
+        {/* <Button
           variant="ghost"
           size="sm"
           onClick={(e) => {
@@ -69,7 +69,7 @@ export const createParticipantColumns = (handleEditClick, handleDeleteClick, han
           disabled={isEventCompleted}
         >
           <Trash2 className="h-4 w-4" />
-        </Button>
+        </Button> */}
       </div>
     )
   }

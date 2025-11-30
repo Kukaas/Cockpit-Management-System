@@ -43,7 +43,7 @@ export const createEntranceColumns = (formatDate, formatCurrency, handleEditClic
         >
           <Edit className="h-4 w-4" />
         </Button>
-        <Button
+        {/* <Button
           variant="ghost"
           size="sm"
           onClick={(e) => {
@@ -54,7 +54,7 @@ export const createEntranceColumns = (formatDate, formatCurrency, handleEditClic
           disabled={isEventDisabled}
         >
           <Trash2 className="h-4 w-4" />
-        </Button>
+        </Button> */}
       </div>
     )
   }
