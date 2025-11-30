@@ -20,10 +20,6 @@ const CageAvailabilityForm = ({
   isPending,
   isEdit = false
 }) => {
-  const arenaOptions = [
-    'Buenavista Cockpit Arena',
-  ]
-
   return (
     <CustomAlertDialog
       open={open}
@@ -111,24 +107,6 @@ const CageAvailabilityForm = ({
               />
             </div>
           )}
-
-          <div className="space-y-2">
-            <Label htmlFor={isEdit ? "editArena" : "arena"} className="text-sm font-medium">
-              Arena *
-            </Label>
-            <NativeSelect
-              id={isEdit ? "editArena" : "arena"}
-              value={formData.arena}
-              onChange={(e) => onInputChange('arena', e.target.value)}
-              required
-            >
-              {arenaOptions.map((arena) => (
-                <option key={arena} value={arena}>
-                  {arena}
-                </option>
-              ))}
-            </NativeSelect>
-          </div>
         </div>
       </div>
     </CustomAlertDialog>
