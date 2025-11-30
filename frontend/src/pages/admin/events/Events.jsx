@@ -202,6 +202,16 @@ const Events = () => {
     // Prepare data for create - remove fields that shouldn't be sent for regular events
     const createData = { ...formData }
 
+    // Convert date to ISO string to preserve absolute time
+    if (createData.date) {
+      createData.date = new Date(createData.date).toISOString()
+    }
+
+    // Convert registrationDeadline to ISO string if present
+    if (createData.registrationDeadline) {
+      createData.registrationDeadline = new Date(createData.registrationDeadline).toISOString()
+    }
+
     // Handle entryFee - convert to number if provided, otherwise set to null
     if (createData.entryFee && createData.entryFee !== '') {
       createData.entryFee = Number(createData.entryFee)
@@ -292,6 +302,16 @@ const Events = () => {
 
     // Prepare data for update - remove fields that shouldn't be sent for regular events
     const updateData = { ...editFormData }
+
+    // Convert date to ISO string to preserve absolute time
+    if (updateData.date) {
+      updateData.date = new Date(updateData.date).toISOString()
+    }
+
+    // Convert registrationDeadline to ISO string if present
+    if (updateData.registrationDeadline) {
+      updateData.registrationDeadline = new Date(updateData.registrationDeadline).toISOString()
+    }
 
     // Handle entryFee - convert to number if provided, otherwise set to null
     if (updateData.entryFee && updateData.entryFee !== '') {
