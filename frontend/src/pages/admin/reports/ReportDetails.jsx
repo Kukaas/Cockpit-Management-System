@@ -7,6 +7,8 @@ import { useGetById } from '@/hooks/useApiQueries'
 import EventDetailsCard from '../../entrance-staff/entrance-registration/components/EventDetailsCard'
 import ReportTabs from './components/ReportTabs'
 
+import UnifiedPrintButton from './components/UnifiedPrintButton'
+
 const ReportDetails = () => {
   const { eventId } = useParams()
   const navigate = useNavigate()
@@ -68,10 +70,17 @@ const ReportDetails = () => {
       title={`Reports - ${selectedEvent.eventName}`}
       description="View financial reports for this event"
       headerButton={
-        <Button variant="outline" onClick={() => navigate('/admin/reports')}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Reports
-        </Button>
+        <div className="flex gap-2">
+          <UnifiedPrintButton
+            event={selectedEvent}
+            formatCurrency={formatCurrency}
+            formatDate={formatDate}
+          />
+          <Button variant="outline" onClick={() => navigate('/admin/reports')}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Reports
+          </Button>
+        </div>
       }
     >
       {/* Event Details Card */}
