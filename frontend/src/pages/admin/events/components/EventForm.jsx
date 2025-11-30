@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label'
 import CustomAlertDialog from '@/components/custom/CustomAlertDialog'
 import InputField from '@/components/custom/InputField'
 import NativeSelect from '@/components/custom/NativeSelect'
-import { Calendar, MapPin, DollarSign, Hash, Clock, Users, FileText, Building } from 'lucide-react'
+import { Calendar, MapPin,  Hash, Clock, Users, FileText, Building } from 'lucide-react'
 
 const EventForm = ({
   open,
@@ -95,7 +95,6 @@ const EventForm = ({
         <InputField
           id={isEdit ? "editEntranceFee" : "entranceFee"}
           label="Entrance Fee (PHP) *"
-          icon={DollarSign}
           type="number"
           value={formData.entranceFee}
           onChange={(e) => onInputChange('entranceFee', e.target.value)}
@@ -108,8 +107,6 @@ const EventForm = ({
         {/* Entry Fee - Optional */}
         <InputField
           id={isEdit ? "editEntryFee" : "entryFee"}
-          label="Entry Fee (PHP)"
-          icon={DollarSign}
           type="number"
           value={formData.entryFee}
           onChange={(e) => onInputChange('entryFee', e.target.value)}
@@ -122,7 +119,6 @@ const EventForm = ({
         <InputField
           id={isEdit ? "editCageRentalFee" : "cageRentalFee"}
           label="Cage Rental Fee (PHP) *"
-          icon={DollarSign}
           type="number"
           value={formData.cageRentalFee}
           onChange={(e) => onInputChange('cageRentalFee', e.target.value)}
@@ -164,7 +160,7 @@ const EventForm = ({
               <InputField
                 id={isEdit ? "editPrize" : "prize"}
                 label="Prize Pool (PHP) *"
-                icon={DollarSign}
+
                 type="number"
                 value={formData.prize}
                 onChange={(e) => onInputChange('prize', e.target.value)}
@@ -199,7 +195,6 @@ const EventForm = ({
             <InputField
               id={isEdit ? "editPrize" : "prize"}
               label="Prize Pool (PHP) *"
-              icon={DollarSign}
               type="number"
               value={formData.prize}
               onChange={(e) => onInputChange('prize', e.target.value)}

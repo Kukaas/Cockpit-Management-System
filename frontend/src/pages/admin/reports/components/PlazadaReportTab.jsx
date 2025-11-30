@@ -1,7 +1,7 @@
 import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Printer, DollarSign } from 'lucide-react'
+import { Printer } from 'lucide-react'
 import { useGetAll } from '@/hooks/useApiQueries'
 import DataTable from '@/components/custom/DataTable'
 import { createViewOnlyMatchResultColumns } from '../../events/components/ViewOnlyTableColumns'
@@ -258,7 +258,6 @@ const PlazadaReportTab = ({ event, formatCurrency, formatDate }) => {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
-                <DollarSign className="h-5 w-5 text-emerald-600" />
                 Plazada Report
               </CardTitle>
               <CardDescription>

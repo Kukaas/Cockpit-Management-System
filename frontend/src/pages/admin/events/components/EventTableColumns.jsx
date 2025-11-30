@@ -1,7 +1,7 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Edit, Trash2, Calendar, MapPin, DollarSign, Users, Award, Target, Info, Building, Zap } from 'lucide-react'
+import { Edit, Trash2, Calendar, MapPin,  Users, Award, Target, Info, Building, Zap } from 'lucide-react'
 
 export const createEventColumns = (
   formatCurrency,
@@ -125,9 +125,7 @@ export const createEventColumns = (
       sortable: true,
       filterable: false,
       render: (value) => (
-        <div className="flex items-center gap-1">
-          <DollarSign className="h-4 w-4 text-green-600" />
-          <span>{formatCurrency(value)}</span>
+        <div className="flex items-center gap-1"> <span>{formatCurrency(value)}</span>
         </div>
       )
     },
@@ -151,9 +149,7 @@ export const createEventColumns = (
           return (
             <div className="space-y-1">
               {row.prize && (
-                <div className="flex items-center gap-1">
-                  <DollarSign className="h-3 w-3 text-green-600" />
-                  <span className="text-xs font-medium">{formatCurrency(row.prize)}</span>
+                <div className="flex items-center gap-1"> <span className="text-xs font-medium">{formatCurrency(row.prize)}</span>
                 </div>
               )}
               {row.noCockRequirements && (

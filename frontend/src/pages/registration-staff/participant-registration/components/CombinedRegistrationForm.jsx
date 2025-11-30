@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import CustomAlertDialog from '@/components/custom/CustomAlertDialog'
 import InputField from '@/components/custom/InputField'
-import { Plus, Trash2, DollarSign } from 'lucide-react'
+import { Plus, Trash2 } from 'lucide-react'
 import { useGetById, useGetAll } from '@/hooks/useApiQueries'
 
 const CombinedRegistrationForm = ({
@@ -180,7 +180,6 @@ const CombinedRegistrationForm = ({
             <InputField
               id="entryFee"
               label={`Entry Fee (PHP) *`}
-              icon={DollarSign}
               type="number"
               value={formData.entryFee || eventData.entryFee.toString()}
               onChange={(e) => onInputChange('entryFee', e.target.value)}

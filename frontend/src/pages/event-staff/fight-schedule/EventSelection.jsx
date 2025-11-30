@@ -2,7 +2,7 @@ import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Calendar, MapPin, DollarSign, Users, ArrowLeft, Swords } from 'lucide-react'
+import { Calendar, MapPin,  Users, ArrowLeft, Swords } from 'lucide-react'
 import PageLayout from '@/layouts/PageLayout'
 import { useGetAll } from '@/hooks/useApiQueries'
 import DataTable from '@/components/custom/DataTable'
@@ -124,9 +124,7 @@ const StaffEventSelection = () => {
           return (
             <div className="space-y-1">
               {row.prize && (
-                <div className="flex items-center gap-1">
-                  <DollarSign className="h-3 w-3 text-green-600" />
-                  <span className="text-xs font-medium">{formatCurrency(row.prize)}</span>
+                <div className="flex items-center gap-1"> <span className="text-xs font-medium">{formatCurrency(row.prize)}</span>
                 </div>
               )}
               {row.noCockRequirements && (
@@ -136,9 +134,7 @@ const StaffEventSelection = () => {
                 </div>
               )}
               {row.minimumBet && (
-                <div className="flex items-center gap-1">
-                  <DollarSign className="h-3 w-3 text-orange-600" />
-                  <span className="text-xs">Min: {formatCurrency(row.minimumBet)}</span>
+                <div className="flex items-center gap-1"> <span className="text-xs">Min: {formatCurrency(row.minimumBet)}</span>
                 </div>
               )}
             </div>

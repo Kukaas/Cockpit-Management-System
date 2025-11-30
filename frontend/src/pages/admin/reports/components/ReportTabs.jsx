@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Building2, Users, DollarSign, Ticket } from 'lucide-react'
+import { Building2, Users, Ticket } from 'lucide-react'
 import RentalsReportTab from './RentalsReportTab'
 import EntrancesReportTab from './EntrancesReportTab'
 import PlazadaReportTab from './PlazadaReportTab'
@@ -35,7 +35,6 @@ const ReportTabs = ({
                     Entrances
                 </TabsTrigger>
                 <TabsTrigger value="plazada" className="flex items-center gap-2">
-                    <DollarSign className="h-4 w-4" />
                     Plazada
                 </TabsTrigger>
                 {hasEntryFee && (

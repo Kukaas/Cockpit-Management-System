@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Calendar, MapPin, DollarSign, Users, ArrowLeft, Swords, Filter, Trophy, Target, Clock, Award, TrendingUp } from 'lucide-react'
+import { Calendar, MapPin,  Users, ArrowLeft, Swords, Filter, Trophy, Target, Clock, Award, TrendingUp } from 'lucide-react'
 import PageLayout from '@/layouts/PageLayout'
 import { useGetAll } from '@/hooks/useApiQueries'
 import DataTable from '@/components/custom/DataTable'
@@ -200,9 +200,7 @@ const AdminEventSelection = () => {
           return (
             <div className="space-y-1">
               {row.prize && (
-                <div className="flex items-center gap-1">
-                  <DollarSign className="h-3 w-3 text-green-600" />
-                  <span className="text-xs font-medium">{formatCurrency(row.prize)}</span>
+                <div className="flex items-center gap-1"> <span className="text-xs font-medium">{formatCurrency(row.prize)}</span>
                 </div>
               )}
               {row.noCockRequirements && (
@@ -212,9 +210,7 @@ const AdminEventSelection = () => {
                 </div>
               )}
               {row.minimumBet && (
-                <div className="flex items-center gap-1">
-                  <DollarSign className="h-3 w-3 text-orange-600" />
-                  <span className="text-xs">Min: {formatCurrency(row.minimumBet)}</span>
+                <div className="flex items-center gap-1"> <span className="text-xs">Min: {formatCurrency(row.minimumBet)}</span>
                 </div>
               )}
             </div>
@@ -325,9 +321,7 @@ const AdminEventSelection = () => {
         <div className="grid grid-cols-1 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Plazada</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
+              <CardTitle className="text-sm font-medium">Total Plazada</CardTitle> </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-emerald-600">
                 {formatCurrency(stats.totalPlazada)}

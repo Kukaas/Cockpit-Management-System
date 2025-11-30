@@ -2,7 +2,7 @@ import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { Calendar, MapPin, DollarSign, Users, Clock, Award, Building, TrendingUp } from 'lucide-react'
+import { Calendar, MapPin,  Users, Clock, Award, Building, TrendingUp } from 'lucide-react'
 
 const EventDetailsCard = ({ event, formatDate, formatCurrency, totalPlazada = 0 }) => {
   // Helper function to get badge variant based on event type
@@ -121,9 +121,7 @@ const EventDetailsCard = ({ event, formatDate, formatCurrency, totalPlazada = 0 
           {event.entryFee && event.entryFee > 0 && (
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">Entry Fee</p>
-              <p className="flex items-center gap-1">
-                <DollarSign className="h-4 w-4 text-blue-600" />
-                <span className="font-semibold text-blue-700">{formatCurrency(event.entryFee)}</span>
+              <p className="flex items-center gap-1"> <span className="font-semibold text-blue-700">{formatCurrency(event.entryFee)}</span>
               </p>
             </div>
           )}
@@ -143,9 +141,7 @@ const EventDetailsCard = ({ event, formatDate, formatCurrency, totalPlazada = 0 
           {event.eventType === 'derby' && event.prize && (
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">Prize Pool</p>
-              <p className="flex items-center gap-1">
-                <DollarSign className="h-4 w-4 text-green-600" />
-                {formatCurrency(event.prize)}
+              <p className="flex items-center gap-1"> {formatCurrency(event.prize)}
               </p>
             </div>
           )}

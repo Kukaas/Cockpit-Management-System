@@ -2,7 +2,7 @@ import React from 'react'
 import { Button } from '@/components/ui/button'
 import CustomAlertDialog from '@/components/custom/CustomAlertDialog'
 import InputField from '@/components/custom/InputField'
-import { DollarSign } from 'lucide-react'
+import { } from 'lucide-react'
 
 const ParticipantForm = ({
   open,
@@ -70,7 +70,6 @@ const ParticipantForm = ({
             <InputField
               id={isEdit ? "editEntryFee" : "entryFee"}
               label={`Entry Fee (PHP) *`}
-              icon={DollarSign}
               type="number"
               value={formData.entryFee || event.entryFee.toString()}
               onChange={(e) => onInputChange('entryFee', e.target.value)}

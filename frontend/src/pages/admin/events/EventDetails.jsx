@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ArrowLeft, Eye, DollarSign } from 'lucide-react'
+import { ArrowLeft, Eye } from 'lucide-react'
 import PageLayout from '@/layouts/PageLayout'
 import { useGetAll, useGetById } from '@/hooks/useApiQueries'
 import CustomAlertDialog from '@/components/custom/CustomAlertDialog'
@@ -159,9 +159,7 @@ const EventDetails = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Entry Fee Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
+            <CardTitle className="text-sm font-medium">Total Entry Fee Revenue</CardTitle> </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
               {formatCurrency(entryFeeRevenue)}
@@ -174,9 +172,7 @@ const EventDetails = () => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Entrance Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
+            <CardTitle className="text-sm font-medium">Total Entrance Revenue</CardTitle> </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
               {formatCurrency(entranceRevenue)}
@@ -189,9 +185,7 @@ const EventDetails = () => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Plazada Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
+            <CardTitle className="text-sm font-medium">Total Plazada Revenue</CardTitle> </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
               {formatCurrency(plazadaRevenue)}
@@ -204,9 +198,7 @@ const EventDetails = () => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Rental Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
+            <CardTitle className="text-sm font-medium">Total Rental Revenue</CardTitle> </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
               {formatCurrency(rentalRevenue)}

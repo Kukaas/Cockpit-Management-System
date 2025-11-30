@@ -2,7 +2,7 @@ import PageLayout from '@/layouts/PageLayout'
 import React, { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Users, Target, Filter, Award, Activity, DollarSign } from 'lucide-react'
+import { Users, Target, Filter, Award, Activity } from 'lucide-react'
 import { useGetAll } from '@/hooks/useApiQueries'
 import NativeSelect from '@/components/custom/NativeSelect'
 import { RegistrationChart } from './components/RegistrationChart'
@@ -186,9 +186,7 @@ const RegistrationDashboard = () => {
         {/* Entry Fee Statistics */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Entry Fee Collected</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
+            <CardTitle className="text-sm font-medium">Total Entry Fee Collected</CardTitle> </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-600">
               {formatCurrency(filteredStats.totalEntryFee)}

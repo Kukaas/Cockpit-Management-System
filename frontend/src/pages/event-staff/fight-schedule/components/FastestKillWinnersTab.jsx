@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Trophy, Award, Target, Users, DollarSign, Clock, Zap, Edit, Save, X } from 'lucide-react'
+import { Trophy, Award, Target, Users,  Clock, Zap, Edit, Save, X } from 'lucide-react'
 import { useGetAll } from '@/hooks/useApiQueries'
 import { useCustomMutation } from '@/hooks/useApiMutations'
 import { toast } from 'sonner'

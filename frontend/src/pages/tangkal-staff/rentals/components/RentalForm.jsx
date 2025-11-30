@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Shield, MapPin, DollarSign, Search } from 'lucide-react'
+import { Shield, MapPin,  Search } from 'lucide-react'
 import CustomAlertDialog from '@/components/custom/CustomAlertDialog'
 import InputField from '@/components/custom/InputField'
 import NativeSelect from '@/components/custom/NativeSelect'
@@ -348,9 +348,7 @@ const RentalForm = ({
                   })} per cage
                 </p>
               </div>
-              <div className="flex items-center gap-1">
-                <DollarSign className="h-4 w-4 text-green-600" />
-                <span className="text-lg font-bold text-green-600">
+              <div className="flex items-center gap-1"> <span className="text-lg font-bold text-green-600">
                   {totalPrice.toLocaleString('en-PH', {
                     style: 'currency',
                     currency: 'PHP'

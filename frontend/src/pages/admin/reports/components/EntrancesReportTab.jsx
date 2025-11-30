@@ -1,7 +1,7 @@
 import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Printer, Users, DollarSign, Calendar } from 'lucide-react'
+import { Printer, Users, Calendar } from 'lucide-react'
 import { useGetAll } from '@/hooks/useApiQueries'
 import DataTable from '@/components/custom/DataTable'
 import { createAdminEntranceColumns } from '../../entrance/components/TableColumns'
@@ -101,15 +101,15 @@ const EntrancesReportTab = ({ event, formatCurrency, formatDate }) => {
             <div class="event-title">Entrances Report</div>
             <div class="event-title">${event?.eventName || 'Event Name'}</div>
             <div class="event-details">Date: ${event?.date ? new Date(event.date).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric'
-            }) : 'N/A'}</div>
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    }) : 'N/A'}</div>
             <div class="event-details">Time: ${event?.date ? new Date(event.date).toLocaleTimeString('en-US', {
-              hour: '2-digit',
-              minute: '2-digit',
-              hour12: true
-            }) : 'N/A'}</div>
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    }) : 'N/A'}</div>
             <div class="event-details">Location: ${event?.location || 'N/A'}</div>
             <div class="event-details">Entrance Fee: ${event?.entranceFee ? formatCurrency(event.entranceFee) : 'N/A'}</div>
             <div class="event-details">Report Generated: ${new Date().toLocaleString('en-US')}</div>
@@ -146,23 +146,23 @@ const EntrancesReportTab = ({ event, formatCurrency, formatDate }) => {
             </thead>
             <tbody>
               ${entrances.map((entrance, index) => {
-                const entranceTotal = (entrance.count || 0) * (event?.entranceFee || 0)
-                return `
+      const entranceTotal = (entrance.count || 0) * (event?.entranceFee || 0)
+      return `
                 <tr>
                   <td>${index + 1}</td>
                   <td>${entrance.count || 0}</td>
                   <td class="text-right">${formatCurrency(entranceTotal)}</td>
                   <td>${entrance.date ? new Date(entrance.date).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  }) : 'N/A'}</td>
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      }) : 'N/A'}</td>
                   <td>${entrance.recordedBy?.username || entrance.recordedBy?.firstName || 'N/A'}</td>
                 </tr>
               `
-              }).join('')}
+    }).join('')}
             </tbody>
             <tfoot>
               <tr>

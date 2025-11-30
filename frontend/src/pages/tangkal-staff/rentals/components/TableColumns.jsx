@@ -1,7 +1,7 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Edit, Trash2, DollarSign, RotateCcw, Eye } from 'lucide-react'
+import { Edit, Trash2,  RotateCcw, Eye } from 'lucide-react'
 
 export const createRentalColumns = (formatCurrency, formatDate, handleEditClick, handleDeleteClick, handleStatusChange, statusChangeMutation, handleRentalStatusChange, rentalStatusMutation, handleViewDetails) => [
   {
@@ -16,9 +16,7 @@ export const createRentalColumns = (formatCurrency, formatDate, handleEditClick,
     sortable: true,
     filterable: false,
     render: (value) => (
-      <div className="flex items-center gap-1">
-        <DollarSign className="h-4 w-4 text-green-600" />
-        <span>{formatCurrency(value)}</span>
+      <div className="flex items-center gap-1"> <span>{formatCurrency(value)}</span>
       </div>
     )
   },

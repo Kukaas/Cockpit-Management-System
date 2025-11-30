@@ -1,42 +1,42 @@
 import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Printer, Building2, DollarSign, Calendar } from 'lucide-react'
+import { Printer, Building2, Calendar } from 'lucide-react'
 import { useGetAll } from '@/hooks/useApiQueries'
 import DataTable from '@/components/custom/DataTable'
 import { createViewOnlyRentalColumns } from '../../tangkal/components/ViewOnlyRentalColumns'
 
 const RentalsReportTab = ({ event, formatCurrency, formatDate }) => {
-    const eventId = event?._id
+  const eventId = event?._id
 
-    // Fetch rentals for this event
-    const { data: rentalsData = [], isLoading } = useGetAll(
-        eventId ? `/cage-rentals/event/${eventId}` : null
-    )
+  // Fetch rentals for this event
+  const { data: rentalsData = [], isLoading } = useGetAll(
+    eventId ? `/cage-rentals/event/${eventId}` : null
+  )
 
-    const rentals = rentalsData || []
+  const rentals = rentalsData || []
 
-    // Calculate totals
-    const totalRentals = rentals.length
-    const totalRevenue = rentals.reduce((sum, rental) => sum + (rental.totalPrice || 0), 0)
-    const paidRentals = rentals.filter(r => r.paymentStatus === 'paid').length
-    const unpaidRentals = rentals.filter(r => r.paymentStatus === 'unpaid').length
+  // Calculate totals
+  const totalRentals = rentals.length
+  const totalRevenue = rentals.reduce((sum, rental) => sum + (rental.totalPrice || 0), 0)
+  const paidRentals = rentals.filter(r => r.paymentStatus === 'paid').length
+  const unpaidRentals = rentals.filter(r => r.paymentStatus === 'unpaid').length
 
-    // Handle view details (no-op for reports)
-    const handleViewDetails = () => { }
+  // Handle view details (no-op for reports)
+  const handleViewDetails = () => { }
 
-    // Create table columns
-    const rentalColumns = createViewOnlyRentalColumns(
-        formatCurrency,
-        formatDate,
-        handleViewDetails
-    )
+  // Create table columns
+  const rentalColumns = createViewOnlyRentalColumns(
+    formatCurrency,
+    formatDate,
+    handleViewDetails
+  )
 
-    // Print functionality
-    const handlePrint = () => {
-        const printWindow = window.open('', '_blank')
+  // Print functionality
+  const handlePrint = () => {
+    const printWindow = window.open('', '_blank')
 
-        const printContent = `
+    const printContent = `
       <!DOCTYPE html>
       <html>
         <head>
@@ -109,15 +109,15 @@ const RentalsReportTab = ({ event, formatCurrency, formatDate }) => {
             <div class="event-title">Rentals Report</div>
             <div class="event-title">${event?.eventName || 'Event Name'}</div>
             <div class="event-details">Date: ${event?.date ? new Date(event.date).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        }) : 'N/A'}</div>
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    }) : 'N/A'}</div>
             <div class="event-details">Time: ${event?.date ? new Date(event.date).toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true
-        }) : 'N/A'}</div>
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    }) : 'N/A'}</div>
             <div class="event-details">Location: ${event?.location || 'N/A'}</div>
             <div class="event-details">Report Generated: ${new Date().toLocaleString('en-US')}</div>
           </div>
@@ -164,10 +164,10 @@ const RentalsReportTab = ({ event, formatCurrency, formatDate }) => {
                   <td>${rental.arena || 'N/A'}</td>
                   <td>${rental.quantity || 0}</td>
                   <td>${rental.date ? new Date(rental.date).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        }) : 'N/A'}</td>
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    }) : 'N/A'}</td>
                   <td class="text-right">${formatCurrency(rental.totalPrice || 0)}</td>
                   <td>${rental.paymentStatus ? rental.paymentStatus.charAt(0).toUpperCase() + rental.paymentStatus.slice(1) : 'N/A'}</td>
                   <td>${rental.rentalStatus ? rental.rentalStatus.charAt(0).toUpperCase() + rental.rentalStatus.slice(1) : 'N/A'}</td>
@@ -186,94 +186,94 @@ const RentalsReportTab = ({ event, formatCurrency, formatDate }) => {
       </html>
     `
 
-        printWindow.document.write(printContent)
-        printWindow.document.close()
-        printWindow.focus()
-        printWindow.print()
-        printWindow.close()
-    }
+    printWindow.document.write(printContent)
+    printWindow.document.close()
+    printWindow.focus()
+    printWindow.print()
+    printWindow.close()
+  }
 
-    if (!eventId) {
-        return (
-            <div className="text-center py-8 text-muted-foreground">
-                <p>Please select an event to view rentals report</p>
-            </div>
-        )
-    }
-
+  if (!eventId) {
     return (
-        <div className="space-y-6">
-            {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Card>
-                    <CardHeader className="pb-3">
-                        <CardTitle className="text-sm font-medium text-muted-foreground">Total Rentals</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{totalRentals}</div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="pb-3">
-                        <CardTitle className="text-sm font-medium text-muted-foreground">Total Revenue</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-green-600">{formatCurrency(totalRevenue)}</div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="pb-3">
-                        <CardTitle className="text-sm font-medium text-muted-foreground">Paid</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-blue-600">{paidRentals}</div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="pb-3">
-                        <CardTitle className="text-sm font-medium text-muted-foreground">Unpaid</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-red-600">{unpaidRentals}</div>
-                    </CardContent>
-                </Card>
-            </div>
-
-            {/* Rentals Table */}
-            <Card>
-                <CardHeader>
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <CardTitle className="flex items-center gap-2">
-                                <Building2 className="h-5 w-5 text-blue-600" />
-                                Rentals Report
-                            </CardTitle>
-                            <CardDescription>
-                                Cage rental records for this event
-                            </CardDescription>
-                        </div>
-                        <Button onClick={handlePrint} variant="outline" size="sm">
-                            <Printer className="h-4 w-4 mr-2" />
-                            Print Report
-                        </Button>
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    <DataTable
-                        data={rentals}
-                        columns={rentalColumns}
-                        pageSize={10}
-                        searchable={true}
-                        filterable={true}
-                        title="Rentals"
-                        loading={isLoading}
-                        emptyMessage="No rentals found for this event"
-                        className="shadow-sm"
-                    />
-                </CardContent>
-            </Card>
-        </div>
+      <div className="text-center py-8 text-muted-foreground">
+        <p>Please select an event to view rentals report</p>
+      </div>
     )
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Rentals</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalRentals}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Revenue</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">{formatCurrency(totalRevenue)}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Paid</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-600">{paidRentals}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Unpaid</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-red-600">{unpaidRentals}</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Rentals Table */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Building2 className="h-5 w-5 text-blue-600" />
+                Rentals Report
+              </CardTitle>
+              <CardDescription>
+                Cage rental records for this event
+              </CardDescription>
+            </div>
+            <Button onClick={handlePrint} variant="outline" size="sm">
+              <Printer className="h-4 w-4 mr-2" />
+              Print Report
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <DataTable
+            data={rentals}
+            columns={rentalColumns}
+            pageSize={10}
+            searchable={true}
+            filterable={true}
+            title="Rentals"
+            loading={isLoading}
+            emptyMessage="No rentals found for this event"
+            className="shadow-sm"
+          />
+        </CardContent>
+      </Card>
+    </div>
+  )
 }
 
 export default RentalsReportTab

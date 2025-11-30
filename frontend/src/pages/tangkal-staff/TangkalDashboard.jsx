@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Calendar, DollarSign, Users, Home, Settings, TrendingUp, TrendingDown, Activity, Filter } from 'lucide-react'
+import { Calendar,  Users, Home, Settings, TrendingUp, TrendingDown, Activity, Filter } from 'lucide-react'
 import { useGetAll } from '@/hooks/useApiQueries'
 import NativeSelect from '@/components/custom/NativeSelect'
 import { RentalChart } from './rentals/components/RentalChart'
@@ -114,7 +114,6 @@ const TangkalDashboard = () => {
     {
       title: 'Payment Tracking',
       description: 'Monitor payment status and send reminders',
-      icon: <DollarSign className="h-8 w-8" />,
       action: () => navigate('/tangkal-staff/cage-rentals'),
       color: 'bg-yellow-500',
       badge: 'Track'
@@ -256,9 +255,7 @@ const TangkalDashboard = () => {
           </Card> */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
+              <CardTitle className="text-sm font-medium">Total Revenue</CardTitle> </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-emerald-600">
                 {formatCurrency(filteredStats.totalRevenue)}

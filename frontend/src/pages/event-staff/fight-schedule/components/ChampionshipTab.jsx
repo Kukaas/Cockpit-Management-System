@@ -1,6 +1,6 @@
 import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Trophy, Award, Target, Users, DollarSign, TrendingUp } from 'lucide-react'
+import { Trophy, Award, Target, Users,  TrendingUp } from 'lucide-react'
 import { useGetAll } from '@/hooks/useApiQueries'
 import { createChampionshipColumns } from './TableColumns'
 import DataTable from '@/components/custom/DataTable'

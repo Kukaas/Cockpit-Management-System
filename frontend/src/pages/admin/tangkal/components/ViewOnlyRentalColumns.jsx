@@ -1,7 +1,7 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Eye, DollarSign, Calendar, MapPin } from 'lucide-react'
+import { Eye,  Calendar, MapPin } from 'lucide-react'
 
 export const createViewOnlyRentalColumns = (formatCurrency, formatDate, handleViewDetails) => [
   {
@@ -16,9 +16,7 @@ export const createViewOnlyRentalColumns = (formatCurrency, formatDate, handleVi
     sortable: true,
     filterable: false,
     render: (value) => (
-      <div className="flex items-center gap-1">
-        <DollarSign className="h-4 w-4 text-green-600" />
-        <span>{formatCurrency(value)}</span>
+      <div className="flex items-center gap-1"> <span>{formatCurrency(value)}</span>
       </div>
     )
   },
