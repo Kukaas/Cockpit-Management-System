@@ -25,7 +25,7 @@ const Events = () => {
   const [pendingStatusChange, setPendingStatusChange] = useState(null) // { eventId, newStatus, oldStatus, event }
   const [formData, setFormData] = useState({
     eventName: '',
-    location: '',
+    location: 'Buenavista Cockpit Arena',
     date: '',
     prize: '',
     eventType: '',
@@ -324,7 +324,7 @@ const Events = () => {
   const resetForm = () => {
     setFormData({
       eventName: '',
-      location: '',
+      location: 'Buenavista Cockpit Arena',
       date: '',
       prize: '',
       eventType: '',
@@ -422,17 +422,31 @@ const Events = () => {
     }).format(amount)
   }
 
+  // Helper function to format date for datetime-local input without timezone conversion
+  const formatDateForInput = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    // Get local date components
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    // Return in format: YYYY-MM-DDTHH:mm
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  }
+
   // Action handlers
   const handleEditEventClick = (event) => {
     setSelectedEvent(event)
     setEditFormData({
       eventName: event.eventName || '',
       location: event.location || '',
-      date: event.date ? new Date(event.date).toISOString().slice(0, 16) : '',
+      date: formatDateForInput(event.date),
       prize: event.prize ? event.prize.toString() : '',
       eventType: event.eventType || '',
       noCockRequirements: event.noCockRequirements ? event.noCockRequirements.toString() : '',
-      registrationDeadline: event.registrationDeadline ? new Date(event.registrationDeadline).toISOString().slice(0, 16) : '',
+      registrationDeadline: formatDateForInput(event.registrationDeadline),
       entranceFee: event.entranceFee ? event.entranceFee.toString() : '',
       entryFee: event.entryFee ? event.entryFee.toString() : '',
       cageRentalFee: event.cageRentalFee ? event.cageRentalFee.toString() : ''
