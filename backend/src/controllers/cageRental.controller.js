@@ -604,6 +604,12 @@ export const updateRentalStatus = async (req, res) => {
         if (rentalStatus === 'returned') {
             // Restore all cages to active status if rental is returned
             const cageIds = cageRental.cages.map(cage => cage.cageNo);
+            // Also mark all cages as returned with timestamp
+            await CageRental.findByIdAndUpdate(id, {
+                $set: {
+                    'cages.$[].returnedAt': new Date()
+                }
+            });
             await CageAvailability.updateMany(
                 { _id: { $in: cageIds } },
                 { status: 'active' }
@@ -611,6 +617,12 @@ export const updateRentalStatus = async (req, res) => {
         } else if (oldRentalStatus === 'returned' && rentalStatus === 'active') {
             // Set all cages back to rented if rental is reactivated
             const cageIds = cageRental.cages.map(cage => cage.cageNo);
+            // Clear returnedAt timestamps
+            await CageRental.findByIdAndUpdate(id, {
+                $set: {
+                    'cages.$[].returnedAt': null
+                }
+            });
             await CageAvailability.updateMany(
                 { _id: { $in: cageIds } },
                 { status: 'rented' }
@@ -624,6 +636,110 @@ export const updateRentalStatus = async (req, res) => {
         });
     } catch (error) {
         console.error('Error updating rental status:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+            error: error.message
+        });
+    }
+};
+
+// Return selected cages (partial return)
+export const returnSelectedCages = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { cageIds } = req.body;
+
+        // Validate cageIds
+        if (!cageIds || !Array.isArray(cageIds) || cageIds.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Please provide an array of cage IDs to return'
+            });
+        }
+
+        // Find the cage rental
+        const cageRental = await CageRental.findById(id);
+
+        if (!cageRental) {
+            return res.status(404).json({
+                success: false,
+                message: 'Cage rental not found'
+            });
+        }
+
+        // Check if user can update this rental
+        if (req.user.role !== 'admin' && cageRental.recordedBy.toString() !== req.user._id.toString()) {
+            return res.status(403).json({
+                success: false,
+                message: 'You can only update rentals you recorded'
+            });
+        }
+
+        // Validate that all provided cage IDs belong to this rental
+        const rentalCageIds = cageRental.cages.map(cage => cage.cageNo.toString());
+        const invalidCageIds = cageIds.filter(cageId => !rentalCageIds.includes(cageId));
+
+        if (invalidCageIds.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: `The following cage IDs do not belong to this rental: ${invalidCageIds.join(', ')}`
+            });
+        }
+
+        // Check if any of the cages are already returned
+        const alreadyReturned = cageRental.cages.filter(cage =>
+            cageIds.includes(cage.cageNo.toString()) && cage.returnedAt !== null
+        );
+
+        if (alreadyReturned.length > 0) {
+            const alreadyReturnedIds = alreadyReturned.map(cage => cage.cageNo.toString());
+            return res.status(400).json({
+                success: false,
+                message: `The following cages are already returned: ${alreadyReturnedIds.join(', ')}`
+            });
+        }
+
+        // Update returnedAt for selected cages
+        const returnDate = new Date();
+        await CageRental.findByIdAndUpdate(id, {
+            $set: {
+                'cages.$[cage].returnedAt': returnDate
+            }
+        }, {
+            arrayFilters: [{ 'cage.cageNo': { $in: cageIds } }]
+        });
+
+        // Update cage availability status to 'active' for returned cages
+        await CageAvailability.updateMany(
+            { _id: { $in: cageIds } },
+            { status: 'active' }
+        );
+
+        // Fetch updated rental to check if all cages are returned
+        const updatedRental = await CageRental.findById(id);
+        const allReturned = updatedRental.cages.every(cage => cage.returnedAt !== null);
+
+        // If all cages are returned, update rental status to 'returned'
+        if (allReturned) {
+            updatedRental.rentalStatus = 'returned';
+            await updatedRental.save();
+        }
+
+        // Populate and return the updated rental
+        await updatedRental.populate([
+            { path: 'cages.cageNo', select: 'cageNumber availabilityNumber status arena' },
+            { path: 'eventID', select: 'eventName date location' },
+            { path: 'recordedBy', select: 'firstName lastName username' }
+        ]);
+
+        res.status(200).json({
+            success: true,
+            message: `Successfully returned ${cageIds.length} cage${cageIds.length > 1 ? 's' : ''}`,
+            data: updatedRental
+        });
+    } catch (error) {
+        console.error('Error returning selected cages:', error);
         res.status(500).json({
             success: false,
             message: 'Internal server error',

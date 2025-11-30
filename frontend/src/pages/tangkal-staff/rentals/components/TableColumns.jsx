@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Edit, Trash2, RotateCcw, Eye } from 'lucide-react'
 
-export const createRentalColumns = (formatCurrency, formatDate, handleEditClick, handleDeleteClick, handleStatusChange, statusChangeMutation, handleRentalStatusChange, rentalStatusMutation, handleViewDetails) => [
+export const createRentalColumns = (formatCurrency, formatDate, handleEditClick, handleDeleteClick, handleStatusChange, statusChangeMutation, handleOpenReturnDialog, rentalStatusMutation, handleViewDetails) => [
   {
     key: 'nameOfRenter',
     label: 'Renter Name',
@@ -150,11 +150,11 @@ export const createRentalColumns = (formatCurrency, formatDate, handleEditClick,
               size="sm"
               onClick={(e) => {
                 e.stopPropagation()
-                handleRentalStatusChange(row._id, 'returned', row.rentalStatus)
+                handleOpenReturnDialog(row)
               }}
               disabled={rentalStatusMutation.isPending || row.paymentStatus === 'unpaid'}
               className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700"
-              title={'Mark as Returned'}
+              title={row.quantity > 1 ? 'Return Cages' : 'Mark as Returned'}
             >
               <RotateCcw className="h-4 w-4" />
             </Button>

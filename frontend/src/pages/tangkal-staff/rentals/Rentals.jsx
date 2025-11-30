@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft,  Plus } from 'lucide-react'
+import { ArrowLeft, Plus } from 'lucide-react'
 import PageLayout from '@/layouts/PageLayout'
 import { toast } from 'sonner'
 import { useGetAll, useGetById } from '@/hooks/useApiQueries'
@@ -14,6 +14,7 @@ import DataTable from '@/components/custom/DataTable'
 import RentalForm from './components/RentalForm'
 import DetailsDialog from './components/DetailsDialog'
 import EventDetailsCard from './components/EventDetailsCard'
+import ReturnCagesDialog from './components/ReturnCagesDialog'
 import { createRentalColumns } from './components/TableColumns'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
@@ -30,6 +31,7 @@ const Rentals = () => {
   const [deleteRentalDialogOpen, setDeleteRentalDialogOpen] = useState(false)
   const [statusChangeDialogOpen, setStatusChangeDialogOpen] = useState(false)
   const [rentalStatusDialogOpen, setRentalStatusDialogOpen] = useState(false)
+  const [returnCagesDialogOpen, setReturnCagesDialogOpen] = useState(false)
   const [detailDialogOpen, setDetailDialogOpen] = useState(false)
 
   // Selected items for editing/deleting
@@ -133,6 +135,27 @@ const Rentals = () => {
       onSuccess: () => {
         setRentalStatusDialogOpen(false)
         setPendingRentalStatusChange(null)
+        refetchRentals()
+      },
+    }
+  )
+
+  // Return selected cages mutation
+  const returnCagesMutation = useCustomMutation(
+    async ({ id, cageIds }) => {
+      const response = await api.patch(`/cage-rentals/${id}/return-cages`, { cageIds })
+      return response.data
+    },
+    {
+      successMessage: (data) => {
+        return data?.message || 'Cages returned successfully'
+      },
+      errorMessage: (error) => {
+        return error?.response?.data?.message || 'Failed to return cages'
+      },
+      onSuccess: () => {
+        setReturnCagesDialogOpen(false)
+        setSelectedRental(null)
         refetchRentals()
       },
     }
@@ -311,6 +334,39 @@ const Rentals = () => {
     setPendingRentalStatusChange(null)
   }
 
+  // Handle return cages - open dialog for selection
+  const handleOpenReturnDialog = (rental) => {
+    setSelectedRental(rental)
+    // If only one cage or all cages already returned, use old flow
+    const activeCages = rental.cages.filter(cage => !cage.returnedAt)
+    if (activeCages.length === 0) {
+      toast.error('All cages have already been returned')
+      return
+    }
+    if (activeCages.length === 1) {
+      // Single cage - return immediately with confirmation
+      setPendingRentalStatusChange({
+        rentalId: rental._id,
+        newStatus: 'returned',
+        currentStatus: rental.rentalStatus,
+        rental
+      })
+      setRentalStatusDialogOpen(true)
+    } else {
+      // Multiple cages - show selection dialog
+      setReturnCagesDialogOpen(true)
+    }
+  }
+
+  // Confirm return of selected cages
+  const handleConfirmReturnCages = (cageIds) => {
+    if (!selectedRental || !cageIds || cageIds.length === 0) return
+    returnCagesMutation.mutate({
+      id: selectedRental._id,
+      cageIds
+    })
+  }
+
   // Handle view details
   const handleViewDetails = (rental) => {
     setSelectedItem(rental)
@@ -343,7 +399,7 @@ const Rentals = () => {
     handleDeleteRentalClick,
     handleStatusChange,
     statusChangeMutation,
-    handleRentalStatusChange,
+    handleOpenReturnDialog,
     rentalStatusMutation,
     handleViewDetails
   )
@@ -513,6 +569,15 @@ const Rentals = () => {
         onCancel={cancelRentalStatusChange}
         variant="default"
         loading={rentalStatusMutation.isPending}
+      />
+
+      {/* Return Cages Dialog */}
+      <ReturnCagesDialog
+        open={returnCagesDialogOpen}
+        onOpenChange={setReturnCagesDialogOpen}
+        rental={selectedRental}
+        onConfirm={handleConfirmReturnCages}
+        isPending={returnCagesMutation.isPending}
       />
 
       {/* Detail View Dialog */}

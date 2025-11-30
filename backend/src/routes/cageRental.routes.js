@@ -7,6 +7,7 @@ import {
     deleteCageRental,
     updatePaymentStatus,
     updateRentalStatus,
+    returnSelectedCages,
     getCageRentalsByEvent,
     getOverdueRentals,
     getAvailableCages,
@@ -36,6 +37,7 @@ router.post('/', verifyToken, requireRole(['admin', 'tangkal_staff']), createCag
 router.put('/:id', verifyToken, requireRole(['admin', 'tangkal_staff']), updateCageRental);
 router.patch('/:id/payment-status', verifyToken, requireRole(['admin', 'tangkal_staff']), updatePaymentStatus);
 router.patch('/:id/rental-status', verifyToken, requireRole(['admin', 'tangkal_staff']), updateRentalStatus);
+router.patch('/:id/return-cages', verifyToken, requireRole(['admin', 'tangkal_staff']), returnSelectedCages);
 router.delete('/:id', verifyToken, requireRole(['admin', 'tangkal_staff']), deleteCageRental);
 
 export default router;
