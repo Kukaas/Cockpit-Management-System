@@ -1,7 +1,7 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Eye,  Calendar, MapPin } from 'lucide-react'
+import { Eye, Calendar, MapPin } from 'lucide-react'
 
 export const createViewOnlyRentalColumns = (formatCurrency, formatDate, handleViewDetails) => [
   {
@@ -32,16 +32,16 @@ export const createViewOnlyRentalColumns = (formatCurrency, formatDate, handleVi
       </div>
     )
   },
-  {
-    key: 'arena',
-    label: 'Arena',
-    render: (value) => (
-      <div className="flex items-center gap-1">
-        <MapPin className="h-4 w-4 text-blue-600" />
-        <span className="text-sm">{value}</span>
-      </div>
-    )
-  },
+  // {
+  //   key: 'arena',
+  //   label: 'Arena',
+  //   render: (value) => (
+  //     <div className="flex items-center gap-1">
+  //       <MapPin className="h-4 w-4 text-blue-600" />
+  //       <span className="text-sm">{value}</span>
+  //     </div>
+  //   )
+  // },
   {
     key: 'quantity',
     label: 'Quantity',
@@ -75,8 +75,8 @@ export const createViewOnlyRentalColumns = (formatCurrency, formatDate, handleVi
       <Badge
         variant={
           value === 'paid' ? 'default' :
-          value === 'unpaid' ? 'destructive' :
-          value === 'pending' ? 'secondary' : 'outline'
+            value === 'unpaid' ? 'destructive' :
+              value === 'pending' ? 'secondary' : 'outline'
         }
         className="text-xs capitalize"
       >
