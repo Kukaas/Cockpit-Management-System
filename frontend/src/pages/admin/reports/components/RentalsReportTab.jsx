@@ -242,16 +242,7 @@ const RentalsReportTab = ({ event, formatCurrency, formatDate }) => {
       {/* Rentals Table */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Building2 className="h-5 w-5 text-blue-600" />
-                Rentals Report
-              </CardTitle>
-              <CardDescription>
-                Cage rental records for this event
-              </CardDescription>
-            </div>
+          <div className="flex items-center justify-end">
             <Button onClick={handlePrint} variant="outline" size="sm">
               <Printer className="h-4 w-4 mr-2" />
               Print Report
@@ -265,7 +256,7 @@ const RentalsReportTab = ({ event, formatCurrency, formatDate }) => {
             pageSize={10}
             searchable={true}
             filterable={true}
-            title="Rentals"
+            title="Rentals Report"
             loading={isLoading}
             emptyMessage="No rentals found for this event"
             className="shadow-sm"

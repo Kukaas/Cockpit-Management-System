@@ -255,15 +255,7 @@ const PlazadaReportTab = ({ event, formatCurrency, formatDate }) => {
       {/* Plazada Table */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                Plazada Report
-              </CardTitle>
-              <CardDescription>
-                Plazada collected from match results (10% from loser's bet)
-              </CardDescription>
-            </div>
+          <div className="flex items-center justify-end">
             <Button onClick={handlePrint} variant="outline" size="sm">
               <Printer className="h-4 w-4 mr-2" />
               Print Report
@@ -277,7 +269,7 @@ const PlazadaReportTab = ({ event, formatCurrency, formatDate }) => {
             pageSize={10}
             searchable={true}
             filterable={true}
-            title="Plazada"
+            title="Plazada Report"
             loading={isLoading}
             emptyMessage="No match results found for this event"
             className="shadow-sm"

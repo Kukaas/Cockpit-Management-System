@@ -224,16 +224,7 @@ const EntrancesReportTab = ({ event, formatCurrency, formatDate }) => {
       {/* Entrances Table */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-green-600" />
-                Entrances Report
-              </CardTitle>
-              <CardDescription>
-                Entrance tally records for this event
-              </CardDescription>
-            </div>
+          <div className="flex items-center justify-end">
             <Button onClick={handlePrint} variant="outline" size="sm">
               <Printer className="h-4 w-4 mr-2" />
               Print Report
@@ -247,7 +238,7 @@ const EntrancesReportTab = ({ event, formatCurrency, formatDate }) => {
             pageSize={10}
             searchable={true}
             filterable={true}
-            title="Entrances"
+            title="Entrance Report"
             loading={isLoading}
             emptyMessage="No entrance records found for this event"
             className="shadow-sm"

@@ -275,15 +275,7 @@ const EntryFeesReportTab = ({ event, formatCurrency, formatDate }) => {
       {/* Entry Fees Table */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                Entry Fees Report
-              </CardTitle>
-              <CardDescription>
-                Entry fees collected from participants
-              </CardDescription>
-            </div>
+          <div className="flex items-center justify-end">
             <Button onClick={handlePrint} variant="outline" size="sm">
               <Printer className="h-4 w-4 mr-2" />
               Print Report
@@ -297,7 +289,7 @@ const EntryFeesReportTab = ({ event, formatCurrency, formatDate }) => {
             pageSize={10}
             searchable={true}
             filterable={true}
-            title="Entry Fees"
+            title="Entry Fees Report"
             loading={isLoading}
             emptyMessage="No participants with entry fees found for this event"
             className="shadow-sm"
