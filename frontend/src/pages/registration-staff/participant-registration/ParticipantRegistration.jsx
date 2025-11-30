@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowLeft, Printer } from 'lucide-react'
 import PageLayout from '@/layouts/PageLayout'
 import { toast } from 'sonner'
@@ -245,6 +246,9 @@ const ParticipantRegistration = () => {
   // Use the API data directly instead of local state
   const participants = participantsData || []
   const cockProfiles = cockProfilesData || []
+
+  // Calculate total entry fee revenue
+  const totalEntryFeeRevenue = participants.reduce((sum, participant) => sum + (participant.entryFee || 0), 0)
 
   // Form handlers
   const handleParticipantInputChange = (field, value) => {
@@ -877,6 +881,25 @@ const ParticipantRegistration = () => {
         formatDate={formatDate}
         formatCurrency={formatCurrency}
       />
+
+      {/* Entry Fee Revenue Card */}
+      {selectedEvent?.entryFee && selectedEvent.entryFee > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-1 gap-4 mb-6">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Entry Fee Revenue</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">
+                {formatCurrency(totalEntryFeeRevenue)}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Total entry fees collected from {participants.filter(p => p.entryFee && p.entryFee > 0).length} participant(s)
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Registration Deadline Warning */}
       {selectedEvent?.eventType === 'derby' && selectedEvent?.registrationDeadline && (
