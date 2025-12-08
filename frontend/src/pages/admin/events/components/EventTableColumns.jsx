@@ -1,7 +1,7 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Edit, Trash2, Calendar, MapPin,  Users, Award, Target, Info, Building, Zap } from 'lucide-react'
+import { Edit, Trash2, Calendar, MapPin, Users, Award, Target, Info, Building, Zap } from 'lucide-react'
 
 export const createEventColumns = (
   formatCurrency,
@@ -16,14 +16,8 @@ export const createEventColumns = (
       label: 'Event Name',
       sortable: true,
       filterable: false,
-      render: (value, row) => (
-        <div className="flex flex-col">
-          <span className="font-medium">{value}</span>
-          <span className="text-xs text-muted-foreground flex items-center gap-1">
-            <MapPin className="h-3 w-3" />
-            {row.location}
-          </span>
-        </div>
+      render: (value) => (
+        <span className="font-medium">{value}</span>
       )
     },
     {

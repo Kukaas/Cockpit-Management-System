@@ -102,7 +102,6 @@ const AdminEventTabs = ({
       minute: '2-digit',
       hour12: true
     }) : 'N/A'}</div>
-            <div class="event-details">Location: ${event?.location || 'N/A'}</div>
             <div class="event-details">Type: ${event?.eventType || 'N/A'}</div>
             <div class="event-details">Entrance Fee: ${event?.entranceFee ? formatCurrency(event.entranceFee) : 'N/A'}</div>
             <div class="event-details">Max Participants: ${event?.maxParticipants || 'N/A'}</div>

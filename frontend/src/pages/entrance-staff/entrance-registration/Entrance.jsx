@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft,  Plus, Printer } from 'lucide-react'
+import { ArrowLeft, Plus, Printer } from 'lucide-react'
 import PageLayout from '@/layouts/PageLayout'
 import { toast } from 'sonner'
 import { useGetAll, useGetById } from '@/hooks/useApiQueries'
@@ -12,7 +12,7 @@ import DataTable from '@/components/custom/DataTable'
 import { printEntranceReport } from '@/lib/printEntranceReport'
 
 // Import custom components
-import EventDetailsCard from './components/EventDetailsCard'
+import EventDetailsCard from '@/components/EventDetailsCard'
 import EntranceForm from './components/EntranceForm'
 import { createEntranceColumns } from './components/TableColumns'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -261,6 +261,7 @@ const Entrance = () => {
         event={selectedEvent}
         formatDate={formatDate}
         formatCurrency={formatCurrency}
+        showCapacity={true}
       />
 
       {/* Summary Stats */}

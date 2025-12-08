@@ -12,7 +12,7 @@ import ConfirmationDialog from '@/components/custom/ConfirmationDialog'
 import CustomAlertDialog from '@/components/custom/CustomAlertDialog'
 
 // Import custom components
-import EventDetailsCard from './components/EventDetailsCard'
+import EventDetailsCard from '@/components/EventDetailsCard'
 import ParticipantForm from './components/ParticipantForm'
 import CockProfileForm from './components/CockProfileForm'
 import CombinedRegistrationForm from './components/CombinedRegistrationForm'

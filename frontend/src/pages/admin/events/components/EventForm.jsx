@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label'
 import CustomAlertDialog from '@/components/custom/CustomAlertDialog'
 import InputField from '@/components/custom/InputField'
 import NativeSelect from '@/components/custom/NativeSelect'
-import { Calendar, MapPin,  Hash, Clock, Users, FileText, Building } from 'lucide-react'
+import { Calendar, Hash, Clock, Users, FileText, DollarSign, Weight } from 'lucide-react'
 
 const EventForm = ({
   open,
@@ -74,60 +74,6 @@ const EventForm = ({
           required
         />
 
-        {/* Location */}
-        <div className="space-y-2">
-          <Label htmlFor={isEdit ? "editLocation" : "location"} className="text-sm font-medium">
-            Location *
-          </Label>
-          <NativeSelect
-            id={isEdit ? "editLocation" : "location"}
-            value={formData.location}
-            onChange={(e) => onInputChange('location', e.target.value)}
-            placeholder="Select event location"
-            required
-          >
-            <option value="">Select location...</option>
-            <option value="Buenavista Cockpit Arena">Buenavista Cockpit Arena</option>
-          </NativeSelect>
-        </div>
-
-        {/* Entrance Fee - Always required */}
-        <InputField
-          id={isEdit ? "editEntranceFee" : "entranceFee"}
-          label="Entrance Fee (PHP) *"
-          type="number"
-          value={formData.entranceFee}
-          onChange={(e) => onInputChange('entranceFee', e.target.value)}
-          placeholder="Enter entrance fee per person"
-          min="0"
-          step="0.01"
-          required
-        />
-
-        {/* Entry Fee - Optional */}
-        <InputField
-          id={isEdit ? "editEntryFee" : "entryFee"}
-          type="number"
-          value={formData.entryFee}
-          onChange={(e) => onInputChange('entryFee', e.target.value)}
-          placeholder="Enter entry fee (optional)"
-          min="0"
-          step="0.01"
-        />
-
-        {/* Cage Rental Fee - Always required */}
-        <InputField
-          id={isEdit ? "editCageRentalFee" : "cageRentalFee"}
-          label="Cage Rental Fee (PHP) *"
-          type="number"
-          value={formData.cageRentalFee}
-          onChange={(e) => onInputChange('cageRentalFee', e.target.value)}
-          placeholder="Enter cage rental fee per cage"
-          min="0"
-          step="0.01"
-          required
-        />
-
         {/* Date and Time */}
         <InputField
           id={isEdit ? "editDate" : "date"}
@@ -137,6 +83,75 @@ const EventForm = ({
           value={formData.date}
           onChange={(e) => onInputChange('date', e.target.value)}
           required
+        />
+
+        <div className='grid grid-cols-2 gap-4'>
+          {/* Minimum Bet - Required for all events */}
+          <InputField
+            id={isEdit ? "editMinimumBet" : "minimumBet"}
+            label="Minimum Bet (PHP) *"
+            icon={DollarSign}
+            type="number"
+            value={formData.minimumBet}
+            onChange={(e) => onInputChange('minimumBet', e.target.value)}
+            placeholder="Enter minimum bet"
+            min="0"
+            step="0.01"
+            required
+          />
+
+          {/* Minimum Participants - Required for all events */}
+          <InputField
+            id={isEdit ? "editMinimumParticipants" : "minimumParticipants"}
+            label="Minimum Participants *"
+            icon={Users}
+            type="number"
+            value={formData.minimumParticipants}
+            onChange={(e) => onInputChange('minimumParticipants', e.target.value)}
+            placeholder="Enter minimum participants"
+            min="1"
+            required
+          />
+        </div>
+
+        <div className='grid grid-cols-2 gap-4'>
+          {/* Entrance Fee - Always required */}
+          <InputField
+            id={isEdit ? "editEntranceFee" : "entranceFee"}
+            label="Entrance Fee (PHP) *"
+            type="number"
+            value={formData.entranceFee}
+            onChange={(e) => onInputChange('entranceFee', e.target.value)}
+            placeholder="Enter entrance fee per person"
+            min="0"
+            step="0.01"
+            required
+          />
+
+          {/* Cage Rental Fee - Always required */}
+          <InputField
+            id={isEdit ? "editCageRentalFee" : "cageRentalFee"}
+            label="Cage Rental Fee (PHP) *"
+            type="number"
+            value={formData.cageRentalFee}
+            onChange={(e) => onInputChange('cageRentalFee', e.target.value)}
+            placeholder="Enter cage rental fee per cage"
+            min="0"
+            step="0.01"
+            required
+          />
+        </div>
+
+        {/* Entry Fee - Optional */}
+        <InputField
+          id={isEdit ? "editEntryFee" : "entryFee"}
+          label="Entry Fee (PHP)"
+          type="number"
+          value={formData.entryFee}
+          onChange={(e) => onInputChange('entryFee', e.target.value)}
+          placeholder="Enter entry fee (optional)"
+          min="0"
+          step="0.01"
         />
 
         {/* Conditional fields - Only show for derby and hits_ulutan events */}
@@ -160,7 +175,6 @@ const EventForm = ({
               <InputField
                 id={isEdit ? "editPrize" : "prize"}
                 label="Prize Pool (PHP) *"
-
                 type="number"
                 value={formData.prize}
                 onChange={(e) => onInputChange('prize', e.target.value)}
@@ -185,24 +199,82 @@ const EventForm = ({
               />
             </div>
 
+            {/* Derby-specific weight fields */}
+            {isDerbyEvent && (
+              <div className='space-y-4'>
+                <div className='grid grid-cols-2 gap-4'>
+                  {/* Desired Weight */}
+                  <InputField
+                    id={isEdit ? "editDesiredWeight" : "desiredWeight"}
+                    label="Desired Weight (kg) *"
+                    icon={Weight}
+                    type="number"
+                    value={formData.desiredWeight}
+                    onChange={(e) => onInputChange('desiredWeight', e.target.value)}
+                    placeholder="e.g., 2.5"
+                    min="0"
+                    step="0.01"
+                    required
+                  />
+
+                  {/* Weight Gap */}
+                  <InputField
+                    id={isEdit ? "editWeightGap" : "weightGap"}
+                    label="Weight Gap (kg) *"
+                    icon={Weight}
+                    type="number"
+                    value={formData.weightGap}
+                    onChange={(e) => onInputChange('weightGap', e.target.value)}
+                    placeholder="e.g., 0.2"
+                    min="0"
+                    step="0.01"
+                    required
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  <strong>Weight Gap Explanation:</strong> The allowable weight difference for matching participants.
+                  For example, if desired weight is 2.5kg and weight gap is 0.2kg, participants with weights
+                  between 2.3kg and 2.7kg can be matched together.
+                </p>
+              </div>
+            )}
+
           </>
         )}
 
         {/* Conditional fields - Only show for fastest_kill events */}
         {isFastestKillEvent && (
           <>
-            {/* Prize Pool */}
-            <InputField
-              id={isEdit ? "editPrize" : "prize"}
-              label="Prize Pool (PHP) *"
-              type="number"
-              value={formData.prize}
-              onChange={(e) => onInputChange('prize', e.target.value)}
-              placeholder="Enter prize amount"
-              min="0"
-              step="0.01"
-              required
-            />
+            <div className='grid grid-cols-2 gap-4'>
+              {/* Prize Pool */}
+              <InputField
+                id={isEdit ? "editPrize" : "prize"}
+                label="Prize Pool (PHP) *"
+                type="number"
+                value={formData.prize}
+                onChange={(e) => onInputChange('prize', e.target.value)}
+                placeholder="Enter prize amount"
+                min="0"
+                step="0.01"
+                required
+              />
+
+              {/* Winner Count */}
+              <InputField
+                id={isEdit ? "editWinnerCount" : "winnerCount"}
+                label="Number of Winners *"
+                icon={Hash}
+                type="number"
+                value={formData.winnerCount}
+                onChange={(e) => onInputChange('winnerCount', e.target.value)}
+                placeholder="e.g., 10"
+                min="1"
+                required
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Specify the ranking cutoff for fastest times (e.g., Top 10 or Top 20).
+            </p>
           </>
         )}
 

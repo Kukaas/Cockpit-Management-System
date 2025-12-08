@@ -12,7 +12,7 @@ import ConfirmationDialog from '@/components/custom/ConfirmationDialog'
 import CustomAlertDialog from '@/components/custom/CustomAlertDialog'
 
 // Import custom components
-import EventDetailsCard from './components/EventDetailsCard'
+import EventDetailsCard from '@/components/EventDetailsCard'
 import FightForm from './components/FightForm'
 import MatchResultForm from './components/MatchResultForm'
 import FightTabs from './components/FightTabs'

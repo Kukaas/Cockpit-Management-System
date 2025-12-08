@@ -6,7 +6,7 @@ import PageLayout from '@/layouts/PageLayout'
 import { useGetById, useGetAll } from '@/hooks/useApiQueries'
 
 // Import custom components
-import EventDetailsCard from './components/EventDetailsCard'
+import EventDetailsCard from '@/components/EventDetailsCard'
 import AdminFightTabs from './components/FightTabs'
 import DetailsDialog from './components/DetailsDialog'
 import ChampionshipTab from './components/ChampionshipTab'

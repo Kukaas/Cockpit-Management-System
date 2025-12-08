@@ -5,19 +5,23 @@ export const createEvent = async (req, res) => {
     try {
         const {
             eventName,
-            location,
             date,
+            minimumBet,
+            minimumParticipants,
             prize,
             eventType,
             noCockRequirements,
             registrationDeadline,
             entranceFee,
             entryFee,
-            cageRentalFee
+            cageRentalFee,
+            desiredWeight,
+            weightGap,
+            winnerCount
         } = req.body;
 
         // Validate required fields based on event type
-        const basicRequiredFields = ['eventName', 'location', 'date', 'eventType', 'entranceFee', 'cageRentalFee'];
+        const basicRequiredFields = ['eventName', 'date', 'eventType', 'entranceFee', 'cageRentalFee', 'minimumBet', 'minimumParticipants'];
         const missingBasicFields = basicRequiredFields.filter(field => !req.body[field]);
 
         if (missingBasicFields.length > 0) {
@@ -29,7 +33,7 @@ export const createEvent = async (req, res) => {
 
         // Additional required fields for derby events
         if (eventType === 'derby') {
-            const additionalRequiredFields = ['prize', 'noCockRequirements', 'registrationDeadline'];
+            const additionalRequiredFields = ['prize', 'noCockRequirements', 'registrationDeadline', 'desiredWeight', 'weightGap'];
             const missingAdditionalFields = additionalRequiredFields.filter(field => !req.body[field]);
 
             if (missingAdditionalFields.length > 0) {
@@ -55,7 +59,7 @@ export const createEvent = async (req, res) => {
 
         // Additional required fields for fastest_kill events
         if (eventType === 'fastest_kill') {
-            const additionalRequiredFields = ['prize'];
+            const additionalRequiredFields = ['prize', 'winnerCount'];
             const missingAdditionalFields = additionalRequiredFields.filter(field => !req.body[field]);
 
             if (missingAdditionalFields.length > 0) {
@@ -78,10 +82,11 @@ export const createEvent = async (req, res) => {
         // Create new event
         const eventData = {
             eventName,
-            location,
             date: eventDate,
             eventType,
             adminID: req.user._id,
+            minimumBet: Number(minimumBet),
+            minimumParticipants: Number(minimumParticipants),
             entranceFee: Number(entranceFee),
             cageRentalFee: Number(cageRentalFee),
             registrationDeadline: registrationDeadline ? new Date(registrationDeadline) : null
@@ -101,9 +106,16 @@ export const createEvent = async (req, res) => {
             eventData.noCockRequirements = Number(noCockRequirements);
         }
 
+        // Add Derby-specific fields
+        if (eventType === 'derby') {
+            eventData.desiredWeight = Number(desiredWeight);
+            eventData.weightGap = Number(weightGap);
+        }
+
         // Only add prize for fastest_kill events
         if (eventType === 'fastest_kill') {
             eventData.prize = Number(prize);
+            eventData.winnerCount = Number(winnerCount);
         }
 
         const newEvent = new Event(eventData);
@@ -149,8 +161,7 @@ export const getAllEvents = async (req, res) => {
 
         if (search) {
             filter.$or = [
-                { eventName: { $regex: search, $options: 'i' } },
-                { location: { $regex: search, $options: 'i' } }
+                { eventName: { $regex: search, $options: 'i' } }
             ];
         }
 
@@ -234,7 +245,7 @@ export const updateEvent = async (req, res) => {
 
         // Validate required fields based on event type
         const eventType = updateData.eventType || event.eventType;
-        const basicRequiredFields = ['eventName', 'location', 'date', 'eventType', 'entranceFee'];
+        const basicRequiredFields = ['eventName', 'date', 'eventType', 'entranceFee', 'minimumBet', 'minimumParticipants'];
         const missingBasicFields = basicRequiredFields.filter(field => !updateData[field] && !event[field]);
 
         if (missingBasicFields.length > 0) {
@@ -246,7 +257,7 @@ export const updateEvent = async (req, res) => {
 
         // Additional required fields for derby events
         if (eventType === 'derby') {
-            const additionalRequiredFields = ['prize', 'noCockRequirements', 'registrationDeadline'];
+            const additionalRequiredFields = ['prize', 'noCockRequirements', 'registrationDeadline', 'desiredWeight', 'weightGap'];
             const missingAdditionalFields = additionalRequiredFields.filter(field => !updateData[field] && !event[field]);
 
             if (missingAdditionalFields.length > 0) {
@@ -272,7 +283,7 @@ export const updateEvent = async (req, res) => {
 
         // Additional required fields for fastest_kill events
         if (eventType === 'fastest_kill') {
-            const additionalRequiredFields = ['prize'];
+            const additionalRequiredFields = ['prize', 'winnerCount'];
             const missingAdditionalFields = additionalRequiredFields.filter(field => !updateData[field] && !event[field]);
 
             if (missingAdditionalFields.length > 0) {
@@ -299,6 +310,11 @@ export const updateEvent = async (req, res) => {
         if (updateData.noCockRequirements) updateData.noCockRequirements = Number(updateData.noCockRequirements);
         if (updateData.entranceFee) updateData.entranceFee = Number(updateData.entranceFee);
         if (updateData.cageRentalFee) updateData.cageRentalFee = Number(updateData.cageRentalFee);
+        if (updateData.minimumBet) updateData.minimumBet = Number(updateData.minimumBet);
+        if (updateData.minimumParticipants) updateData.minimumParticipants = Number(updateData.minimumParticipants);
+        if (updateData.desiredWeight) updateData.desiredWeight = Number(updateData.desiredWeight);
+        if (updateData.weightGap) updateData.weightGap = Number(updateData.weightGap);
+        if (updateData.winnerCount) updateData.winnerCount = Number(updateData.winnerCount);
 
         // Handle entryFee - can be set, updated, or removed (set to null)
         if (updateData.entryFee !== undefined) {

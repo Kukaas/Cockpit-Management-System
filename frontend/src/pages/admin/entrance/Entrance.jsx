@@ -7,7 +7,7 @@ import { useGetAll, useGetById } from '@/hooks/useApiQueries'
 import { printEntranceReport } from '@/lib/printEntranceReport'
 
 // Import custom components
-import EventDetailsCard from './components/EventDetailsCard'
+import EventDetailsCard from '@/components/EventDetailsCard'
 import EntranceStats from './components/EntranceStats'
 import { createAdminEntranceColumns } from './components/TableColumns'
 import DataTable from '@/components/custom/DataTable'

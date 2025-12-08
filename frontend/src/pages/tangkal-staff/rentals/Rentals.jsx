@@ -13,7 +13,7 @@ import DataTable from '@/components/custom/DataTable'
 // Import custom components
 import RentalForm from './components/RentalForm'
 import DetailsDialog from './components/DetailsDialog'
-import EventDetailsCard from './components/EventDetailsCard'
+import EventDetailsCard from '@/components/EventDetailsCard'
 import ReturnCagesDialog from './components/ReturnCagesDialog'
 import { createRentalColumns } from './components/TableColumns'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -165,10 +165,9 @@ const Rentals = () => {
   useEffect(() => {
     if (event && event._id && (!selectedEvent || selectedEvent._id !== event._id)) {
       setSelectedEvent(event)
-      // Auto-set arena from event location
+      // Set eventID in form
       setRentalFormData(prev => ({
         ...prev,
-        arena: event.location,
         eventID: event._id
       }))
     }
@@ -190,7 +189,7 @@ const Rentals = () => {
   const resetRentalForm = () => {
     setRentalFormData({
       quantity: '0',
-      arena: selectedEvent?.location || '',
+      arena: '',
       date: new Date().toISOString().split('T')[0], // Default to today
       nameOfRenter: '',
       contactNumber: '',

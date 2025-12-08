@@ -8,7 +8,7 @@ import CustomAlertDialog from '@/components/custom/CustomAlertDialog'
 import DataTable from '@/components/custom/DataTable'
 
 // Import custom components
-import EventDetailsCard from '@/pages/tangkal-staff/rentals/components/EventDetailsCard'
+import EventDetailsCard from '@/components/EventDetailsCard'
 import { createViewOnlyRentalColumns } from './components/ViewOnlyRentalColumns'
 import DetailsDialog from '@/pages/tangkal-staff/rentals/components/DetailsDialog'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'

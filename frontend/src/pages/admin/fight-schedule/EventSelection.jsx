@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Calendar, MapPin,  Users, ArrowLeft, Swords, Filter, Trophy, Target, Clock, Award, TrendingUp } from 'lucide-react'
+import { Calendar, MapPin, Users, ArrowLeft, Swords, Filter, Trophy, Target, Clock, Award, TrendingUp } from 'lucide-react'
 import PageLayout from '@/layouts/PageLayout'
 import { useGetAll } from '@/hooks/useApiQueries'
 import DataTable from '@/components/custom/DataTable'
@@ -15,7 +15,6 @@ const AdminEventSelection = () => {
   const navigate = useNavigate()
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth())
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
-  const [selectedVenue, setSelectedVenue] = useState('')
 
   // Fetch events
   const { data: events = [], isLoading } = useGetAll('/events')
@@ -27,16 +26,14 @@ const AdminEventSelection = () => {
     const eventDate = new Date(schedule.eventID?.date)
     const matchesMonth = eventDate.getMonth() === selectedMonth
     const matchesYear = eventDate.getFullYear() === selectedYear
-    const matchesVenue = !selectedVenue || schedule.eventID?.location === selectedVenue
-    return matchesMonth && matchesYear && matchesVenue
+    return matchesMonth && matchesYear
   }) || []
 
   const filteredMatchResults = matchResultsData?.filter(result => {
     const eventDate = new Date(result.matchID?.eventID?.date)
     const matchesMonth = eventDate.getMonth() === selectedMonth
     const matchesYear = eventDate.getFullYear() === selectedYear
-    const matchesVenue = !selectedVenue || result.matchID?.eventID?.location === selectedVenue
-    return matchesMonth && matchesYear && matchesVenue
+    return matchesMonth && matchesYear
   }) || []
 
   // Calculate statistics
@@ -54,8 +51,7 @@ const AdminEventSelection = () => {
     pendingResults: filteredMatchResults.filter(r => !r.verified).length
   }
 
-  // Get unique venues from events
-  const venues = events ? [...new Set(events.map(event => event.location).filter(Boolean))] : []
+
 
   // Month options
   const months = [
@@ -81,7 +77,6 @@ const AdminEventSelection = () => {
   const resetFilters = () => {
     setSelectedMonth(new Date().getMonth())
     setSelectedYear(new Date().getFullYear())
-    setSelectedVenue('')
   }
 
   // Format date for display
@@ -110,14 +105,8 @@ const AdminEventSelection = () => {
       label: 'Event Name',
       sortable: true,
       filterable: false,
-      render: (value, row) => (
-        <div className="flex flex-col">
-          <span className="font-medium">{value}</span>
-          <span className="text-xs text-muted-foreground flex items-center gap-1">
-            <MapPin className="h-3 w-3" />
-            {row.location}
-          </span>
-        </div>
+      render: (value) => (
+        <span className="font-medium">{value}</span>
       )
     },
     {
@@ -266,11 +255,11 @@ const AdminEventSelection = () => {
               </Button>
             </div>
             <CardDescription>
-              Filter dashboard data by month, year, and venue
+              Filter dashboard data by month and year
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Month</label>
                 <NativeSelect
@@ -294,21 +283,6 @@ const AdminEventSelection = () => {
                   {years.map((year) => (
                     <option key={year} value={year}>
                       {year}
-                    </option>
-                  ))}
-                </NativeSelect>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Venue</label>
-                <NativeSelect
-                  value={selectedVenue}
-                  onChange={(e) => setSelectedVenue(e.target.value)}
-                >
-                  <option value="">All Venues</option>
-                  {venues.map((venue) => (
-                    <option key={venue} value={venue}>
-                      {venue}
                     </option>
                   ))}
                 </NativeSelect>

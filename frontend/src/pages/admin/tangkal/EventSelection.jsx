@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Calendar, MapPin, Users, Award,  Home, TrendingUp, Activity, Filter } from 'lucide-react'
+import { ArrowLeft, Calendar, MapPin, Users, Award, Home, TrendingUp, Activity, Filter } from 'lucide-react'
 import PageLayout from '@/layouts/PageLayout'
 import { useGetAll } from '@/hooks/useApiQueries'
 import DataTable from '@/components/custom/DataTable'
@@ -115,14 +115,8 @@ const EventSelection = () => {
       label: 'Event Name',
       sortable: true,
       filterable: false,
-      render: (value, row) => (
-        <div className="flex flex-col">
-          <span className="font-medium">{value}</span>
-          <span className="text-xs text-muted-foreground flex items-center gap-1">
-            <MapPin className="h-3 w-3" />
-            {row.location}
-          </span>
-        </div>
+      render: (value) => (
+        <span className="font-medium">{value}</span>
       )
     },
     {

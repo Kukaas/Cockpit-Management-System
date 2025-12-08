@@ -7,20 +7,26 @@ const eventSchema = new mongoose.Schema({
         trim: true,
         maxlength: 200
     },
-    location: {
-        type: String,
-        required: true,
-        trim: true,
-        maxlength: 500
-    },
     date: {
         type: Date,
         required: true
     },
+    minimumBet: {
+        type: Number,
+        required: true,
+        min: 0,
+        default: 100
+    },
+    minimumParticipants: {
+        type: Number,
+        required: true,
+        min: 1,
+        default: 10
+    },
     prize: {
         type: Number,
         required: function () {
-            return this.eventType === 'derby' || this.eventType === 'hits_ulutan';
+            return this.eventType === 'derby' || this.eventType === 'hits_ulutan' || this.eventType === 'fastest_kill';
         },
         min: 0
     },
@@ -37,6 +43,29 @@ const eventSchema = new mongoose.Schema({
         },
         min: 0,
         max: 1000
+    },
+    // Derby-specific fields
+    desiredWeight: {
+        type: Number,
+        required: function () {
+            return this.eventType === 'derby';
+        },
+        min: 0
+    },
+    weightGap: {
+        type: Number,
+        required: function () {
+            return this.eventType === 'derby';
+        },
+        min: 0
+    },
+    // Fastest Kill-specific field
+    winnerCount: {
+        type: Number,
+        required: function () {
+            return this.eventType === 'fastest_kill';
+        },
+        min: 1
     },
     adminID: {
         type: mongoose.Schema.Types.ObjectId,

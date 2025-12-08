@@ -35,14 +35,8 @@ const EventSelection = () => {
       label: 'Event Name',
       sortable: true,
       filterable: false,
-      render: (value, row) => (
-        <div className="flex flex-col">
-          <span className="font-medium">{value}</span>
-          <span className="text-xs text-muted-foreground flex items-center gap-1">
-            <MapPin className="h-3 w-3" />
-            {row.location}
-          </span>
-        </div>
+      render: (value) => (
+        <span className="font-medium">{value}</span>
       )
     },
     {

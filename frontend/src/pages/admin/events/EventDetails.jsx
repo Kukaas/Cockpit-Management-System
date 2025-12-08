@@ -8,7 +8,7 @@ import { useGetAll, useGetById } from '@/hooks/useApiQueries'
 import CustomAlertDialog from '@/components/custom/CustomAlertDialog'
 
 // Import custom components
-import EventDetailsCard from '../../entrance-staff/entrance-registration/components/EventDetailsCard'
+import EventDetailsCard from '@/components/EventDetailsCard'
 import AdminEventTabs from './components/AdminEventTabs'
 import { createViewOnlyParticipantColumns, createViewOnlyCockProfileColumns, createViewOnlyFightScheduleColumns, createViewOnlyMatchResultColumns } from './components/ViewOnlyTableColumns'
 
@@ -211,21 +211,21 @@ const EventDetails = () => {
       </div>
 
       {/* Admin Event Tabs */}
-        <AdminEventTabs
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          participants={participants}
-          cockProfiles={cockProfiles}
-          participantColumns={participantColumns}
-          cockProfileColumns={cockProfileColumns}
-          fightSchedules={fightSchedules}
-          fightScheduleColumns={fightScheduleColumns}
-          matchResults={matchResults}
-          matchResultColumns={matchResultColumns}
-          event={selectedEvent}
-          formatCurrency={formatCurrency}
-          formatDate={formatDate}
-        />
+      <AdminEventTabs
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        participants={participants}
+        cockProfiles={cockProfiles}
+        participantColumns={participantColumns}
+        cockProfileColumns={cockProfileColumns}
+        fightSchedules={fightSchedules}
+        fightScheduleColumns={fightScheduleColumns}
+        matchResults={matchResults}
+        matchResultColumns={matchResultColumns}
+        event={selectedEvent}
+        formatCurrency={formatCurrency}
+        formatDate={formatDate}
+      />
 
       {/* Detail View Dialog */}
       <CustomAlertDialog

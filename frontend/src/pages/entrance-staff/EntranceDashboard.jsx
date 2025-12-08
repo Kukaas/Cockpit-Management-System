@@ -2,7 +2,7 @@ import PageLayout from '@/layouts/PageLayout'
 import React, { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import {  Users, TrendingUp, Filter, Ticket } from 'lucide-react'
+import { Users, TrendingUp, Filter, Ticket } from 'lucide-react'
 import { useGetAll } from '@/hooks/useApiQueries'
 import NativeSelect from '@/components/custom/NativeSelect'
 
@@ -11,7 +11,6 @@ import { EntranceChart } from './components/EntranceChart'
 const EntranceDashboard = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth())
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
-  const [selectedVenue, setSelectedVenue] = useState('')
   const [selectedEventType, setSelectedEventType] = useState('')
 
   // Fetch data with filters
@@ -23,10 +22,9 @@ const EntranceDashboard = () => {
     const entranceDate = new Date(entrance.date)
     const matchesMonth = entranceDate.getMonth() === selectedMonth
     const matchesYear = entranceDate.getFullYear() === selectedYear
-    const matchesVenue = !selectedVenue || entrance.eventID?.location === selectedVenue
     const matchesEventType = !selectedEventType || entrance.eventID?.eventType === selectedEventType
 
-    return matchesMonth && matchesYear && matchesVenue && matchesEventType
+    return matchesMonth && matchesYear && matchesEventType
   }) || []
 
   // Calculate filtered statistics
@@ -39,8 +37,7 @@ const EntranceDashboard = () => {
       : 0
   }
 
-  // Get unique venues from events
-  const venues = eventsData ? [...new Set(eventsData.map(event => event.location).filter(Boolean))] : []
+
 
   // Event type options based on event model
   const eventTypes = [
@@ -81,7 +78,6 @@ const EntranceDashboard = () => {
   const resetFilters = () => {
     setSelectedMonth(new Date().getMonth())
     setSelectedYear(new Date().getFullYear())
-    setSelectedVenue('')
     setSelectedEventType('')
   }
 

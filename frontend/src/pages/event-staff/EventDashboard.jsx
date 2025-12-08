@@ -2,7 +2,7 @@ import PageLayout from '@/layouts/PageLayout'
 import React, { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import {  Users, TrendingUp, Filter, Trophy, Target, Clock, Award } from 'lucide-react'
+import { Users, TrendingUp, Filter, Trophy, Target, Clock, Award } from 'lucide-react'
 import { useGetAll } from '@/hooks/useApiQueries'
 import NativeSelect from '@/components/custom/NativeSelect'
 
@@ -11,7 +11,6 @@ import { EventChart } from './components/EventChart'
 const EventDashboard = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth())
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
-  const [selectedVenue, setSelectedVenue] = useState('')
   const [selectedEventType, setSelectedEventType] = useState('')
 
   // Fetch data
@@ -24,18 +23,16 @@ const EventDashboard = () => {
     const eventDate = new Date(schedule.eventID?.date)
     const matchesMonth = eventDate.getMonth() === selectedMonth
     const matchesYear = eventDate.getFullYear() === selectedYear
-    const matchesVenue = !selectedVenue || schedule.eventID?.location === selectedVenue
     const matchesEventType = !selectedEventType || schedule.eventID?.eventType === selectedEventType
-    return matchesMonth && matchesYear && matchesVenue && matchesEventType
+    return matchesMonth && matchesYear && matchesEventType
   }) || []
 
   const filteredMatchResults = matchResultsData?.filter(result => {
     const eventDate = new Date(result.matchID?.eventID?.date)
     const matchesMonth = eventDate.getMonth() === selectedMonth
     const matchesYear = eventDate.getFullYear() === selectedYear
-    const matchesVenue = !selectedVenue || result.matchID?.eventID?.location === selectedVenue
     const matchesEventType = !selectedEventType || result.matchID?.eventID?.eventType === selectedEventType
-    return matchesMonth && matchesYear && matchesVenue && matchesEventType
+    return matchesMonth && matchesYear && matchesEventType
   }) || []
 
   // Calculate statistics
@@ -53,8 +50,7 @@ const EventDashboard = () => {
     pendingResults: filteredMatchResults.filter(r => !r.verified).length
   }
 
-  // Get unique venues from events
-  const venues = eventsData ? [...new Set(eventsData.map(event => event.location).filter(Boolean))] : []
+
 
   // Month options
   const months = [
@@ -87,7 +83,6 @@ const EventDashboard = () => {
   const resetFilters = () => {
     setSelectedMonth(new Date().getMonth())
     setSelectedYear(new Date().getFullYear())
-    setSelectedVenue('')
     setSelectedEventType('')
   }
 

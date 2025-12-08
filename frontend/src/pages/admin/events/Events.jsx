@@ -25,27 +25,35 @@ const Events = () => {
   const [pendingStatusChange, setPendingStatusChange] = useState(null) // { eventId, newStatus, oldStatus, event }
   const [formData, setFormData] = useState({
     eventName: '',
-    location: 'Buenavista Cockpit Arena',
     date: '',
+    minimumBet: '',
+    minimumParticipants: '',
     prize: '',
     eventType: '',
     noCockRequirements: '',
     registrationDeadline: '',
     entranceFee: '',
     entryFee: '',
-    cageRentalFee: ''
+    cageRentalFee: '',
+    desiredWeight: '',
+    weightGap: '',
+    winnerCount: ''
   })
   const [editFormData, setEditFormData] = useState({
     eventName: '',
-    location: '',
     date: '',
+    minimumBet: '',
+    minimumParticipants: '',
     prize: '',
     eventType: '',
     noCockRequirements: '',
     registrationDeadline: '',
     entranceFee: '',
     entryFee: '',
-    cageRentalFee: ''
+    cageRentalFee: '',
+    desiredWeight: '',
+    weightGap: '',
+    winnerCount: ''
   })
 
   // Fetch events with general hook
@@ -132,7 +140,7 @@ const Events = () => {
 
   const handleAddEvent = async () => {
     // Basic required fields for all events
-    const basicRequiredFields = ['eventName', 'location', 'date', 'eventType', 'entranceFee', 'cageRentalFee']
+    const basicRequiredFields = ['eventName', 'date', 'eventType', 'entranceFee', 'cageRentalFee', 'minimumBet', 'minimumParticipants']
     const missingBasicFields = basicRequiredFields.filter(field => !formData[field])
 
     if (missingBasicFields.length > 0) {
@@ -142,7 +150,7 @@ const Events = () => {
 
     // Additional required fields for derby events
     if (formData.eventType === 'derby') {
-      const additionalRequiredFields = ['prize', 'noCockRequirements', 'registrationDeadline']
+      const additionalRequiredFields = ['prize', 'noCockRequirements', 'registrationDeadline', 'desiredWeight', 'weightGap']
       const missingAdditionalFields = additionalRequiredFields.filter(field => !formData[field])
 
       if (missingAdditionalFields.length > 0) {
@@ -164,7 +172,7 @@ const Events = () => {
 
     // Additional required fields for fastest_kill events
     if (formData.eventType === 'fastest_kill') {
-      const additionalRequiredFields = ['prize']
+      const additionalRequiredFields = ['prize', 'winnerCount']
       const missingAdditionalFields = additionalRequiredFields.filter(field => !formData[field])
 
       if (missingAdditionalFields.length > 0) {
@@ -181,15 +189,18 @@ const Events = () => {
     }
 
     // Validate numeric fields
-    const numericFields = ['entranceFee', 'cageRentalFee']
+    const numericFields = ['entranceFee', 'cageRentalFee', 'minimumBet', 'minimumParticipants']
     if (formData.entryFee) {
       numericFields.push('entryFee')
     }
     if (formData.eventType === 'derby' || formData.eventType === 'hits_ulutan') {
       numericFields.push('prize', 'noCockRequirements')
     }
+    if (formData.eventType === 'derby') {
+      numericFields.push('desiredWeight', 'weightGap')
+    }
     if (formData.eventType === 'fastest_kill') {
-      numericFields.push('prize')
+      numericFields.push('prize', 'winnerCount')
     }
 
     for (const field of numericFields) {
@@ -224,6 +235,26 @@ const Events = () => {
       delete createData.prize
       delete createData.noCockRequirements
       delete createData.registrationDeadline
+      delete createData.desiredWeight
+      delete createData.weightGap
+      delete createData.winnerCount
+    }
+
+    // For non-derby events, remove derby-specific fields
+    if (formData.eventType !== 'derby') {
+      delete createData.desiredWeight
+      delete createData.weightGap
+      delete createData.registrationDeadline
+    }
+
+    // For non-fastest_kill events, remove fastest kill-specific fields
+    if (formData.eventType !== 'fastest_kill') {
+      delete createData.winnerCount
+    }
+
+    // For non-derby and non-hits_ulutan events, remove noCockRequirements
+    if (formData.eventType !== 'derby' && formData.eventType !== 'hits_ulutan') {
+      delete createData.noCockRequirements
     }
 
     createEventMutation.mutate(createData)
@@ -231,7 +262,7 @@ const Events = () => {
 
   const handleEditEvent = async () => {
     // Basic required fields for all events
-    const basicRequiredFields = ['eventName', 'location', 'date', 'eventType', 'entranceFee', 'cageRentalFee']
+    const basicRequiredFields = ['eventName', 'date', 'eventType', 'entranceFee', 'cageRentalFee', 'minimumBet', 'minimumParticipants']
     const missingBasicFields = basicRequiredFields.filter(field => !editFormData[field])
 
     if (missingBasicFields.length > 0) {
@@ -241,7 +272,7 @@ const Events = () => {
 
     // Additional required fields for derby events
     if (editFormData.eventType === 'derby') {
-      const additionalRequiredFields = ['prize', 'noCockRequirements', 'registrationDeadline']
+      const additionalRequiredFields = ['prize', 'noCockRequirements', 'registrationDeadline', 'desiredWeight', 'weightGap']
       const missingAdditionalFields = additionalRequiredFields.filter(field => !editFormData[field])
 
       if (missingAdditionalFields.length > 0) {
@@ -263,7 +294,7 @@ const Events = () => {
 
     // Additional required fields for fastest_kill events
     if (editFormData.eventType === 'fastest_kill') {
-      const additionalRequiredFields = ['prize']
+      const additionalRequiredFields = ['prize', 'winnerCount']
       const missingAdditionalFields = additionalRequiredFields.filter(field => !editFormData[field])
 
       if (missingAdditionalFields.length > 0) {
@@ -282,15 +313,18 @@ const Events = () => {
     }
 
     // Validate numeric fields
-    const numericFields = ['entranceFee', 'cageRentalFee']
+    const numericFields = ['entranceFee', 'cageRentalFee', 'minimumBet', 'minimumParticipants']
     if (editFormData.entryFee) {
       numericFields.push('entryFee')
     }
     if (editFormData.eventType === 'derby' || editFormData.eventType === 'hits_ulutan') {
       numericFields.push('prize', 'noCockRequirements')
     }
+    if (editFormData.eventType === 'derby') {
+      numericFields.push('desiredWeight', 'weightGap')
+    }
     if (editFormData.eventType === 'fastest_kill') {
-      numericFields.push('prize')
+      numericFields.push('prize', 'winnerCount')
     }
 
     for (const field of numericFields) {
@@ -325,6 +359,26 @@ const Events = () => {
       delete updateData.prize
       delete updateData.noCockRequirements
       delete updateData.registrationDeadline
+      delete updateData.desiredWeight
+      delete updateData.weightGap
+      delete updateData.winnerCount
+    }
+
+    // For non-derby events, remove derby-specific fields
+    if (editFormData.eventType !== 'derby') {
+      delete updateData.desiredWeight
+      delete updateData.weightGap
+      delete updateData.registrationDeadline
+    }
+
+    // For non-fastest_kill events, remove fastest kill-specific fields
+    if (editFormData.eventType !== 'fastest_kill') {
+      delete updateData.winnerCount
+    }
+
+    // For non-derby and non-hits_ulutan events, remove noCockRequirements
+    if (editFormData.eventType !== 'derby' && editFormData.eventType !== 'hits_ulutan') {
+      delete updateData.noCockRequirements
     }
 
     updateEventMutation.mutate({
@@ -344,28 +398,38 @@ const Events = () => {
   const resetForm = () => {
     setFormData({
       eventName: '',
-      location: 'Buenavista Cockpit Arena',
       date: '',
+      minimumBet: '',
+      minimumParticipants: '',
       prize: '',
       eventType: '',
       noCockRequirements: '',
       registrationDeadline: '',
       entranceFee: '',
-      entryFee: ''
+      entryFee: '',
+      cageRentalFee: '',
+      desiredWeight: '',
+      weightGap: '',
+      winnerCount: ''
     })
   }
 
   const resetEditForm = () => {
     setEditFormData({
       eventName: '',
-      location: '',
       date: '',
+      minimumBet: '',
+      minimumParticipants: '',
       prize: '',
       eventType: '',
       noCockRequirements: '',
       registrationDeadline: '',
       entranceFee: '',
-      entryFee: ''
+      entryFee: '',
+      cageRentalFee: '',
+      desiredWeight: '',
+      weightGap: '',
+      winnerCount: ''
     })
   }
 
@@ -461,15 +525,19 @@ const Events = () => {
     setSelectedEvent(event)
     setEditFormData({
       eventName: event.eventName || '',
-      location: event.location || '',
       date: formatDateForInput(event.date),
+      minimumBet: event.minimumBet ? event.minimumBet.toString() : '',
+      minimumParticipants: event.minimumParticipants ? event.minimumParticipants.toString() : '',
       prize: event.prize ? event.prize.toString() : '',
       eventType: event.eventType || '',
       noCockRequirements: event.noCockRequirements ? event.noCockRequirements.toString() : '',
       registrationDeadline: formatDateForInput(event.registrationDeadline),
       entranceFee: event.entranceFee ? event.entranceFee.toString() : '',
       entryFee: event.entryFee ? event.entryFee.toString() : '',
-      cageRentalFee: event.cageRentalFee ? event.cageRentalFee.toString() : ''
+      cageRentalFee: event.cageRentalFee ? event.cageRentalFee.toString() : '',
+      desiredWeight: event.desiredWeight ? event.desiredWeight.toString() : '',
+      weightGap: event.weightGap ? event.weightGap.toString() : '',
+      winnerCount: event.winnerCount ? event.winnerCount.toString() : ''
     })
     setEditEventDialogOpen(true)
   }

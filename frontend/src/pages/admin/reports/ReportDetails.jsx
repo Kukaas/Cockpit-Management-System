@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import PageLayout from '@/layouts/PageLayout'
 import { useGetById } from '@/hooks/useApiQueries'
-import EventDetailsCard from '../../entrance-staff/entrance-registration/components/EventDetailsCard'
+import EventDetailsCard from '@/components/EventDetailsCard'
 import ReportTabs from './components/ReportTabs'
 
 import UnifiedPrintButton from './components/UnifiedPrintButton'
