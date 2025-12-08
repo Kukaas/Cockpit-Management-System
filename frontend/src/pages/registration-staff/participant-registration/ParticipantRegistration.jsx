@@ -902,9 +902,9 @@ const ParticipantRegistration = () => {
   }
 
   // Determine if fight schedule tab should be shown
-  const showFightScheduleTab = isMinimumParticipantsMet()
-
   const registrationDeadlinePassed = isRegistrationDeadlinePassed()
+  const showFightScheduleTab = isMinimumParticipantsMet() && registrationDeadlinePassed
+
   const deadlineApproaching = isDeadlineApproaching()
 
   // Create table columns
