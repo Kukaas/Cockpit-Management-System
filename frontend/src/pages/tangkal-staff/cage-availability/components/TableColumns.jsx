@@ -1,7 +1,7 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Edit, Trash2, Shield, MapPin, Hash, Settings, CheckCircle, XCircle, AlertTriangle, Clock } from 'lucide-react'
+import { Edit, Trash2, Shield, Hash, Settings, CheckCircle, XCircle, AlertTriangle, Clock } from 'lucide-react'
 
 export const createCageAvailabilityColumns = (handleEditClick, handleDeleteClick) => [
   {
@@ -16,16 +16,9 @@ export const createCageAvailabilityColumns = (handleEditClick, handleDeleteClick
       </div>
     )
   },
-  // {
-  //   key: 'arena',
-  //   label: 'Arena',
-  //   render: (value) => (
-  //     <div className="flex items-center gap-2">
-  //       <MapPin className="h-4 w-4 text-muted-foreground" />
-  //       <span className="text-sm">{value}</span>
-  //     </div>
-  //   )
-  // },
+  // No changes needed, just removing the commented out block.
+  // Wait, I can't just remove lines without replacing.
+  // I will replace the commented block with empty string.
   {
     key: 'status',
     label: 'Status',

@@ -5,24 +5,14 @@ export const createCageAvailability = async (req, res) => {
     try {
         const {
             cageNumber,
-            arena = 'Buenavista Cockpit Arena',
             status = 'active'
         } = req.body;
-
-        // Validate arena
-        const validArenas = ['Buenavista Cockpit Arena', 'Mogpog Cockpit Arena', 'Boac Cockpit Arena'];
-        if (!validArenas.includes(arena)) {
-            return res.status(400).json({
-                success: false,
-                message: `Invalid arena. Must be one of: ${validArenas.join(', ')}`
-            });
-        }
 
         // Auto-generate incremental cage number if not provided
         let finalCageNumber = cageNumber;
         if (!finalCageNumber) {
-            // Get all existing cages in the arena
-            const existingCages = await CageAvailability.find({ arena })
+            // Get all existing cages (global)
+            const existingCages = await CageAvailability.find()
                 .select('cageNumber');
 
             // Extract numeric values from existing cage numbers
@@ -45,19 +35,18 @@ export const createCageAvailability = async (req, res) => {
             finalCageNumber = String(maxNumber + 1);
         }
 
-        // Check if cage number already exists in the same arena
-        const existingCage = await CageAvailability.findOne({ cageNumber: finalCageNumber, arena });
+        // Check if cage number already exists (globally)
+        const existingCage = await CageAvailability.findOne({ cageNumber: finalCageNumber });
         if (existingCage) {
             return res.status(400).json({
                 success: false,
-                message: `Cage ${finalCageNumber} already exists in ${arena}`
+                message: `Cage ${finalCageNumber} already exists`
             });
         }
 
         // Create new cage availability record
         const newCageAvailability = new CageAvailability({
             cageNumber: finalCageNumber,
-            arena,
             status,
             recordedBy: req.user._id
         });
@@ -81,7 +70,7 @@ export const createCageAvailability = async (req, res) => {
             if (field === 'cageNumber') {
                 return res.status(400).json({
                     success: false,
-                    message: `Cage number "${req.body.cageNumber}" already exists in ${req.body.arena || 'the selected arena'}. Please use a different cage number.`
+                    message: `Cage number "${req.body.cageNumber}" already exists. Please use a different cage number.`
                 });
             }
         }
@@ -98,7 +87,6 @@ export const createCageAvailability = async (req, res) => {
 export const bulkCreateCageAvailability = async (req, res) => {
     try {
         const {
-            arena = 'Buenavista Cockpit Arena',
             status = 'active',
             count = 1
         } = req.body;
@@ -111,17 +99,8 @@ export const bulkCreateCageAvailability = async (req, res) => {
             });
         }
 
-        // Validate arena
-        const validArenas = ['Buenavista Cockpit Arena', 'Mogpog Cockpit Arena', 'Boac Cockpit Arena'];
-        if (!validArenas.includes(arena)) {
-            return res.status(400).json({
-                success: false,
-                message: `Invalid arena. Must be one of: ${validArenas.join(', ')}`
-            });
-        }
-
-        // Get all existing cages in the arena to find the highest number
-        const existingCages = await CageAvailability.find({ arena })
+        // Get all existing cages to find the highest number (global)
+        const existingCages = await CageAvailability.find()
             .select('cageNumber');
 
         // Extract numeric values from existing cage numbers
@@ -150,7 +129,6 @@ export const bulkCreateCageAvailability = async (req, res) => {
 
             cagesToCreate.push({
                 cageNumber,
-                arena,
                 status,
                 recordedBy: req.user._id
             });
@@ -175,7 +153,6 @@ export const bulkCreateCageAvailability = async (req, res) => {
             data: {
                 createdCages,
                 totalCreated: createdCages.length,
-                arena,
                 status
             }
         });
@@ -186,7 +163,7 @@ export const bulkCreateCageAvailability = async (req, res) => {
         if (error.code === 11000) {
             return res.status(400).json({
                 success: false,
-                message: 'Some cage numbers already exist in the selected arena. Please try again.'
+                message: 'Some cage numbers already exist. Please try again.'
             });
         }
 
@@ -203,7 +180,6 @@ export const getAllCageAvailability = async (req, res) => {
     try {
         const {
             status,
-            arena,
             search,
             sortBy = 'cageNumber',
             sortOrder = 'asc'
@@ -216,15 +192,8 @@ export const getAllCageAvailability = async (req, res) => {
             filter.status = status;
         }
 
-        if (arena) {
-            filter.arena = arena;
-        }
-
         if (search) {
-            filter.$or = [
-                { cageNumber: { $regex: search, $options: 'i' } },
-                { arena: { $regex: search, $options: 'i' } }
-            ];
+            filter.cageNumber = { $regex: search, $options: 'i' };
         }
 
         // Build sort object
@@ -320,32 +289,22 @@ export const updateCageAvailability = async (req, res) => {
             });
         }
 
-        // Validate arena if it's being updated
-        if (updateData.arena) {
-            const validArenas = ['Buenavista Cockpit Arena', 'Mogpog Cockpit Arena', 'Boac Cockpit Arena'];
-            if (!validArenas.includes(updateData.arena)) {
-                return res.status(400).json({
-                    success: false,
-                    message: `Invalid arena. Must be one of: ${validArenas.join(', ')}`
-                });
-            }
-        }
-
-        // Check if cage number is being changed and if it already exists in the same arena
-        const targetArena = updateData.arena || cageAvailability.arena;
+        // Check if cage number is being changed and if it already exists (globally)
         if (updateData.cageNumber && updateData.cageNumber !== cageAvailability.cageNumber) {
             const existingCage = await CageAvailability.findOne({
                 cageNumber: updateData.cageNumber,
-                arena: targetArena,
                 _id: { $ne: id }
             });
             if (existingCage) {
                 return res.status(400).json({
                     success: false,
-                    message: `Cage ${updateData.cageNumber} already exists in ${targetArena}`
+                    message: `Cage ${updateData.cageNumber} already exists`
                 });
             }
         }
+
+        // Remove arena from updateData if present (to safely ignore it)
+        delete updateData.arena;
 
         // Update the cage availability record
         const updatedCageAvailability = await CageAvailability.findByIdAndUpdate(
@@ -368,7 +327,7 @@ export const updateCageAvailability = async (req, res) => {
             if (field === 'cageNumber') {
                 return res.status(400).json({
                     success: false,
-                    message: `Cage number "${req.body.cageNumber}" already exists in ${req.body.arena || 'the selected arena'}. Please use a different cage number.`
+                    message: `Cage number "${req.body.cageNumber}" already exists. Please use a different cage number.`
                 });
             }
         }
@@ -423,15 +382,12 @@ export const deleteCageAvailability = async (req, res) => {
 // Get available cages for rental selection
 export const getAvailableCagesForRental = async (req, res) => {
     try {
-        const { date, arena } = req.query;
+        const { date } = req.query;
 
         // Build filter for active cages
         const cageFilter = { status: 'active' };
-        if (arena) {
-            cageFilter.arena = arena;
-        }
 
-        // Get all active cages (optionally filtered by arena)
+        // Get all active cages
         const allCages = await CageAvailability.find(cageFilter)
             .sort({ cageNumber: 1 });
 
@@ -451,11 +407,6 @@ export const getAvailableCagesForRental = async (req, res) => {
                 paymentStatus: { $ne: 'cancelled' }
             };
 
-            // Add arena filter to rental query if specified
-            if (arena) {
-                rentalFilter.arena = arena;
-            }
-
             // Get rented cages for the date
             const rentedCages = await CageRental.find(rentalFilter).select('cages.cageNo');
 
@@ -473,7 +424,6 @@ export const getAvailableCagesForRental = async (req, res) => {
                 message: 'Available cages retrieved successfully',
                 data: {
                     date: rentalDate,
-                    arena: arena || 'All Arenas',
                     availableCages,
                     totalAvailable: availableCages.length,
                     totalCages: allCages.length
@@ -485,7 +435,6 @@ export const getAvailableCagesForRental = async (req, res) => {
                 success: true,
                 message: 'All active cages retrieved successfully',
                 data: {
-                    arena: arena || 'All Arenas',
                     cages: allCages,
                     totalCages: allCages.length
                 }
@@ -514,32 +463,6 @@ export const getCageAvailabilitySummary = async (req, res) => {
             status: 'active'
         });
 
-        // Get arena breakdown
-        const arenaBreakdown = await CageAvailability.aggregate([
-            {
-                $group: {
-                    _id: '$arena',
-                    total: { $sum: 1 },
-                    active: { $sum: { $cond: [{ $eq: ['$status', 'active'] }, 1, 0] } },
-                    inactive: { $sum: { $cond: [{ $eq: ['$status', 'inactive'] }, 1, 0] } },
-                    maintenance: { $sum: { $cond: [{ $eq: ['$status', 'maintenance'] }, 1, 0] } },
-                    rented: { $sum: { $cond: [{ $eq: ['$status', 'rented'] }, 1, 0] } }
-                }
-            },
-            {
-                $project: {
-                    arena: '$_id',
-                    total: 1,
-                    active: 1,
-                    inactive: 1,
-                    maintenance: 1,
-                    rented: 1,
-                    available: { $subtract: ['$active', '$rented'] }
-                }
-            },
-            { $sort: { arena: 1 } }
-        ]);
-
         res.status(200).json({
             success: true,
             message: 'Cage availability summary retrieved successfully',
@@ -549,8 +472,7 @@ export const getCageAvailabilitySummary = async (req, res) => {
                 inactiveCages,
                 maintenanceCages,
                 availableCages,
-                occupiedCages: totalCages - availableCages,
-                arenaBreakdown
+                occupiedCages: totalCages - availableCages
             }
         });
     } catch (error) {

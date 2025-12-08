@@ -7,12 +7,6 @@ const cageAvailabilitySchema = new mongoose.Schema({
         trim: true,
         maxlength: 50
     },
-    arena: {
-        type: String,
-        required: true,
-        enum: ['Buenavista Cockpit Arena', 'Mogpog Cockpit Arena', 'Boac Cockpit Arena'],
-        default: 'Buenavista Cockpit Arena'
-    },
     // Additional fields for better management
     status: {
         type: String,
@@ -30,18 +24,17 @@ const cageAvailabilitySchema = new mongoose.Schema({
 });
 
 // Indexes for better query performance
-cageAvailabilitySchema.index({ cageNumber: 1, arena: 1 }, { unique: true });
-cageAvailabilitySchema.index({ arena: 1 });
+cageAvailabilitySchema.index({ cageNumber: 1 }, { unique: true });
 cageAvailabilitySchema.index({ status: 1 });
 cageAvailabilitySchema.index({ recordedBy: 1 });
 
 // Virtual for checking if cage is available
-cageAvailabilitySchema.virtual('isAvailable').get(function() {
+cageAvailabilitySchema.virtual('isAvailable').get(function () {
     return this.status === 'active';
 });
 
 // Method to get availability status
-cageAvailabilitySchema.methods.getAvailabilityStatus = function() {
+cageAvailabilitySchema.methods.getAvailabilityStatus = function () {
     if (this.status === 'inactive') return 'inactive';
     if (this.status === 'maintenance') return 'maintenance';
     if (this.status === 'rented') return 'rented';
@@ -52,7 +45,7 @@ cageAvailabilitySchema.methods.getAvailabilityStatus = function() {
 // Ensure virtual fields are serialized
 cageAvailabilitySchema.set('toJSON', {
     virtuals: true,
-    transform: function(doc, ret) {
+    transform: function (doc, ret) {
         ret.availabilityStatus = doc.getAvailabilityStatus();
         return ret;
     }

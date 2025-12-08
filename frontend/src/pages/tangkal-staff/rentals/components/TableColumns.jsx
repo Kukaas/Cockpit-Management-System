@@ -1,9 +1,9 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Edit, Trash2, RotateCcw, Eye } from 'lucide-react'
+import { Edit, Trash2, RotateCcw, Eye, Printer } from 'lucide-react'
 
-export const createRentalColumns = (formatCurrency, formatDate, handleEditClick, handleDeleteClick, handleStatusChange, statusChangeMutation, handleOpenReturnDialog, rentalStatusMutation, handleViewDetails) => [
+export const createRentalColumns = (formatCurrency, formatDate, handleEditClick, handleDeleteClick, handleStatusChange, statusChangeMutation, handleOpenReturnDialog, rentalStatusMutation, handleViewDetails, handlePrint) => [
   {
     key: 'nameOfRenter',
     label: 'Renter Name',
@@ -132,6 +132,18 @@ export const createRentalColumns = (formatCurrency, formatDate, handleEditClick,
 
       return (
         <div className="flex items-center space-x-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation()
+              handlePrint(row)
+            }}
+            className="h-8 w-8 p-0 text-gray-600 hover:text-gray-900"
+            title="Print Receipt"
+          >
+            <Printer className="h-4 w-4" />
+          </Button>
           <Button
             variant="ghost"
             size="sm"

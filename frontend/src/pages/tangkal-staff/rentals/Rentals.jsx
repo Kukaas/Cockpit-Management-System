@@ -17,6 +17,7 @@ import EventDetailsCard from '@/components/EventDetailsCard'
 import ReturnCagesDialog from './components/ReturnCagesDialog'
 import { createRentalColumns } from './components/TableColumns'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { printRentalReceipt } from './utils/printReceipt'
 
 const Rentals = () => {
   const { eventId } = useParams()
@@ -201,7 +202,7 @@ const Rentals = () => {
 
   // Submit handlers
   const handleAddRental = async () => {
-    const requiredFields = ['quantity', 'arena', 'date', 'nameOfRenter', 'eventID', 'selectedCageIds']
+    const requiredFields = ['quantity', 'date', 'nameOfRenter', 'eventID', 'selectedCageIds']
     const missingFields = requiredFields.filter(field => !rentalFormData[field])
 
     if (missingFields.length > 0) {
@@ -225,7 +226,7 @@ const Rentals = () => {
   const handleEditRental = async () => {
     if (!selectedRental) return
 
-    const requiredFields = ['quantity', 'arena', 'date', 'nameOfRenter', 'eventID']
+    const requiredFields = ['quantity', 'date', 'nameOfRenter', 'eventID']
     const missingFields = requiredFields.filter(field => !rentalFormData[field])
 
     if (missingFields.length > 0) {
@@ -372,6 +373,11 @@ const Rentals = () => {
     setDetailDialogOpen(true)
   }
 
+  // Handle print receipt
+  const handlePrint = (rental) => {
+    printRentalReceipt(rental, selectedEvent)
+  }
+
   // Format functions
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -400,7 +406,8 @@ const Rentals = () => {
     statusChangeMutation,
     handleOpenReturnDialog,
     rentalStatusMutation,
-    handleViewDetails
+    handleViewDetails,
+    handlePrint
   )
 
   if (eventLoading) {

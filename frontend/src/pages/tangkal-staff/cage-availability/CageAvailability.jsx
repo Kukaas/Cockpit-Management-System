@@ -29,7 +29,6 @@ const CageAvailability = () => {
   // Form data
   const [cageFormData, setCageFormData] = useState({
     cageNumber: '',
-    arena: 'Buenavista Cockpit Arena',
     status: 'active',
     bulkCount: '1'
   })
@@ -110,7 +109,6 @@ const CageAvailability = () => {
   const resetCageForm = () => {
     setCageFormData({
       cageNumber: '',
-      arena: 'Buenavista Cockpit Arena',
       status: 'active',
       bulkCount: '1'
     })
@@ -118,7 +116,7 @@ const CageAvailability = () => {
 
   // Submit handlers
   const handleAddCage = async () => {
-    const requiredFields = ['bulkCount', 'arena']
+    const requiredFields = ['bulkCount']
     const missingFields = requiredFields.filter(field => !cageFormData[field])
 
     if (missingFields.length > 0) {
@@ -133,7 +131,6 @@ const CageAvailability = () => {
     }
 
     const cageData = {
-      arena: cageFormData.arena,
       status: cageFormData.status,
       count: bulkCount
     }
@@ -144,7 +141,7 @@ const CageAvailability = () => {
   const handleEditCage = async () => {
     if (!selectedCage) return
 
-    const requiredFields = ['cageNumber', 'arena']
+    const requiredFields = ['cageNumber']
     const missingFields = requiredFields.filter(field => !cageFormData[field])
 
     if (missingFields.length > 0) {
@@ -152,21 +149,19 @@ const CageAvailability = () => {
       return
     }
 
-    // Check for duplicate cage number in the same arena (excluding current cage)
+    // Check for duplicate cage number (excluding current cage)
     const existingCage = cages.find(cage =>
       cage.cageNumber === cageFormData.cageNumber &&
-      cage.arena === cageFormData.arena &&
       cage._id !== selectedCage._id
     )
 
     if (existingCage) {
-      toast.error(`Cage number "${cageFormData.cageNumber}" already exists in ${cageFormData.arena}. Please use a different cage number.`)
+      toast.error(`Cage number "${cageFormData.cageNumber}" already exists. Please use a different cage number.`)
       return
     }
 
     const cageData = {
       cageNumber: cageFormData.cageNumber,
-      arena: cageFormData.arena,
       status: cageFormData.status
     }
 
@@ -186,7 +181,6 @@ const CageAvailability = () => {
     setSelectedCage(cage)
     setCageFormData({
       cageNumber: cage.cageNumber,
-      arena: cage.arena,
       status: cage.status,
       bulkCount: '1'
     })
@@ -272,7 +266,7 @@ const CageAvailability = () => {
         open={deleteCageDialogOpen}
         onOpenChange={setDeleteCageDialogOpen}
         title="Delete Cage Availability"
-        description={`Are you sure you want to delete the cage availability record for "${selectedCage?.cageNumber}" in ${selectedCage?.arena}? This action cannot be undone.`}
+        description={`Are you sure you want to delete the cage availability record for "${selectedCage?.cageNumber}"? This action cannot be undone.`}
         confirmText="Delete Cage"
         cancelText="Cancel"
         onConfirm={handleDeleteCage}

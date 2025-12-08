@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Shield, MapPin,  Search } from 'lucide-react'
+import { Shield, MapPin, Search } from 'lucide-react'
 import CustomAlertDialog from '@/components/custom/CustomAlertDialog'
 import InputField from '@/components/custom/InputField'
 import NativeSelect from '@/components/custom/NativeSelect'
@@ -32,8 +32,8 @@ const RentalForm = ({
 
   // Fetch available cages for the selected arena and date
   // In edit mode, exclude current rental so its cages show as available
-  const apiUrl = formData.arena && formData.date
-    ? `/cage-rentals/available?date=${formData.date}&arena=${formData.arena}${isEdit && rentalData?._id ? `&excludeRentalId=${rentalData._id}` : ''}`
+  const apiUrl = formData.date
+    ? `/cage-rentals/available?date=${formData.date}${isEdit && rentalData?._id ? `&excludeRentalId=${rentalData._id}` : ''}`
     : null
 
   const { data: availableCagesResponse, isLoading: isLoadingCages } = useGetAll(apiUrl)
@@ -206,7 +206,7 @@ const RentalForm = ({
             {!isLoadingCages && (
               <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
                 <p className="text-sm text-blue-800">
-                  <span className="font-medium">Available cages in {formData.arena}:</span> {availableCages.length}
+                  <span className="font-medium">Available cages:</span> {availableCages.length}
                 </p>
                 <p className="text-xs text-blue-600 mt-1">
                   Select the specific cages you want to rent. These cage numbers will be given to the renter.
@@ -272,7 +272,7 @@ const RentalForm = ({
                   </>
                 ) : (
                   <>
-                    <p className="text-sm">No available cages found in {formData.arena}</p>
+                    <p className="text-sm">No available cages found</p>
                     <p className="text-xs">All cages might be rented, inactive, or under maintenance</p>
                   </>
                 )}
@@ -349,11 +349,11 @@ const RentalForm = ({
                 </p>
               </div>
               <div className="flex items-center gap-1"> <span className="text-lg font-bold text-green-600">
-                  {totalPrice.toLocaleString('en-PH', {
-                    style: 'currency',
-                    currency: 'PHP'
-                  })}
-                </span>
+                {totalPrice.toLocaleString('en-PH', {
+                  style: 'currency',
+                  currency: 'PHP'
+                })}
+              </span>
               </div>
             </div>
           </div>
