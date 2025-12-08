@@ -283,105 +283,99 @@ const MatchResultForm = ({
           </div>
         )}
 
-        {/* Participant Bets */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h4 className="font-medium">Participant Bets</h4>
-            {isSpecialOutcome && (
+        {/* Participant Bets - Read Only Display */}
+        {!isSpecialOutcome && participantBets.length > 0 && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h4 className="font-medium">Participant Bets</h4>
               <span className="text-xs text-muted-foreground">
-                Bets not required for draw or cancelled results
+                Bets recorded during bet entry phase
               </span>
-            )}
-          </div>
-          {participants.map((participant) => {
-            // Find bet by participantID (handle both object and string IDs)
-            const participantBet = participantBets.find(bet => {
-              const betParticipantId = bet?.participantID?._id || bet?.participantID
-              const participantId = participant._id
-              return betParticipantId === participantId || betParticipantId?.toString() === participantId?.toString()
-            })
+            </div>
 
-            return (
-              <div key={participant._id} className="space-y-2">
-                <Label className="text-sm font-medium">
-                  {participant.participantName} Bet Amount{isSpecialOutcome ? '' : ' *'}
-                </Label>
-                <InputField
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  disabled={isSpecialOutcome}
-                  value={participantBet?.betAmount ?? ''}
-                  onChange={(e) => {
-                    const newBets = [...participantBets]
-                    const existingBetIndex = newBets.findIndex(bet => {
-                      const betParticipantId = bet?.participantID?._id || bet?.participantID
-                      const participantId = participant._id
-                      return betParticipantId === participantId || betParticipantId?.toString() === participantId?.toString()
-                    })
+            <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {participants.map((participant) => {
+                  const participantBet = participantBets.find(bet => {
+                    const betParticipantId = bet?.participantID?._id || bet?.participantID
+                    const participantId = participant._id
+                    return betParticipantId === participantId || betParticipantId?.toString() === participantId?.toString()
+                  })
 
-                    // Allow empty string, only convert to number when value exists
-                    const inputValue = e.target.value
-                    const newBetAmount = inputValue === '' ? '' : (parseFloat(inputValue) || 0)
-                    const betData = {
-                      participantID: participant._id,
-                      betAmount: newBetAmount,
-                      position: participantBet?.position // Preserve position if exists from saved data
-                    }
+                  if (!participantBet) return null
 
-                    if (existingBetIndex >= 0) {
-                      newBets[existingBetIndex] = betData
-                    } else {
-                      newBets.push(betData)
-                    }
+                  const position = getParticipantPosition(participant._id)
 
-                    // Always recalculate position from current bet amounts (when both bets are entered)
-                    // Meron has the higher bet, Wala has the lower bet
-                    // Only calculate if both bets have valid numbers (not empty strings)
-                    const validBets = newBets.filter(bet => bet.betAmount !== '' && bet.betAmount > 0)
-                    if (validBets.length === 2) {
-                      const [bet1, bet2] = validBets
-                      // Always recalculate to ensure positions match current bet amounts
-                      if (bet1.betAmount > bet2.betAmount) {
-                        bet1.position = 'Meron'
-                        bet2.position = 'Wala'
-                      } else if (bet2.betAmount > bet1.betAmount) {
-                        bet2.position = 'Meron'
-                        bet1.position = 'Wala'
-                      } else {
-                        // If amounts are equal, clear positions
-                        bet1.position = undefined
-                        bet2.position = undefined
-                      }
-                      // Update positions in the full newBets array
-                      newBets.forEach(bet => {
-                        const validBet = validBets.find(vb => {
-                          const betId = bet?.participantID?._id || bet?.participantID
-                          const validBetId = vb?.participantID?._id || vb?.participantID
-                          return betId === validBetId || betId?.toString() === validBetId?.toString()
-                        })
-                        if (validBet) {
-                          bet.position = validBet.position
-                        } else {
-                          bet.position = undefined
-                        }
-                      })
-                    } else {
-                      // Clear positions if not both bets are valid
-                      newBets.forEach(bet => {
-                        bet.position = undefined
-                      })
-                    }
-
-                    onInputChange('participantBets', newBets)
-                  }}
-                  placeholder={isSpecialOutcome ? 'Not required' : 'Enter bet amount'}
-                  required={!isSpecialOutcome}
-                />
+                  return (
+                    <div key={participant._id} className={`p-4 rounded-lg border-2 ${position === 'Meron'
+                        ? 'bg-red-50 border-red-300'
+                        : position === 'Wala'
+                          ? 'bg-blue-50 border-blue-300'
+                          : 'bg-gray-50 border-gray-300'
+                      }`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-medium text-gray-900">{participant.participantName}</span>
+                        {position && (
+                          <span className={`text-xs font-bold uppercase px-2 py-1 rounded ${position === 'Meron'
+                              ? 'bg-red-200 text-red-800'
+                              : 'bg-blue-200 text-blue-800'
+                            }`}>
+                            {position}
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-2xl font-bold text-gray-900">
+                        ₱{participantBet.betAmount?.toLocaleString()}
+                      </div>
+                      <div className="text-xs text-gray-600 mt-1">Bet Amount</div>
+                    </div>
+                  )
+                })}
               </div>
-            )
-          })}
-        </div>
+
+              {/* Betting Summary */}
+              {bettingInfo && (
+                <div className="mt-4 pt-4 border-t border-blue-200">
+                  <div className="grid grid-cols-3 gap-3 text-center">
+                    <div>
+                      <div className="text-xs text-gray-600 mb-1">Total Pool</div>
+                      <div className="font-semibold text-gray-900">
+                        ₱{(bettingInfo.meronBet.betAmount + bettingInfo.walaBet.betAmount + bettingInfo.outsideBets)?.toLocaleString()}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-600 mb-1">Outside Bets</div>
+                      <div className="font-semibold text-gray-700">
+                        ₱{bettingInfo.outsideBets?.toLocaleString()}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-600 mb-1">Plazada (10%)</div>
+                      <div className="font-semibold text-green-700">
+                        ₱{bettingInfo.loserPlazada?.toLocaleString() || '0'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Warning if no bets recorded */}
+        {!isSpecialOutcome && participantBets.length === 0 && (
+          <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
+            <div className="flex items-center gap-2">
+              <svg className="h-5 w-5 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+              <div>
+                <p className="text-sm font-medium text-orange-800">No Bets Recorded</p>
+                <p className="text-sm text-orange-700">Please record bets for this fight before adding the match result.</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Match Result */}
         <div className="space-y-4">

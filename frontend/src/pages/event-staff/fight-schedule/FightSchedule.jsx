@@ -15,6 +15,7 @@ import CustomAlertDialog from '@/components/custom/CustomAlertDialog'
 import EventDetailsCard from '@/components/EventDetailsCard'
 import FightForm from './components/FightForm'
 import MatchResultForm from './components/MatchResultForm'
+import BetEntryForm from './components/BetEntryForm'
 import FightTabs from './components/FightTabs'
 import DetailsDialog from './components/DetailsDialog'
 import ChampionshipTab from './components/ChampionshipTab'
@@ -34,6 +35,8 @@ const FightSchedule = () => {
   // Dialog states
   const [addFightDialogOpen, setAddFightDialogOpen] = useState(false)
   const [editFightDialogOpen, setEditFightDialogOpen] = useState(false)
+  const [addBetDialogOpen, setAddBetDialogOpen] = useState(false)
+  const [editBetDialogOpen, setEditBetDialogOpen] = useState(false)
   const [addResultDialogOpen, setAddResultDialogOpen] = useState(false)
   const [editResultDialogOpen, setEditResultDialogOpen] = useState(false)
   const [deleteFightDialogOpen, setDeleteFightDialogOpen] = useState(false)
@@ -49,6 +52,10 @@ const FightSchedule = () => {
     participant2: '',
     cockProfile1: '',
     cockProfile2: ''
+  })
+
+  const [betFormData, setBetFormData] = useState({
+    participantBets: []
   })
 
   const [resultFormData, setResultFormData] = useState({
@@ -70,6 +77,28 @@ const FightSchedule = () => {
 
   // Fetch match results for this event
   const { data: resultsData = [], refetch: refetchResults } = useGetAll(`/match-results/event/${eventId}`)
+
+  // Enrich fights data with hasBet flag
+  const enrichedFightsData = fightsData.map(fight => {
+    // Check if there's a match result with bets for this fight
+    const matchResult = resultsData.find(result => {
+      const matchId = result.matchID?._id || result.matchID
+      const fightId = fight._id
+      return matchId === fightId || matchId?.toString() === fightId?.toString()
+    })
+
+    // Fight has bet if there's a match result with participant bets
+    const hasBet = matchResult && matchResult.participantBets && matchResult.participantBets.length > 0
+
+    // Fight has result if there's a match result and winner is not pending
+    const hasResult = matchResult && matchResult.betWinner !== 'Pending'
+
+    return {
+      ...fight,
+      hasBet,
+      hasResult
+    }
+  })
 
   // Calculate total plazada for this event from match results
   const totalPlazada = resultsData?.reduce((sum, result) => sum + (result.totalPlazada || 0), 0) || 0
@@ -153,9 +182,33 @@ const FightSchedule = () => {
     },
     onSuccess: () => {
       setEditResultDialogOpen(false)
+      setAddResultDialogOpen(false)
       setSelectedResult(null)
       resetResultForm()
       refetchResults()
+    }
+  })
+
+  // Mutations specifically for bets (separate messages)
+  const createBetMutation = useCreateMutation('/match-results', {
+    successMessage: 'Bets recorded successfully',
+    errorMessage: (error) => error?.response?.data?.message || 'Failed to record bets',
+    onSuccess: () => {
+      setAddBetDialogOpen(false)
+      resetBetForm()
+      refetchResults()
+      refetchFights()
+    }
+  })
+
+  const updateBetMutation = usePutMutation('/match-results', {
+    successMessage: 'Bets updated successfully',
+    errorMessage: (error) => error?.response?.data?.message || 'Failed to update bets',
+    onSuccess: () => {
+      setAddBetDialogOpen(false)
+      resetBetForm()
+      refetchResults()
+      refetchFights()
     }
   })
 
@@ -184,6 +237,10 @@ const FightSchedule = () => {
     setFightFormData(prev => ({ ...prev, [field]: value }))
   }
 
+  const handleBetInputChange = (field, value) => {
+    setBetFormData(prev => ({ ...prev, [field]: value }))
+  }
+
   const handleResultInputChange = (field, value) => {
     setResultFormData(prev => ({ ...prev, [field]: value }))
   }
@@ -194,6 +251,12 @@ const FightSchedule = () => {
       participant2: '',
       cockProfile1: '',
       cockProfile2: ''
+    })
+  }
+
+  const resetBetForm = () => {
+    setBetFormData({
+      participantBets: []
     })
   }
 
@@ -237,6 +300,46 @@ const FightSchedule = () => {
     }
 
     createFightMutation.mutate(fightData)
+  }
+
+  const handleAddBet = async () => {
+    if (!selectedFight) {
+      toast.error('Please select a fight before recording bets')
+      return
+    }
+
+    const participantBets = betFormData.participantBets || []
+
+    if (participantBets.length !== 2) {
+      toast.error('Please enter bet amounts for both participants')
+      return
+    }
+
+    // Validate bet amounts
+    const [bet1, bet2] = participantBets
+    if (!bet1.betAmount || !bet2.betAmount || bet1.betAmount <= 0 || bet2.betAmount <= 0) {
+      toast.error('Please enter valid bet amounts for both participants')
+      return
+    }
+
+    // Check for existing pending result
+    const existingResult = resultsData.find(r =>
+      (r.matchID?._id === selectedFight._id || r.matchID === selectedFight._id) &&
+      r.betWinner === 'Pending'
+    )
+
+    // Create match result with bets only (no winner yet)
+    const betData = {
+      matchID: selectedFight._id,
+      participantBets,
+      winnerParticipantID: 'pending' // Temporary value, will be updated when result is recorded
+    }
+
+    if (existingResult) {
+      updateBetMutation.mutate({ id: existingResult._id, data: betData })
+    } else {
+      createBetMutation.mutate(betData)
+    }
   }
 
   const handleAddResult = async () => {
@@ -301,7 +404,17 @@ const FightSchedule = () => {
       resultData.matchTimeSeconds = resultFormData.matchTimeSeconds
     }
 
-    createResultMutation.mutate(resultData)
+    // Check for existing pending result
+    const existingResult = resultsData.find(r =>
+      (r.matchID?._id === selectedFight._id || r.matchID === selectedFight._id) &&
+      r.betWinner === 'Pending'
+    )
+
+    if (existingResult) {
+      updateResultMutation.mutate({ id: existingResult._id, data: resultData })
+    } else {
+      createResultMutation.mutate(resultData)
+    }
   }
 
   // Action handlers
@@ -323,9 +436,29 @@ const FightSchedule = () => {
     setDeleteFightDialogOpen(true)
   }
 
+  const handleAddBetClick = (fight) => {
+    setSelectedFight(fight)
+    resetBetForm()
+    setAddBetDialogOpen(true)
+  }
+
   const handleAddResultClick = (fight) => {
     setSelectedFight(fight)
     resetResultForm()
+
+    // Check for existing pending result to pre-fill bets
+    const pendingResult = resultsData.find(r =>
+      (r.matchID?._id === fight._id || r.matchID === fight._id) &&
+      r.betWinner === 'Pending'
+    )
+
+    if (pendingResult) {
+      setResultFormData(prev => ({
+        ...prev,
+        participantBets: pendingResult.participantBets || []
+      }))
+    }
+
     setAddResultDialogOpen(true)
   }
 
@@ -398,6 +531,7 @@ const FightSchedule = () => {
     formatDate,
     handleEditFightClick,
     handleDeleteFightClick,
+    handleAddBetClick,
     handleAddResultClick,
     handleViewDetails
   )
@@ -477,7 +611,7 @@ const FightSchedule = () => {
       <FightTabs
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        fights={fightsData}
+        fights={enrichedFightsData}
         results={resultsData}
         fightColumns={fightColumns}
         resultColumns={resultColumns}
@@ -543,6 +677,22 @@ const FightSchedule = () => {
         isEdit={true}
         event={event}
         selectedFight={selectedFight}
+      />
+
+      {/* Add Bet Dialog */}
+      <BetEntryForm
+        open={addBetDialogOpen}
+        onOpenChange={setAddBetDialogOpen}
+        title="Record Bet"
+        description="Enter bet amounts for this fight"
+        formData={betFormData}
+        onInputChange={handleBetInputChange}
+        onSubmit={handleAddBet}
+        onCancel={() => setAddBetDialogOpen(false)}
+        isPending={createBetMutation.isPending} // Use createBetMutation pending state
+        selectedFight={selectedFight}
+        isEdit={false}
+        event={event}
       />
 
       {/* Add Match Result Dialog */}

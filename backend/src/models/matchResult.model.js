@@ -44,7 +44,7 @@ const matchResultSchema = new mongoose.Schema({
   // Winner of the bet (Meron, Wala, or Draw)
   betWinner: {
     type: String,
-    enum: ['Meron', 'Wala', 'Draw', 'Cancelled'],
+    enum: ['Meron', 'Wala', 'Draw', 'Cancelled', 'Pending'],
     required: true
   },
 

@@ -1,9 +1,9 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Edit, Trash2, Trophy, Clock, Users, Target, Award, Calendar, Info, Eye } from 'lucide-react'
+import { Edit, Trash2, Trophy, Clock, Users, Target, Award, Calendar, Info, Eye, Wallet } from 'lucide-react'
 
-export const createFightColumns = (formatCurrency, formatDate, handleEditClick, handleDeleteClick, handleAddResultClick, handleViewDetails, showAddResult = true) => [
+export const createFightColumns = (formatCurrency, formatDate, handleEditClick, handleDeleteClick, handleAddBetClick, handleAddResultClick, handleViewDetails, showAddResult = true) => [
   {
     key: 'fightNumber',
     label: 'Fight #',
@@ -72,18 +72,24 @@ export const createFightColumns = (formatCurrency, formatDate, handleEditClick, 
       <div className="flex items-center space-x-2">
         {row.status === 'scheduled' && (
           <>
-            {/* <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation()
-                handleEditClick(row)
-              }}
-              className="h-8 w-8 p-0"
-            >
-              <Edit className="h-4 w-4" />
-            </Button> */}
-            {showAddResult && (
+            {/* Show Record Bet button ONLY if bet has NOT been recorded */}
+            {!row.hasBet && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleAddBetClick(row)
+                }}
+                className="h-8 w-8 p-0 text-amber-600 hover:text-amber-700"
+                title="Record Bet"
+              >
+                <Wallet className="h-4 w-4" />
+              </Button>
+            )}
+
+            {/* Show Add Result button ONLY if bet has been recorded AND result is not final */}
+            {showAddResult && row.hasBet && !row.hasResult && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -92,6 +98,7 @@ export const createFightColumns = (formatCurrency, formatDate, handleEditClick, 
                   handleAddResultClick(row)
                 }}
                 className="h-8 w-8 p-0 text-green-600 hover:text-green-700"
+                title="Record Match Result"
               >
                 <Trophy className="h-4 w-4" />
               </Button>
@@ -162,6 +169,17 @@ export const createMatchResultColumns = (formatCurrency, formatDate, handleEditC
           {value}
         </Badge>
       </div>
+    )
+  },
+  {
+    key: 'totalPlazada',
+    label: 'Plazada',
+    sortable: true,
+    filterable: false,
+    render: (value) => (
+      <span className="font-medium text-green-600">
+        {formatCurrency(value || 0)}
+      </span>
     )
   },
   // Only show match time for fastest kill events

@@ -20,8 +20,9 @@ export const createMatchResult = async (req, res) => {
     const outcomeKey = typeof winnerParticipantID === 'string' ? winnerParticipantID.toLowerCase() : '';
     const isDrawOutcome = outcomeKey === 'draw';
     const isCancelledOutcome = outcomeKey === 'cancelled';
+    const isPendingOutcome = outcomeKey === 'pending';
     const isSpecialOutcome = isDrawOutcome || isCancelledOutcome;
-    const specialBetWinner = isDrawOutcome ? 'Draw' : isCancelledOutcome ? 'Cancelled' : null;
+    const specialBetWinner = isDrawOutcome ? 'Draw' : isCancelledOutcome ? 'Cancelled' : isPendingOutcome ? 'Pending' : null;
 
     // Validate fight schedule exists
     const fightSchedule = await FightSchedule.findById(matchID)
@@ -39,7 +40,7 @@ export const createMatchResult = async (req, res) => {
 
     // Validate matchTimeSeconds for fastest kill events
     // Note: Frontend sends total seconds (converted from minutes + seconds)
-    if (eventType === 'fastest_kill' && !isSpecialOutcome) {
+    if (eventType === 'fastest_kill' && !isSpecialOutcome && !isPendingOutcome) {
       if (matchTimeSeconds === undefined || matchTimeSeconds === null) {
         return res.status(400).json({ message: 'Match time (in seconds) is required for fastest kill events' });
       }
@@ -63,7 +64,7 @@ export const createMatchResult = async (req, res) => {
       return res.status(400).json({ message: 'Match result already exists for this fight' });
     }
 
-    if (!isSpecialOutcome) {
+    if (!isSpecialOutcome && !isPendingOutcome) {
       // Validate participants are part of this fight
       const participantIDs = fightSchedule.participantsID.map(p => p._id.toString());
       if (!participantIDs.includes(winnerParticipantID) || !participantIDs.includes(loserParticipantID)) {
@@ -87,11 +88,16 @@ export const createMatchResult = async (req, res) => {
       if (missingParticipants.length > 0) {
         return res.status(400).json({ message: 'All participants must have bets' });
       }
+    } else if (isPendingOutcome) {
+      // For pending outcome (Record Bets), just validate bets
+      if (!participantBets || participantBets.length !== 2) {
+        return res.status(400).json({ message: 'Exactly 2 participant bets are required for recording' });
+      }
     }
 
     // Calculate betting totals
     let totalBetPool = 0;
-    if (!isSpecialOutcome && participantBets.length === 2) {
+    if ((!isSpecialOutcome || isPendingOutcome) && participantBets.length === 2) {
       const [bet1, bet2] = participantBets
       const meronBet = bet1.betAmount > bet2.betAmount ? bet1 : bet2
       const walaBet = bet1.betAmount > bet2.betAmount ? bet2 : bet1
@@ -111,7 +117,7 @@ export const createMatchResult = async (req, res) => {
       totalBetPool,
       totalPlazada,
       resultMatch: {
-        ...(isSpecialOutcome ? {} : {
+        ...(isSpecialOutcome || isPendingOutcome ? {} : {
           winnerParticipantID,
           loserParticipantID,
           winnerCockProfileID,
@@ -122,11 +128,13 @@ export const createMatchResult = async (req, res) => {
       recordedBy
     });
 
-    if (isSpecialOutcome) {
+    if (isSpecialOutcome || isPendingOutcome) {
       matchResult.betWinner = specialBetWinner;
-      matchResult.participantBets = [];
-      matchResult.totalBetPool = 0;
-      matchResult.totalPlazada = 0;
+      if (isSpecialOutcome) {
+        matchResult.participantBets = [];
+        matchResult.totalBetPool = 0;
+        matchResult.totalPlazada = 0;
+      }
     } else {
       // Assign Meron/Wala positions based on bet amounts
       matchResult.assignPositions();
@@ -135,39 +143,56 @@ export const createMatchResult = async (req, res) => {
       matchResult.determineBetWinner();
     }
 
+    // For pending outcome, we assign positions but don't determine winner
+    if (isPendingOutcome) {
+      matchResult.assignPositions();
+    }
+
     // Validate the result
     const validationErrors = matchResult.validateResult();
     if (validationErrors.length > 0) {
-      return res.status(400).json({ message: 'Validation errors', errors: validationErrors });
+      // Filter out errors that are expected for pending outcomes
+      if (isPendingOutcome) {
+        const relevantErrors = validationErrors.filter(err =>
+          !err.includes('Winner and loser participants must be specified')
+        )
+        if (relevantErrors.length > 0) {
+          return res.status(400).json({ message: 'Validation errors', errors: relevantErrors });
+        }
+      } else {
+        return res.status(400).json({ message: 'Validation errors', errors: validationErrors });
+      }
     }
 
     await matchResult.save();
 
-    // Update fight schedule status to completed
-    const updatedFightSchedule = await FightSchedule.findByIdAndUpdate(matchID, {
-      status: 'completed'
-    }, {
-      new: true,
-      runValidators: true
-    });
+    if (!isPendingOutcome) {
+      // Update fight schedule status to completed
+      const updatedFightSchedule = await FightSchedule.findByIdAndUpdate(matchID, {
+        status: 'completed'
+      }, {
+        new: true,
+        runValidators: true
+      });
 
-    if (!updatedFightSchedule) {
-      console.error('Failed to update fight schedule status to completed');
-    }
+      if (!updatedFightSchedule) {
+        console.error('Failed to update fight schedule status to completed');
+      }
 
-    // Deactivate the cock profiles that participated in this fight and set status to 'fought'
-    if (!isSpecialOutcome) {
-      try {
-        await CockProfile.updateMany(
-          {
-            _id: {
-              $in: [winnerCockProfileID, loserCockProfileID]
-            }
-          },
-          { isActive: false, status: 'fought' }
-        );
-      } catch (error) {
-        console.error('Error deactivating cock profiles:', error);
+      // Deactivate the cock profiles that participated in this fight and set status to 'fought'
+      if (!isSpecialOutcome) {
+        try {
+          await CockProfile.updateMany(
+            {
+              _id: {
+                $in: [winnerCockProfileID, loserCockProfileID]
+              }
+            },
+            { isActive: false, status: 'fought' }
+          );
+        } catch (error) {
+          console.error('Error deactivating cock profiles:', error);
+        }
       }
     }
 
