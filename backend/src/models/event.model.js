@@ -45,13 +45,31 @@ const eventSchema = new mongoose.Schema({
         max: 1000
     },
     // Derby-specific fields (weights in grams)
-    desiredWeight: {
+    minWeight: {
         type: Number,
         required: function () {
             return this.eventType === 'derby';
         },
         min: 10, // Minimum 10 grams
         max: 10000 // Maximum 10000 grams (10 kg)
+    },
+    maxWeight: {
+        type: Number,
+        required: function () {
+            return this.eventType === 'derby';
+        },
+        min: 10, // Minimum 10 grams
+        max: 10000, // Maximum 10000 grams (10 kg)
+        validate: {
+            validator: function (value) {
+                // Only validate if both minWeight and maxWeight are set
+                if (this.minWeight && value) {
+                    return value >= this.minWeight;
+                }
+                return true;
+            },
+            message: 'maxWeight must be greater than or equal to minWeight'
+        }
     },
     weightGap: {
         type: Number,

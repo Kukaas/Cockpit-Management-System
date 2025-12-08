@@ -296,17 +296,18 @@ const CombinedRegistrationForm = ({
                         max="10000"
                         step="1"
                         required
-                        helperText={eventData?.desiredWeight ?
-                          `Minimum weight: ${eventData.desiredWeight}g` :
+                        helperText={eventData?.minWeight && eventData?.maxWeight ?
+                          `Acceptable range: ${eventData.minWeight}-${eventData.maxWeight}g` :
                           "Weight in grams"
                         }
                       />
                       {/* Weight validation warning */}
-                      {profile.weight && eventData?.desiredWeight &&
-                        Number(profile.weight) < eventData.desiredWeight && (
-                          <div className="p-3 bg-orange-50 border border-orange-200 rounded-md">
-                            <p className="text-xs text-orange-800">
-                              ⚠️ Warning: Weight must be at least {eventData.desiredWeight}g (entered: {profile.weight}g)
+                      {profile.weight && eventData?.minWeight && eventData?.maxWeight && (
+                        Number(profile.weight) < eventData.minWeight || Number(profile.weight) > eventData.maxWeight
+                      ) && (
+                          <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                            <p className="text-xs text-red-800">
+                              ❌ Error: Weight must be between {eventData.minWeight}g and {eventData.maxWeight}g (entered: {profile.weight}g). This entry cannot be saved until the weight is within the acceptable range.
                             </p>
                           </div>
                         )}

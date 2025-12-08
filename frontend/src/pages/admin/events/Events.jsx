@@ -35,7 +35,8 @@ const Events = () => {
     entranceFee: '',
     entryFee: '',
     cageRentalFee: '',
-    desiredWeight: '',
+    minWeight: '',
+    maxWeight: '',
     weightGap: '',
     winnerCount: ''
   })
@@ -51,7 +52,8 @@ const Events = () => {
     entranceFee: '',
     entryFee: '',
     cageRentalFee: '',
-    desiredWeight: '',
+    minWeight: '',
+    maxWeight: '',
     weightGap: '',
     winnerCount: ''
   })
@@ -150,7 +152,7 @@ const Events = () => {
 
     // Additional required fields for derby events
     if (formData.eventType === 'derby') {
-      const additionalRequiredFields = ['prize', 'noCockRequirements', 'registrationDeadline', 'desiredWeight', 'weightGap']
+      const additionalRequiredFields = ['prize', 'noCockRequirements', 'registrationDeadline', 'minWeight', 'maxWeight', 'weightGap']
       const missingAdditionalFields = additionalRequiredFields.filter(field => !formData[field])
 
       if (missingAdditionalFields.length > 0) {
@@ -197,7 +199,7 @@ const Events = () => {
       numericFields.push('prize', 'noCockRequirements')
     }
     if (formData.eventType === 'derby') {
-      numericFields.push('desiredWeight', 'weightGap')
+      numericFields.push('minWeight', 'maxWeight', 'weightGap')
     }
     if (formData.eventType === 'fastest_kill') {
       numericFields.push('prize', 'winnerCount')
@@ -235,15 +237,16 @@ const Events = () => {
       delete createData.prize
       delete createData.noCockRequirements
       delete createData.registrationDeadline
-      delete createData.desiredWeight
+      delete createData.minWeight
+      delete createData.maxWeight
       delete createData.weightGap
       delete createData.winnerCount
     }
 
     // For non-derby events, remove derby-specific fields
     if (formData.eventType !== 'derby') {
-      delete createData.desiredWeight
-      delete createData.weightGap
+      delete createData.minWeight
+      delete createData.maxWeight
       delete createData.registrationDeadline
     }
 
@@ -272,7 +275,7 @@ const Events = () => {
 
     // Additional required fields for derby events
     if (editFormData.eventType === 'derby') {
-      const additionalRequiredFields = ['prize', 'noCockRequirements', 'registrationDeadline', 'desiredWeight', 'weightGap']
+      const additionalRequiredFields = ['prize', 'noCockRequirements', 'registrationDeadline', 'minWeight', 'maxWeight', 'weightGap']
       const missingAdditionalFields = additionalRequiredFields.filter(field => !editFormData[field])
 
       if (missingAdditionalFields.length > 0) {
@@ -321,7 +324,7 @@ const Events = () => {
       numericFields.push('prize', 'noCockRequirements')
     }
     if (editFormData.eventType === 'derby') {
-      numericFields.push('desiredWeight', 'weightGap')
+      numericFields.push('minWeight', 'maxWeight', 'weightGap')
     }
     if (editFormData.eventType === 'fastest_kill') {
       numericFields.push('prize', 'winnerCount')
@@ -359,15 +362,16 @@ const Events = () => {
       delete updateData.prize
       delete updateData.noCockRequirements
       delete updateData.registrationDeadline
-      delete updateData.desiredWeight
+      delete updateData.minWeight
+      delete updateData.maxWeight
       delete updateData.weightGap
       delete updateData.winnerCount
     }
 
     // For non-derby events, remove derby-specific fields
     if (editFormData.eventType !== 'derby') {
-      delete updateData.desiredWeight
-      delete updateData.weightGap
+      delete updateData.minWeight
+      delete updateData.maxWeight
       delete updateData.registrationDeadline
     }
 
@@ -408,7 +412,8 @@ const Events = () => {
       entranceFee: '',
       entryFee: '',
       cageRentalFee: '',
-      desiredWeight: '',
+      minWeight: '',
+      maxWeight: '',
       weightGap: '',
       winnerCount: ''
     })
@@ -427,7 +432,8 @@ const Events = () => {
       entranceFee: '',
       entryFee: '',
       cageRentalFee: '',
-      desiredWeight: '',
+      minWeight: '',
+      maxWeight: '',
       weightGap: '',
       winnerCount: ''
     })
@@ -535,7 +541,8 @@ const Events = () => {
       entranceFee: event.entranceFee ? event.entranceFee.toString() : '',
       entryFee: event.entryFee ? event.entryFee.toString() : '',
       cageRentalFee: event.cageRentalFee ? event.cageRentalFee.toString() : '',
-      desiredWeight: event.desiredWeight ? event.desiredWeight.toString() : '',
+      minWeight: event.minWeight ? event.minWeight.toString() : '',
+      maxWeight: event.maxWeight ? event.maxWeight.toString() : '',
       weightGap: event.weightGap ? event.weightGap.toString() : '',
       winnerCount: event.winnerCount ? event.winnerCount.toString() : ''
     })

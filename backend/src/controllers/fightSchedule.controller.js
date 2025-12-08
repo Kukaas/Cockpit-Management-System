@@ -93,8 +93,8 @@ export const autoScheduleFights = async (req, res) => {
       return res.status(400).json({ message: 'Auto-scheduling is only available for Derby events' });
     }
 
-    if (!event.desiredWeight || !event.weightGap) {
-      return res.status(400).json({ message: 'Event must have desiredWeight and weightGap configured' });
+    if (!event.minWeight || !event.maxWeight || !event.weightGap) {
+      return res.status(400).json({ message: 'Event must have minWeight, maxWeight, and weightGap configured' });
     }
 
     // Get all available cock profiles for this event

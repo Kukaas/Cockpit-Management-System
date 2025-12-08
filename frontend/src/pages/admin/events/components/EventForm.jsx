@@ -203,21 +203,44 @@ const EventForm = ({
             {isDerbyEvent && (
               <div className='space-y-4'>
                 <div className='grid grid-cols-2 gap-4'>
-                  {/* Desired Weight */}
+                  {/* Minimum Weight */}
                   <InputField
-                    id={isEdit ? "editDesiredWeight" : "desiredWeight"}
-                    label="Desired Weight (g) *"
+                    id={isEdit ? "editMinWeight" : "minWeight"}
+                    label="Minimum Weight (g) *"
                     icon={Weight}
                     type="number"
-                    value={formData.desiredWeight}
-                    onChange={(e) => onInputChange('desiredWeight', e.target.value)}
-                    placeholder="e.g., 2500"
+                    value={formData.minWeight}
+                    onChange={(e) => onInputChange('minWeight', e.target.value)}
+                    placeholder="e.g., 1600"
                     min="10"
                     max="10000"
                     step="1"
                     required
                   />
 
+                  {/* Maximum Weight */}
+                  <InputField
+                    id={isEdit ? "editMaxWeight" : "maxWeight"}
+                    label="Maximum Weight (g) *"
+                    icon={Weight}
+                    type="number"
+                    value={formData.maxWeight}
+                    onChange={(e) => onInputChange('maxWeight', e.target.value)}
+                    placeholder="e.g., 2000"
+                    min="10"
+                    max="10000"
+                    step="1"
+                    required
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  <strong>Weight Range:</strong> Specify the acceptable weight range for participants.
+                  For example, minimum weight of 1600g and maximum weight of 2000g means participants
+                  with weights between 1600-2000g are acceptable. Participants outside this range will
+                  receive a warning but can still be registered.
+                </p>
+
+                <div className='grid grid-cols-1 gap-4'>
                   {/* Weight Gap */}
                   <InputField
                     id={isEdit ? "editWeightGap" : "weightGap"}
@@ -234,9 +257,8 @@ const EventForm = ({
                   />
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  <strong>Weight Gap Explanation:</strong> The allowable weight difference for matching participants.
-                  For example, if desired weight is 2500g and weight gap is 100g, participants with weights
-                  between 2400g and 2600g can be matched together.
+                  <strong>Weight Gap Explanation:</strong> The allowable weight difference for matching participants in fights.
+                  For example, if weight gap is 100g, participants with weights differing by up to 100g can be matched together.
                 </p>
               </div>
             )}

@@ -15,7 +15,8 @@ export const createEvent = async (req, res) => {
             entranceFee,
             entryFee,
             cageRentalFee,
-            desiredWeight,
+            minWeight,
+            maxWeight,
             weightGap,
             winnerCount
         } = req.body;
@@ -33,7 +34,7 @@ export const createEvent = async (req, res) => {
 
         // Additional required fields for derby events
         if (eventType === 'derby') {
-            const additionalRequiredFields = ['prize', 'noCockRequirements', 'registrationDeadline', 'desiredWeight', 'weightGap'];
+            const additionalRequiredFields = ['prize', 'noCockRequirements', 'registrationDeadline', 'minWeight', 'maxWeight', 'weightGap'];
             const missingAdditionalFields = additionalRequiredFields.filter(field => !req.body[field]);
 
             if (missingAdditionalFields.length > 0) {
@@ -108,8 +109,17 @@ export const createEvent = async (req, res) => {
 
         // Add Derby-specific fields
         if (eventType === 'derby') {
-            eventData.desiredWeight = Number(desiredWeight);
+            eventData.minWeight = Number(minWeight);
+            eventData.maxWeight = Number(maxWeight);
             eventData.weightGap = Number(weightGap);
+
+            // Validate weight range
+            if (eventData.minWeight >= eventData.maxWeight) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Minimum weight must be less than maximum weight'
+                });
+            }
         }
 
         // Only add prize for fastest_kill events
@@ -257,7 +267,7 @@ export const updateEvent = async (req, res) => {
 
         // Additional required fields for derby events
         if (eventType === 'derby') {
-            const additionalRequiredFields = ['prize', 'noCockRequirements', 'registrationDeadline', 'desiredWeight', 'weightGap'];
+            const additionalRequiredFields = ['prize', 'noCockRequirements', 'registrationDeadline', 'minWeight', 'maxWeight', 'weightGap'];
             const missingAdditionalFields = additionalRequiredFields.filter(field => !updateData[field] && !event[field]);
 
             if (missingAdditionalFields.length > 0) {
@@ -312,8 +322,19 @@ export const updateEvent = async (req, res) => {
         if (updateData.cageRentalFee) updateData.cageRentalFee = Number(updateData.cageRentalFee);
         if (updateData.minimumBet) updateData.minimumBet = Number(updateData.minimumBet);
         if (updateData.minimumParticipants) updateData.minimumParticipants = Number(updateData.minimumParticipants);
-        if (updateData.desiredWeight) updateData.desiredWeight = Number(updateData.desiredWeight);
+        if (updateData.minWeight) updateData.minWeight = Number(updateData.minWeight);
+        if (updateData.maxWeight) updateData.maxWeight = Number(updateData.maxWeight);
         if (updateData.weightGap) updateData.weightGap = Number(updateData.weightGap);
+
+        // Validate weight range if both are being updated
+        if (updateData.minWeight && updateData.maxWeight) {
+            if (updateData.minWeight >= updateData.maxWeight) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Minimum weight must be less than maximum weight'
+                });
+            }
+        }
         if (updateData.winnerCount) updateData.winnerCount = Number(updateData.winnerCount);
 
         // Handle entryFee - can be set, updated, or removed (set to null)

@@ -200,11 +200,11 @@ const EventDetailsCard = ({ event, formatDate, formatCurrency, showCapacity = fa
                         </div>
                     )}
 
-                    {/* Show Derby Weight Fields */}
-                    {event.eventType === 'derby' && event.desiredWeight && (
+                    {/* Show Derby Weight Range */}
+                    {event.eventType === 'derby' && event.minWeight && event.maxWeight && (
                         <div className="space-y-1">
-                            <p className="text-sm font-medium text-muted-foreground">Desired Weight</p>
-                            <p className="flex items-center gap-1">{event.desiredWeight} g</p>
+                            <p className="text-sm font-medium text-muted-foreground">Weight Range</p>
+                            <p className="flex items-center gap-1">{event.minWeight}-{event.maxWeight} g</p>
                         </div>
                     )}
 

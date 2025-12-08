@@ -379,6 +379,15 @@ const ParticipantRegistration = () => {
           toast.error(`Please fill in weight for cock profile ${i + 1}`)
           return
         }
+
+        // Validate weight range (minWeight and maxWeight)
+        if (selectedEvent?.eventType === 'derby' && selectedEvent?.minWeight && selectedEvent?.maxWeight && profile.weight) {
+          const weight = Number(profile.weight)
+          if (weight < selectedEvent.minWeight || weight > selectedEvent.maxWeight) {
+            toast.error(`Weight for cock profile ${i + 1} (${weight}g) is outside the acceptable range (${selectedEvent.minWeight}-${selectedEvent.maxWeight}g). Registration blocked.`)
+            return
+          }
+        }
       }
     }
 
@@ -486,6 +495,15 @@ const ParticipantRegistration = () => {
           toast.error(`Please fill in weight for cock profile ${i + 1}`)
           return
         }
+
+        // Validate weight range (minWeight and maxWeight)
+        if (selectedEvent?.eventType === 'derby' && selectedEvent?.minWeight && selectedEvent?.maxWeight && profile.weight) {
+          const weight = Number(profile.weight)
+          if (weight < selectedEvent.minWeight || weight > selectedEvent.maxWeight) {
+            toast.error(`Weight for cock profile ${i + 1} (${weight}g) is outside the acceptable range (${selectedEvent.minWeight}-${selectedEvent.maxWeight}g). Registration blocked.`)
+            return
+          }
+        }
       }
     }
 
@@ -574,6 +592,15 @@ const ParticipantRegistration = () => {
         if (selectedEvent?.eventType === 'derby' && !profile.weight) {
           toast.error(`Please fill in weight for cock profile ${i + 1}`)
           return
+        }
+
+        // Validate weight range (minWeight and maxWeight)
+        if (selectedEvent?.eventType === 'derby' && selectedEvent?.minWeight && selectedEvent?.maxWeight && profile.weight) {
+          const weight = Number(profile.weight)
+          if (weight < selectedEvent.minWeight || weight > selectedEvent.maxWeight) {
+            toast.error(`Weight for cock profile ${i + 1} (${weight}g) is outside the acceptable range (${selectedEvent.minWeight}-${selectedEvent.maxWeight}g). Registration blocked.`)
+            return
+          }
         }
       }
     }
@@ -669,6 +696,15 @@ const ParticipantRegistration = () => {
       if (missingFields.length > 0) {
         toast.error(`Please fill in all required fields: ${missingFields.join(', ')}`)
         return
+      }
+
+      // Validate weight range (minWeight and maxWeight)
+      if (selectedEvent?.eventType === 'derby' && selectedEvent?.minWeight && selectedEvent?.maxWeight && cockProfileFormData.weight) {
+        const weight = Number(cockProfileFormData.weight)
+        if (weight < selectedEvent.minWeight || weight > selectedEvent.maxWeight) {
+          toast.error(`Weight (${weight}g) is outside the acceptable range (${selectedEvent.minWeight}-${selectedEvent.maxWeight}g). Update blocked.`)
+          return
+        }
       }
     }
 
