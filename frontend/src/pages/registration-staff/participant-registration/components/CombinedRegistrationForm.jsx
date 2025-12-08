@@ -296,19 +296,17 @@ const CombinedRegistrationForm = ({
                         max="10000"
                         step="1"
                         required
-                        helperText={eventData?.desiredWeight && eventData?.weightGap ?
-                          `Acceptable range: ${eventData.desiredWeight - eventData.weightGap}g - ${eventData.desiredWeight + eventData.weightGap}g` :
+                        helperText={eventData?.desiredWeight ?
+                          `Minimum weight: ${eventData.desiredWeight}g` :
                           "Weight in grams"
                         }
                       />
                       {/* Weight validation warning */}
-                      {profile.weight && eventData?.desiredWeight && eventData?.weightGap && (
-                        Number(profile.weight) < (eventData.desiredWeight - eventData.weightGap) ||
-                        Number(profile.weight) > (eventData.desiredWeight + eventData.weightGap)
-                      ) && (
+                      {profile.weight && eventData?.desiredWeight &&
+                        Number(profile.weight) < eventData.desiredWeight && (
                           <div className="p-3 bg-orange-50 border border-orange-200 rounded-md">
                             <p className="text-xs text-orange-800">
-                              ⚠️ Warning: Weight is outside acceptable range ({eventData.desiredWeight - eventData.weightGap}g - {eventData.desiredWeight + eventData.weightGap}g)
+                              ⚠️ Warning: Weight must be at least {eventData.desiredWeight}g (entered: {profile.weight}g)
                             </p>
                           </div>
                         )}

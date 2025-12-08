@@ -298,19 +298,17 @@ const CockProfileForm = ({
                           max="10000"
                           step="1"
                           required
-                          helperText={event?.desiredWeight && event?.weightGap ?
-                            `Acceptable range: ${event.desiredWeight - event.weightGap}g - ${event.desiredWeight + event.weightGap}g` :
+                          helperText={event?.desiredWeight ?
+                            `Minimum weight: ${event.desiredWeight}g` :
                             "Weight in grams"
                           }
                         />
                         {/* Weight validation warning */}
-                        {profile.weight && event?.desiredWeight && event?.weightGap && (
-                          Number(profile.weight) < (event.desiredWeight - event.weightGap) ||
-                          Number(profile.weight) > (event.desiredWeight + event.weightGap)
-                        ) && (
+                        {profile.weight && event?.desiredWeight &&
+                          Number(profile.weight) < event.desiredWeight && (
                             <div className="p-3 bg-orange-50 border border-orange-200 rounded-md">
                               <p className="text-xs text-orange-800">
-                                ⚠️ Warning: Weight is outside acceptable range ({event.desiredWeight - event.weightGap}g - {event.desiredWeight + event.weightGap}g)
+                                ⚠️ Warning: Weight must be at least {event.desiredWeight}g (entered: {profile.weight}g)
                               </p>
                             </div>
                           )}
@@ -369,19 +367,17 @@ const CockProfileForm = ({
                       max="10000"
                       step="1"
                       required
-                      helperText={event?.desiredWeight && event?.weightGap ?
-                        `Acceptable range: ${event.desiredWeight - event.weightGap}g - ${event.desiredWeight + event.weightGap}g` :
+                      helperText={event?.desiredWeight ?
+                        `Minimum weight: ${event.desiredWeight}g` :
                         "Weight in grams"
                       }
                     />
                     {/* Weight validation warning */}
-                    {formData.weight && event?.desiredWeight && event?.weightGap && (
-                      Number(formData.weight) < (event.desiredWeight - event.weightGap) ||
-                      Number(formData.weight) > (event.desiredWeight + event.weightGap)
-                    ) && (
+                    {formData.weight && event?.desiredWeight &&
+                      Number(formData.weight) < event.desiredWeight && (
                         <div className="p-3 bg-orange-50 border border-orange-200 rounded-md">
                           <p className="text-xs text-orange-800">
-                            ⚠️ Warning: Weight is outside acceptable range ({event.desiredWeight - event.weightGap}g - {event.desiredWeight + event.weightGap}g)
+                            ⚠️ Warning: Weight must be at least {event.desiredWeight}g (entered: {formData.weight}g)
                           </p>
                         </div>
                       )}
