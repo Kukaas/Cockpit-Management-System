@@ -201,7 +201,6 @@ const EntryFeesReportTab = ({ event, formatCurrency, formatDate }) => {
                 <th>Address</th>
                 <th class="text-right">Entry Fee</th>
                 <th>Registration Date</th>
-                <th>Status</th>
               </tr>
             </thead>
             <tbody>
@@ -213,7 +212,6 @@ const EntryFeesReportTab = ({ event, formatCurrency, formatDate }) => {
                   <td>${participant.address || 'N/A'}</td>
                   <td class="text-right">${formatCurrency(participant.entryFee || 0)}</td>
                   <td>${participant.registrationDate ? formatDate(participant.registrationDate) : 'N/A'}</td>
-                  <td>${participant.status ? participant.status.charAt(0).toUpperCase() + participant.status.slice(1) : 'N/A'}</td>
                 </tr>
               `).join('')}
             </tbody>
@@ -221,7 +219,7 @@ const EntryFeesReportTab = ({ event, formatCurrency, formatDate }) => {
               <tr>
                 <td colspan="4" style="text-align: right; font-weight: bold;">Total:</td>
                 <td class="text-right" style="font-weight: bold;">${formatCurrency(totalEntryFee)}</td>
-                <td colspan="2"></td>
+                <td></td>
               </tr>
             </tfoot>
           </table>

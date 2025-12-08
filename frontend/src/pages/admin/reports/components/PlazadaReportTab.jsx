@@ -156,7 +156,6 @@ const PlazadaReportTab = ({ event, formatCurrency, formatDate }) => {
                 <th>Plazada Collected</th>
                 <th>Winner</th>
                 <th>Loser</th>
-                <th>Status</th>
               </tr>
             </thead>
             <tbody>
@@ -171,7 +170,6 @@ const PlazadaReportTab = ({ event, formatCurrency, formatDate }) => {
                   <td class="text-right">${formatCurrency(result.totalPlazada || 0)}</td>
                   <td>${winnerName}</td>
                   <td>${loserName}</td>
-                  <td>${result.verified ? 'Verified' : 'Unverified'}</td>
                 </tr>
               `
     }).join('')}
@@ -180,7 +178,7 @@ const PlazadaReportTab = ({ event, formatCurrency, formatDate }) => {
               <tr>
                 <td colspan="3" style="text-align: right; font-weight: bold;">Total:</td>
                 <td class="text-right" style="font-weight: bold;">${formatCurrency(totalPlazada)}</td>
-                <td colspan="3"></td>
+                <td colspan="2"></td>
               </tr>
             </tfoot>
           </table>

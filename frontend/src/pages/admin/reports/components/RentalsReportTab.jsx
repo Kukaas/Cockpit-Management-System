@@ -147,7 +147,6 @@ const RentalsReportTab = ({ event, formatCurrency, formatDate }) => {
                 <th>No.</th>
                 <th>Renter Name</th>
                 <th>Contact</th>
-                <th>Arena</th>
                 <th>Quantity</th>
                 <th>Rental Date</th>
                 <th>Total Price</th>
@@ -161,7 +160,6 @@ const RentalsReportTab = ({ event, formatCurrency, formatDate }) => {
                   <td>${index + 1}</td>
                   <td>${rental.nameOfRenter || 'N/A'}</td>
                   <td>${rental.contactNumber || '-'}</td>
-                  <td>${rental.arena || 'N/A'}</td>
                   <td>${rental.quantity || 0}</td>
                   <td>${rental.date ? new Date(rental.date).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -176,7 +174,7 @@ const RentalsReportTab = ({ event, formatCurrency, formatDate }) => {
             </tbody>
             <tfoot>
               <tr>
-                <td colspan="6" style="text-align: right; font-weight: bold;">Total:</td>
+                <td colspan="5" style="text-align: right; font-weight: bold;">Total:</td>
                 <td class="text-right" style="font-weight: bold;">${formatCurrency(totalRevenue)}</td>
                 <td colspan="2"></td>
               </tr>
