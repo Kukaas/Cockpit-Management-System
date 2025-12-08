@@ -22,14 +22,15 @@ const DataTabs = ({
   eventStatus = 'active',
   onPrintFightSchedule,
   event,
-  formatDate
+  formatDate,
+  showFightScheduleTab = true // New prop to control fight schedule tab visibility
 }) => {
   // Check if event is completed or cancelled
   const isEventDisabled = eventStatus === 'completed' || eventStatus === 'cancelled'
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-      <TabsList className="grid w-full grid-cols-3">
+      <TabsList className={`grid w-full ${showFightScheduleTab ? 'grid-cols-3' : 'grid-cols-2'}`}>
         <TabsTrigger value="participants" className="flex items-center gap-2">
           <UserPlus className="h-4 w-4" />
           Participants ({participants.length})
@@ -38,10 +39,12 @@ const DataTabs = ({
           <Feather className="h-4 w-4" />
           Cock Profiles ({cockProfiles.length})
         </TabsTrigger>
-        <TabsTrigger value="fight-schedule" className="flex items-center gap-2">
-          <Swords className="h-4 w-4" />
-          Fight Schedule ({fights.length})
-        </TabsTrigger>
+        {showFightScheduleTab && (
+          <TabsTrigger value="fight-schedule" className="flex items-center gap-2">
+            <Swords className="h-4 w-4" />
+            Fight Schedule ({fights.length})
+          </TabsTrigger>
+        )}
       </TabsList>
 
       <TabsContent value="participants" className="space-y-4">
@@ -84,40 +87,42 @@ const DataTabs = ({
         />
       </TabsContent>
 
-      <TabsContent value="fight-schedule" className="space-y-4">
-        <div className="flex justify-end items-center">
-          <div className="flex gap-2">
-            {onPrintFightSchedule && (
+      {showFightScheduleTab && (
+        <TabsContent value="fight-schedule" className="space-y-4">
+          <div className="flex justify-end items-center">
+            <div className="flex gap-2">
+              {onPrintFightSchedule && (
+                <Button
+                  variant="outline"
+                  onClick={onPrintFightSchedule}
+                >
+                  <Printer className="h-4 w-4 mr-2" />
+                  Print Schedule
+                </Button>
+              )}
               <Button
-                variant="outline"
-                onClick={onPrintFightSchedule}
+                onClick={onAddFight}
+                disabled={isEventDisabled}
+                title={isEventDisabled ? "Cannot schedule fights for completed/cancelled events" : "Schedule a new fight"}
               >
-                <Printer className="h-4 w-4 mr-2" />
-                Print Schedule
+                <Plus className="h-4 w-4 mr-2" />
+                Schedule Fight
               </Button>
-            )}
-            <Button
-              onClick={onAddFight}
-              disabled={isEventDisabled}
-              title={isEventDisabled ? "Cannot schedule fights for completed/cancelled events" : "Schedule a new fight"}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Schedule Fight
-            </Button>
+            </div>
           </div>
-        </div>
-        <DataTable
-          data={fights}
-          columns={fightColumns}
-          pageSize={10}
-          searchable={true}
-          filterable={true}
-          title="Match List"
-          loading={false}
-          emptyMessage="No fights scheduled yet"
-          className="shadow-sm"
-        />
-      </TabsContent>
+          <DataTable
+            data={fights}
+            columns={fightColumns}
+            pageSize={10}
+            searchable={true}
+            filterable={true}
+            title="Match List"
+            loading={false}
+            emptyMessage="No fights scheduled yet"
+            className="shadow-sm"
+          />
+        </TabsContent>
+      )}
     </Tabs>
   )
 }

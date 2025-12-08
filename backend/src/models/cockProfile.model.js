@@ -24,17 +24,26 @@ const cockProfileSchema = new mongoose.Schema({
   // Fields for derby events only
   legband: {
     type: String,
-    required: function() {
+    required: function () {
       // This will be validated in the controller based on event type
       return false; // We'll handle this in the controller
     },
     trim: true,
-    maxlength: 50
+    minlength: 3,
+    maxlength: 3,
+    validate: {
+      validator: function (v) {
+        // If legband is provided, it must be exactly 3 digits (001-999)
+        if (!v) return true; // Allow empty for non-Derby events
+        return /^[0-9]{3}$/.test(v);
+      },
+      message: 'Legband must be exactly 3 digits (001-999)'
+    }
   },
 
   weight: {
     type: Number,
-    required: function() {
+    required: function () {
       // This will be validated in the controller based on event type
       return false; // We'll handle this in the controller
     },

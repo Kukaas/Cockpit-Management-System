@@ -29,6 +29,17 @@ export const createParticipantColumns = (handleEditClick, handleDeleteClick, han
     )
   },
   {
+    key: 'entryName',
+    label: 'Entry Name',
+    sortable: true,
+    filterable: false,
+    render: (value) => (
+      <div className="flex items-center gap-2">
+        <span className="font-medium text-blue-600">{value || 'N/A'}</span>
+      </div>
+    )
+  },
+  {
     key: 'actions',
     label: 'Actions',
     sortable: false,

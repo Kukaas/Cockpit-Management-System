@@ -12,7 +12,20 @@ const participantSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true,
-    maxlength: 20
+    minlength: 10,
+    maxlength: 11,
+    validate: {
+      validator: function (v) {
+        return /^[0-9]{10,11}$/.test(v);
+      },
+      message: 'Contact number must be 10-11 digits and contain only numbers'
+    }
+  },
+  entryName: {
+    type: String,
+    required: false, // Will be validated in controller for Derby events
+    trim: true,
+    maxlength: 100
   },
   address: {
     type: String,

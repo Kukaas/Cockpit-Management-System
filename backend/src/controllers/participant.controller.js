@@ -10,6 +10,7 @@ export const registerParticipant = async (req, res) => {
       contactNumber,
       address,
       entryFee,
+      entryName,
       eventID,
       isExistingParticipant = false
     } = req.body;
@@ -63,11 +64,21 @@ export const registerParticipant = async (req, res) => {
       }
     }
 
+    // Validate entryName - required for Derby events
+    if (event.eventType === 'derby') {
+      if (!entryName || entryName.trim() === '') {
+        return res.status(400).json({
+          message: 'Entry name is required for Derby events'
+        });
+      }
+    }
+
     const participant = new Participant({
       participantName,
       contactNumber,
       address,
       entryFee: entryFee ? Number(entryFee) : 0,
+      entryName: entryName || null,
       eventID,
       registeredBy
     });
@@ -154,7 +165,8 @@ export const updateParticipant = async (req, res) => {
       participantName,
       contactNumber,
       address,
-      entryFee
+      entryFee,
+      entryName
     } = req.body;
 
     const participant = await Participant.findById(id);
@@ -188,7 +200,8 @@ export const updateParticipant = async (req, res) => {
         participantName,
         contactNumber,
         address,
-        entryFee: entryFee !== undefined ? entryFee : participant.entryFee
+        entryFee: entryFee !== undefined ? entryFee : participant.entryFee,
+        entryName: entryName !== undefined ? entryName : participant.entryName
       },
       { new: true, runValidators: true }
     ).populate([

@@ -50,10 +50,20 @@ const ParticipantForm = ({
           <InputField
             id={isEdit ? "editContactNumber" : "contactNumber"}
             label="Contact Number *"
+            type="tel"
             value={formData.contactNumber}
-            onChange={(e) => onInputChange('contactNumber', e.target.value)}
-            placeholder="Enter contact number"
+            onChange={(e) => {
+              // Only allow numeric input
+              const value = e.target.value.replace(/[^0-9]/g, '');
+              if (value.length <= 11) {
+                onInputChange('contactNumber', value);
+              }
+            }}
+            placeholder="e.g., 09123456789"
+            maxLength={11}
+            pattern="[0-9]{10,11}"
             required
+            helperText="10-11 digits only"
           />
 
           <InputField
@@ -64,6 +74,19 @@ const ParticipantForm = ({
             placeholder="Enter address"
             required
           />
+
+          {/* Entry Name - Required for Derby events */}
+          {event?.eventType === 'derby' && (
+            <InputField
+              id={isEdit ? "editEntryName" : "entryName"}
+              label="Entry Name *"
+              value={formData.entryName || ''}
+              onChange={(e) => onInputChange('entryName', e.target.value)}
+              placeholder="e.g., Entry 1, Team A"
+              required
+              helperText="Group name to prevent same-participant chickens from fighting each other"
+            />
+          )}
 
           {/* Entry Fee - Required if event has entryFee (Read-only) */}
           {event?.entryFee && event.entryFee > 0 && (

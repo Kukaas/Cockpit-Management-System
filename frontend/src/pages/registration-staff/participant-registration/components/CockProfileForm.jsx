@@ -269,25 +269,52 @@ const CockProfileForm = ({
                     <InputField
                       id={`legbandNumber-${index}`}
                       label="Legband Number *"
+                      type="text"
                       value={profile.legbandNumber}
-                      onChange={(e) => handleCockProfileInputChange(index, 'legbandNumber', e.target.value)}
-                      placeholder="Enter legband number"
+                      onChange={(e) => {
+                        // Only allow numeric input, max 3 digits
+                        const value = e.target.value.replace(/[^0-9]/g, '');
+                        if (value.length <= 3) {
+                          handleCockProfileInputChange(index, 'legbandNumber', value);
+                        }
+                      }}
+                      placeholder="e.g., 001"
+                      maxLength={3}
+                      pattern="[0-9]{3}"
                       required
+                      helperText="Exactly 3 digits (001-999)"
                     />
                     {/* Weight only required for derby events, not hits_ulutan */}
                     {event?.eventType === 'derby' && (
-                      <InputField
-                        id={`weight-${index}`}
-                        label="Weight (grams) *"
-                        type="number"
-                        value={profile.weight}
-                        onChange={(e) => handleCockProfileInputChange(index, 'weight', e.target.value)}
-                        placeholder="Enter weight in grams (e.g., 2240)"
-                        min="10"
-                        max="10000"
-                        step="1"
-                        required
-                      />
+                      <div className="space-y-2">
+                        <InputField
+                          id={`weight-${index}`}
+                          label="Weight (grams) *"
+                          type="number"
+                          value={profile.weight}
+                          onChange={(e) => handleCockProfileInputChange(index, 'weight', e.target.value)}
+                          placeholder="Enter weight in grams (e.g., 2500)"
+                          min="10"
+                          max="10000"
+                          step="1"
+                          required
+                          helperText={event?.desiredWeight && event?.weightGap ?
+                            `Acceptable range: ${event.desiredWeight - event.weightGap}g - ${event.desiredWeight + event.weightGap}g` :
+                            "Weight in grams"
+                          }
+                        />
+                        {/* Weight validation warning */}
+                        {profile.weight && event?.desiredWeight && event?.weightGap && (
+                          Number(profile.weight) < (event.desiredWeight - event.weightGap) ||
+                          Number(profile.weight) > (event.desiredWeight + event.weightGap)
+                        ) && (
+                            <div className="p-3 bg-orange-50 border border-orange-200 rounded-md">
+                              <p className="text-xs text-orange-800">
+                                ⚠️ Warning: Weight is outside acceptable range ({event.desiredWeight - event.weightGap}g - {event.desiredWeight + event.weightGap}g)
+                              </p>
+                            </div>
+                          )}
+                      </div>
                     )}
                   </>
                 )}
@@ -313,25 +340,52 @@ const CockProfileForm = ({
                 <InputField
                   id="editLegbandNumber"
                   label="Legband Number *"
+                  type="text"
                   value={formData.legbandNumber}
-                  onChange={(e) => onInputChange('legbandNumber', e.target.value)}
-                  placeholder="Enter legband number"
+                  onChange={(e) => {
+                    // Only allow numeric input, max 3 digits
+                    const value = e.target.value.replace(/[^0-9]/g, '');
+                    if (value.length <= 3) {
+                      onInputChange('legbandNumber', value);
+                    }
+                  }}
+                  placeholder="e.g., 001"
+                  maxLength={3}
+                  pattern="[0-9]{3}"
                   required
+                  helperText="Exactly 3 digits (001-999)"
                 />
                 {/* Weight only required for derby events, not hits_ulutan */}
                 {event?.eventType === 'derby' && (
-                  <InputField
-                    id="editWeight"
-                    label="Weight (grams) *"
-                    type="number"
-                    value={formData.weight}
-                    onChange={(e) => onInputChange('weight', e.target.value)}
-                    placeholder="Enter weight in grams (e.g., 2240)"
-                    min="10"
-                    max="10000"
-                    step="1"
-                    required
-                  />
+                  <div className="space-y-2">
+                    <InputField
+                      id="editWeight"
+                      label="Weight (grams) *"
+                      type="number"
+                      value={formData.weight}
+                      onChange={(e) => onInputChange('weight', e.target.value)}
+                      placeholder="Enter weight in grams (e.g., 2500)"
+                      min="10"
+                      max="10000"
+                      step="1"
+                      required
+                      helperText={event?.desiredWeight && event?.weightGap ?
+                        `Acceptable range: ${event.desiredWeight - event.weightGap}g - ${event.desiredWeight + event.weightGap}g` :
+                        "Weight in grams"
+                      }
+                    />
+                    {/* Weight validation warning */}
+                    {formData.weight && event?.desiredWeight && event?.weightGap && (
+                      Number(formData.weight) < (event.desiredWeight - event.weightGap) ||
+                      Number(formData.weight) > (event.desiredWeight + event.weightGap)
+                    ) && (
+                        <div className="p-3 bg-orange-50 border border-orange-200 rounded-md">
+                          <p className="text-xs text-orange-800">
+                            ⚠️ Warning: Weight is outside acceptable range ({event.desiredWeight - event.weightGap}g - {event.desiredWeight + event.weightGap}g)
+                          </p>
+                        </div>
+                      )}
+                  </div>
                 )}
               </>
             )}

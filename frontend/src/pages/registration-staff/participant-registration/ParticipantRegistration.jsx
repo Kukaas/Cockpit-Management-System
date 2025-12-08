@@ -55,6 +55,7 @@ const ParticipantRegistration = () => {
     contactNumber: '',
     address: '',
     entryFee: '',
+    entryName: '',
     cockProfiles: [{ legbandNumber: '', weight: '' }]
   })
 
@@ -265,6 +266,7 @@ const ParticipantRegistration = () => {
       contactNumber: '',
       address: '',
       entryFee: selectedEvent?.entryFee && selectedEvent.entryFee > 0 ? selectedEvent.entryFee.toString() : '',
+      entryName: '',
       cockProfiles: [{ legbandNumber: '', weight: '' }]
     })
   }
@@ -321,6 +323,11 @@ const ParticipantRegistration = () => {
     // Add entryFee if provided
     if (participantFormData.entryFee) {
       participantData.entryFee = Number(participantFormData.entryFee)
+    }
+
+    // Add entryName if provided (for Derby events)
+    if (participantFormData.entryName) {
+      participantData.entryName = participantFormData.entryName
     }
 
     createParticipantMutation.mutate(participantData)
@@ -403,6 +410,11 @@ const ParticipantRegistration = () => {
       // Add entryFee if provided
       if (participantFormData.entryFee) {
         participantData.entryFee = Number(participantFormData.entryFee)
+      }
+
+      // Add entryName if provided (for Derby events)
+      if (participantFormData.entryName) {
+        participantData.entryName = participantFormData.entryName
       }
 
       const participantResponse = await api.post('/participants', participantData)
@@ -516,6 +528,11 @@ const ParticipantRegistration = () => {
       address: participantFormData.address
     }
 
+    // Add entryName if provided (for Derby events)
+    if (participantFormData.entryName !== undefined) {
+      participantData.entryName = participantFormData.entryName
+    }
+
     updateParticipantMutation.mutate({
       id: selectedParticipant._id,
       data: participantData
@@ -565,6 +582,11 @@ const ParticipantRegistration = () => {
         participantName: participantFormData.participantName,
         contactNumber: participantFormData.contactNumber,
         address: participantFormData.address
+      }
+
+      // Add entryName if provided (for Derby events)
+      if (participantFormData.entryName !== undefined) {
+        participantData.entryName = participantFormData.entryName
       }
 
       await api.put(`/participants/${selectedParticipant._id}`, participantData)
@@ -676,6 +698,7 @@ const ParticipantRegistration = () => {
       participantName: participant.participantName,
       contactNumber: participant.contactNumber,
       address: participant.address,
+      entryName: participant.entryName || '',
       cockProfiles: [] // Will be loaded by the form
     })
     setEditCombinedDialogOpen(true)
@@ -804,6 +827,15 @@ const ParticipantRegistration = () => {
     }
     return false
   }
+
+  // Check if minimum participants requirement is met
+  const isMinimumParticipantsMet = () => {
+    if (!selectedEvent?.minimumParticipants) return true // No requirement set
+    return participants.length >= selectedEvent.minimumParticipants
+  }
+
+  // Determine if fight schedule tab should be shown
+  const showFightScheduleTab = isMinimumParticipantsMet()
 
   const registrationDeadlinePassed = isRegistrationDeadlinePassed()
   const deadlineApproaching = isDeadlineApproaching()
@@ -961,6 +993,7 @@ const ParticipantRegistration = () => {
         onPrintFightSchedule={handlePrintFightSchedule}
         event={selectedEvent}
         formatDate={formatDate}
+        showFightScheduleTab={showFightScheduleTab}
       />
 
       {/* Add Combined Registration Dialog */}
