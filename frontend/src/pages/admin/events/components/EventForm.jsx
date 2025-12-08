@@ -206,35 +206,37 @@ const EventForm = ({
                   {/* Desired Weight */}
                   <InputField
                     id={isEdit ? "editDesiredWeight" : "desiredWeight"}
-                    label="Desired Weight (kg) *"
+                    label="Desired Weight (g) *"
                     icon={Weight}
                     type="number"
                     value={formData.desiredWeight}
                     onChange={(e) => onInputChange('desiredWeight', e.target.value)}
-                    placeholder="e.g., 2.5"
-                    min="0"
-                    step="0.01"
+                    placeholder="e.g., 2500"
+                    min="10"
+                    max="10000"
+                    step="1"
                     required
                   />
 
                   {/* Weight Gap */}
                   <InputField
                     id={isEdit ? "editWeightGap" : "weightGap"}
-                    label="Weight Gap (kg) *"
+                    label="Weight Gap (±g) *"
                     icon={Weight}
                     type="number"
                     value={formData.weightGap}
                     onChange={(e) => onInputChange('weightGap', e.target.value)}
-                    placeholder="e.g., 0.2"
+                    placeholder="e.g., 100"
                     min="0"
-                    step="0.01"
+                    max="5000"
+                    step="1"
                     required
                   />
                 </div>
                 <p className="text-xs text-muted-foreground">
                   <strong>Weight Gap Explanation:</strong> The allowable weight difference for matching participants.
-                  For example, if desired weight is 2.5kg and weight gap is 0.2kg, participants with weights
-                  between 2.3kg and 2.7kg can be matched together.
+                  For example, if desired weight is 2500g and weight gap is 100g, participants with weights
+                  between 2400g and 2600g can be matched together.
                 </p>
               </div>
             )}

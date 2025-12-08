@@ -204,14 +204,14 @@ const EventDetailsCard = ({ event, formatDate, formatCurrency, showCapacity = fa
                     {event.eventType === 'derby' && event.desiredWeight && (
                         <div className="space-y-1">
                             <p className="text-sm font-medium text-muted-foreground">Desired Weight</p>
-                            <p className="flex items-center gap-1">{event.desiredWeight} kg</p>
+                            <p className="flex items-center gap-1">{event.desiredWeight} g</p>
                         </div>
                     )}
 
                     {event.eventType === 'derby' && event.weightGap && (
                         <div className="space-y-1">
                             <p className="text-sm font-medium text-muted-foreground">Weight Gap</p>
-                            <p className="flex items-center gap-1">±{event.weightGap} kg</p>
+                            <p className="flex items-center gap-1">±{event.weightGap} g</p>
                         </div>
                     )}
 

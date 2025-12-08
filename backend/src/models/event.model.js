@@ -44,20 +44,22 @@ const eventSchema = new mongoose.Schema({
         min: 0,
         max: 1000
     },
-    // Derby-specific fields
+    // Derby-specific fields (weights in grams)
     desiredWeight: {
         type: Number,
         required: function () {
             return this.eventType === 'derby';
         },
-        min: 0
+        min: 10, // Minimum 10 grams
+        max: 10000 // Maximum 10000 grams (10 kg)
     },
     weightGap: {
         type: Number,
         required: function () {
             return this.eventType === 'derby';
         },
-        min: 0
+        min: 0,
+        max: 5000 // Maximum gap of 5000 grams (5 kg)
     },
     // Fastest Kill-specific field
     winnerCount: {
