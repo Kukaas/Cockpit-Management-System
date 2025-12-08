@@ -6,13 +6,13 @@
  * @param {Function} params.formatDate - Function to format dates
  */
 export const printFightSchedule = ({
-    event,
-    fightSchedules = [],
-    formatDate
+  event,
+  fightSchedules = [],
+  formatDate
 }) => {
-    const printWindow = window.open('', '_blank')
+  const printWindow = window.open('', '_blank')
 
-    const printContent = `
+  const printContent = `
     <!DOCTYPE html>
     <html>
       <head>
@@ -114,20 +114,20 @@ export const printFightSchedule = ({
           </thead>
           <tbody>
             ${fightSchedules.map((fight) => {
-        const participant1 = fight.participantsID?.[0]
-        const participant2 = fight.participantsID?.[1]
-        const cock1 = fight.cockProfileID?.[0]
-        const cock2 = fight.cockProfileID?.[1]
+    const participant1 = fight.participantsID?.[0]
+    const participant2 = fight.participantsID?.[1]
+    const cock1 = fight.cockProfileID?.[0]
+    const cock2 = fight.cockProfileID?.[1]
 
-        // Get entry name - show participant name
-        const entryName1 = participant1?.participantName || 'N/A'
-        const entryName2 = participant2?.participantName || 'N/A'
+    // Get entry name - show entry name (team name) instead of participant name
+    const entryName1 = participant1?.entryName || participant1?.participantName || 'N/A'
+    const entryName2 = participant2?.entryName || participant2?.participantName || 'N/A'
 
-        // Get weight - show in grams if available
-        const weight1 = cock1?.weight ? `${cock1.weight} g` : 'N/A'
-        const weight2 = cock2?.weight ? `${cock2.weight} g` : 'N/A'
+    // Get weight - show in grams if available
+    const weight1 = cock1?.weight ? `${cock1.weight} g` : 'N/A'
+    const weight2 = cock2?.weight ? `${cock2.weight} g` : 'N/A'
 
-        return `
+    return `
                 <tr>
                   <td class="fight-no">${fight.fightNumber || ''}</td>
                   <td class="entry-name">${entryName1}</td>
@@ -137,7 +137,7 @@ export const printFightSchedule = ({
                   <td class="weight">${weight2}</td>
                 </tr>
               `
-    }).join('')}
+  }).join('')}
           </tbody>
         </table>
 
@@ -149,12 +149,12 @@ export const printFightSchedule = ({
     </html>
   `
 
-    printWindow.document.write(printContent)
-    printWindow.document.close()
-    printWindow.focus()
-    setTimeout(() => {
-        printWindow.print()
-        printWindow.close()
-    }, 250)
+  printWindow.document.write(printContent)
+  printWindow.document.close()
+  printWindow.focus()
+  setTimeout(() => {
+    printWindow.print()
+    printWindow.close()
+  }, 250)
 }
 

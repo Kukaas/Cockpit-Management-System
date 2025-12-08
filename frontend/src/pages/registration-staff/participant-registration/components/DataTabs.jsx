@@ -1,7 +1,7 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { UserPlus, Feather, Plus, Swords, Printer } from 'lucide-react'
+import { UserPlus, Feather, Plus, Swords, Printer, Zap } from 'lucide-react'
 import DataTable from '@/components/custom/DataTable'
 
 const DataTabs = ({
@@ -23,7 +23,8 @@ const DataTabs = ({
   onPrintFightSchedule,
   event,
   formatDate,
-  showFightScheduleTab = true // New prop to control fight schedule tab visibility
+  showFightScheduleTab = true, // New prop to control fight schedule tab visibility
+  onAutoSchedule = () => { } // New prop for auto-scheduling
 }) => {
   // Check if event is completed or cancelled
   const isEventDisabled = eventStatus === 'completed' || eventStatus === 'cancelled'
@@ -98,6 +99,17 @@ const DataTabs = ({
                 >
                   <Printer className="h-4 w-4 mr-2" />
                   Print Schedule
+                </Button>
+              )}
+              {event?.eventType === 'derby' && (
+                <Button
+                  variant="secondary"
+                  onClick={onAutoSchedule}
+                  disabled={isEventDisabled || cockProfiles.filter(c => c.status === 'available').length < 2}
+                  title={isEventDisabled ? "Cannot auto-schedule for completed/cancelled events" : "Automatically schedule all available chickens"}
+                >
+                  <Zap className="h-4 w-4 mr-2" />
+                  Auto-Schedule All
                 </Button>
               )}
               <Button

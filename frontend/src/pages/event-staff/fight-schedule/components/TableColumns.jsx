@@ -72,7 +72,7 @@ export const createFightColumns = (formatCurrency, formatDate, handleEditClick, 
       <div className="flex items-center space-x-2">
         {row.status === 'scheduled' && (
           <>
-            <Button
+            {/* <Button
               variant="ghost"
               size="sm"
               onClick={(e) => {
@@ -82,7 +82,7 @@ export const createFightColumns = (formatCurrency, formatDate, handleEditClick, 
               className="h-8 w-8 p-0"
             >
               <Edit className="h-4 w-4" />
-            </Button>
+            </Button> */}
             {showAddResult && (
               <Button
                 variant="ghost"

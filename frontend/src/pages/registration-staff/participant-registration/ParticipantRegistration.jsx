@@ -21,6 +21,7 @@ import { createParticipantColumns, createCockProfileColumns } from './components
 import FightForm from '@/pages/event-staff/fight-schedule/components/FightForm'
 import { createFightColumns } from '@/pages/event-staff/fight-schedule/components/TableColumns'
 import { printFightSchedule } from '@/lib/printFightSchedule'
+import AutoScheduleResultsModal from './components/AutoScheduleResultsModal'
 
 const ParticipantRegistration = () => {
   const { eventId } = useParams()
@@ -41,6 +42,9 @@ const ParticipantRegistration = () => {
   const [addFightDialogOpen, setAddFightDialogOpen] = useState(false)
   const [editFightDialogOpen, setEditFightDialogOpen] = useState(false)
   const [deleteFightDialogOpen, setDeleteFightDialogOpen] = useState(false)
+  const [autoScheduleResultsOpen, setAutoScheduleResultsOpen] = useState(false)
+  const [autoScheduleLoading, setAutoScheduleLoading] = useState(false)
+  const [autoScheduleResults, setAutoScheduleResults] = useState(null)
 
   // Selected items for editing/deleting
   const [selectedParticipant, setSelectedParticipant] = useState(null)
@@ -775,7 +779,34 @@ const ParticipantRegistration = () => {
     deleteFightMutation.mutate({ id: selectedFight._id })
   }
 
-  // Handle view details
+  // Auto-schedule fights
+  const handleAutoSchedule = async () => {
+    if (!selectedEvent) return
+
+    // Open modal and show loading state
+    setAutoScheduleResultsOpen(true)
+    setAutoScheduleLoading(true)
+    setAutoScheduleResults(null)
+
+    try {
+      const response = await api.post(`/fight-schedules/event/${eventId}/auto-schedule`)
+
+      const { created, fights, unmatched } = response.data.data
+
+      // Set results and hide loading
+      setAutoScheduleResults({ created, fights, unmatched })
+      setAutoScheduleLoading(false)
+
+      // Refetch data
+      refetchFights()
+      refetchCockProfiles()
+    } catch (error) {
+      setAutoScheduleLoading(false)
+      setAutoScheduleResultsOpen(false)
+      toast.error(error?.response?.data?.message || 'Failed to auto-schedule fights')
+    }
+  }
+
   const handleViewDetails = (item, type) => {
     setSelectedItem({ ...item, type })
     setDetailDialogOpen(true)
@@ -994,6 +1025,7 @@ const ParticipantRegistration = () => {
         event={selectedEvent}
         formatDate={formatDate}
         showFightScheduleTab={showFightScheduleTab}
+        onAutoSchedule={handleAutoSchedule}
       />
 
       {/* Add Combined Registration Dialog */}
@@ -1385,6 +1417,14 @@ const ParticipantRegistration = () => {
           </div>
         )}
       </CustomAlertDialog>
+
+      {/* Auto-Schedule Results Modal */}
+      <AutoScheduleResultsModal
+        open={autoScheduleResultsOpen}
+        onOpenChange={setAutoScheduleResultsOpen}
+        isLoading={autoScheduleLoading}
+        results={autoScheduleResults}
+      />
     </PageLayout>
   )
 }

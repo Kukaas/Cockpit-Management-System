@@ -1,6 +1,7 @@
 import express from 'express';
 import {
   createFightSchedule,
+  autoScheduleFights,
   getAllFightSchedules,
   getFightScheduleById,
   updateFightSchedule,
@@ -21,6 +22,7 @@ router.get('/event/:eventID/available-participants', verifyToken, getAvailablePa
 
 // Routes requiring admin, bet_staff role
 router.post('/', verifyToken, requireRole(['admin', 'bet_staff', 'registration_staff']), createFightSchedule);
+router.post('/event/:eventID/auto-schedule', verifyToken, requireRole(['admin', 'bet_staff', 'registration_staff']), autoScheduleFights);
 router.put('/:id', verifyToken, requireRole(['admin', 'bet_staff', 'registration_staff']), updateFightSchedule);
 router.patch('/:id/status', verifyToken, requireRole(['admin', 'bet_staff', 'registration_staff']), updateFightStatus);
 router.delete('/:id', verifyToken, requireRole(['admin', 'bet_staff', 'registration_staff']), deleteFightSchedule);

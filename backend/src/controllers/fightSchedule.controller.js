@@ -77,6 +77,238 @@ export const createFightSchedule = async (req, res) => {
   }
 };
 
+// Auto-schedule fights for an event based on weight matching
+export const autoScheduleFights = async (req, res) => {
+  try {
+    const { eventID } = req.params;
+    const scheduledBy = req.user.id;
+
+    // Validate event exists and is Derby type
+    const event = await Event.findById(eventID);
+    if (!event) {
+      return res.status(404).json({ message: 'Event not found' });
+    }
+
+    if (event.eventType !== 'derby') {
+      return res.status(400).json({ message: 'Auto-scheduling is only available for Derby events' });
+    }
+
+    if (!event.desiredWeight || !event.weightGap) {
+      return res.status(400).json({ message: 'Event must have desiredWeight and weightGap configured' });
+    }
+
+    // Get all available cock profiles for this event
+    const availableCocks = await CockProfile.find({
+      eventID,
+      status: 'available',
+      isActive: true
+    }).populate('participantID', 'entryName participantName');
+
+    if (availableCocks.length < 2) {
+      return res.status(400).json({ message: 'Not enough available chickens to schedule fights (minimum 2 required)' });
+    }
+
+    // Filter out cocks without entryName and warn
+    const cocksWithEntryName = availableCocks.filter(cock => cock.participantID?.entryName);
+    const cocksWithoutEntryName = availableCocks.filter(cock => !cock.participantID?.entryName);
+
+    if (cocksWithEntryName.length < 2) {
+      return res.status(400).json({
+        message: 'Not enough chickens with entry names to schedule fights',
+        unmatchedCount: cocksWithoutEntryName.length
+      });
+    }
+
+    const createdFights = [];
+    const unmatched = [];
+    const { weightGap } = event;
+
+    // Step 1: Group by exact weight
+    const weightGroups = {};
+    cocksWithEntryName.forEach(cock => {
+      const weight = cock.weight;
+      if (!weightGroups[weight]) {
+        weightGroups[weight] = [];
+      }
+      weightGroups[weight].push(cock);
+    });
+
+    // Step 2: Match within exact weight groups
+    for (const weight in weightGroups) {
+      const cocks = weightGroups[weight];
+
+      while (cocks.length >= 2) {
+        const cock1 = cocks.shift();
+
+        // Find opponent with different entryName
+        const opponentIndex = cocks.findIndex(
+          c => c.participantID.entryName !== cock1.participantID.entryName
+        );
+
+        if (opponentIndex >= 0) {
+          const cock2 = cocks.splice(opponentIndex, 1)[0];
+
+          // Get next fight number
+          const lastFight = await FightSchedule.findOne({ eventID }).sort({ fightNumber: -1 });
+          const fightNumber = lastFight ? lastFight.fightNumber + createdFights.length + 1 : createdFights.length + 1;
+
+          // Create fight
+          const fight = new FightSchedule({
+            eventID,
+            participantsID: [cock1.participantID._id, cock2.participantID._id],
+            cockProfileID: [cock1._id, cock2._id],
+            fightNumber,
+            scheduledBy
+          });
+
+          createdFights.push(fight);
+
+          // Mark as matched
+          cock1.matched = true;
+          cock2.matched = true;
+        } else {
+          unmatched.push(cock1);
+        }
+      }
+
+      // Add remaining single cock to unmatched
+      if (cocks.length === 1) {
+        unmatched.push(cocks[0]);
+      }
+    }
+
+    // Step 3: Match remaining cocks within weight gap
+    const remaining = unmatched.filter(c => !c.matched);
+    remaining.sort((a, b) => a.weight - b.weight);
+
+    for (let i = 0; i < remaining.length; i++) {
+      if (remaining[i].matched) continue;
+
+      const cock1 = remaining[i];
+      let bestMatch = null;
+      let minDiff = Infinity;
+
+      // Find closest weight within gap
+      for (let j = i + 1; j < remaining.length; j++) {
+        if (remaining[j].matched) continue;
+
+        const cock2 = remaining[j];
+        const diff = Math.abs(cock1.weight - cock2.weight);
+
+        // Check weight gap and entry name
+        if (
+          diff <= weightGap &&
+          cock1.participantID.entryName !== cock2.participantID.entryName &&
+          diff < minDiff
+        ) {
+          bestMatch = j;
+          minDiff = diff;
+        }
+      }
+
+      if (bestMatch !== null) {
+        const cock2 = remaining[bestMatch];
+
+        // Get next fight number
+        const lastFight = await FightSchedule.findOne({ eventID }).sort({ fightNumber: -1 });
+        const fightNumber = lastFight ? lastFight.fightNumber + createdFights.length + 1 : createdFights.length + 1;
+
+        // Create fight
+        const fight = new FightSchedule({
+          eventID,
+          participantsID: [cock1.participantID._id, cock2.participantID._id],
+          cockProfileID: [cock1._id, cock2._id],
+          fightNumber,
+          scheduledBy
+        });
+
+        createdFights.push(fight);
+
+        // Mark as matched
+        remaining[i].matched = true;
+        remaining[bestMatch].matched = true;
+      }
+    }
+
+    // Save all created fights
+    if (createdFights.length > 0) {
+      const insertedFights = await FightSchedule.insertMany(createdFights);
+
+      // Update cock profiles status to 'scheduled'
+      const scheduledCockIDs = createdFights.flatMap(f => f.cockProfileID);
+      await CockProfile.updateMany(
+        { _id: { $in: scheduledCockIDs } },
+        { status: 'scheduled' }
+      );
+
+      // Populate the inserted fights for response
+      const populatedFights = await FightSchedule.find({
+        _id: { $in: insertedFights.map(f => f._id) }
+      })
+        .populate('cockProfileID', 'entryNo weight legband')
+        .populate('participantsID', 'participantName entryName');
+
+      // Prepare unmatched list
+      const unmatchedList = remaining
+        .filter(c => !c.matched)
+        .map(c => ({
+          entryNo: c.entryNo,
+          weight: c.weight,
+          entryName: c.participantID.entryName,
+          reason: 'No valid opponent found'
+        }));
+
+      // Add cocks without entry name to unmatched
+      cocksWithoutEntryName.forEach(c => {
+        unmatchedList.push({
+          entryNo: c.entryNo,
+          weight: c.weight,
+          entryName: null,
+          reason: 'Missing entry name'
+        });
+      });
+
+      res.status(201).json({
+        message: `Successfully scheduled ${createdFights.length} fights`,
+        data: {
+          created: createdFights.length,
+          fights: populatedFights,
+          unmatched: unmatchedList
+        }
+      });
+    } else {
+      // No fights created
+      const unmatchedList = remaining
+        .map(c => ({
+          entryNo: c.entryNo,
+          weight: c.weight,
+          entryName: c.participantID?.entryName,
+          reason: 'No valid opponent found'
+        }));
+
+      cocksWithoutEntryName.forEach(c => {
+        unmatchedList.push({
+          entryNo: c.entryNo,
+          weight: c.weight,
+          entryName: null,
+          reason: 'Missing entry name'
+        });
+      });
+
+      res.status(201).json({
+        message: 'No fights could be scheduled',
+        data: {
+          created: 0,
+          fights: [],
+          unmatched: unmatchedList
+        }
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to auto-schedule fights', error: error.message });
+  }
+};
+
 // Get all fight schedules (with filtering)
 export const getAllFightSchedules = async (req, res) => {
   try {
@@ -101,7 +333,7 @@ export const getAllFightSchedules = async (req, res) => {
 
     const fightSchedules = await FightSchedule.find(query)
       .populate('eventID', 'eventName date location')
-      .populate('participantsID', 'participantName contactNumber')
+      .populate('participantsID', 'participantName contactNumber entryName')
       .populate('cockProfileID', 'legband weight entryNo ownerName')
       .populate('scheduledBy', 'username')
       .sort({ fightNumber: 1 });
@@ -212,7 +444,7 @@ export const getFightSchedulesByEvent = async (req, res) => {
     }
 
     const fightSchedules = await FightSchedule.find(query)
-      .populate('participantsID', 'participantName contactNumber')
+      .populate('participantsID', 'participantName contactNumber entryName')
       .populate('cockProfileID', 'legband weight entryNo ownerName')
       .populate('scheduledBy', 'username')
       .sort({ fightNumber: 1 });
