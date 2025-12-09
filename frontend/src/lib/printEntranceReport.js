@@ -9,16 +9,16 @@
  * @param {Number} params.totalRevenue - Total revenue
  */
 export const printEntranceReport = ({
-    event,
-    entrances = [],
-    formatDate,
-    formatCurrency,
-    totalEntrances = 0,
-    totalRevenue = 0
+  event,
+  entrances = [],
+  formatDate,
+  formatCurrency,
+  totalEntrances = 0,
+  totalRevenue = 0
 }) => {
-    const printWindow = window.open('', '_blank')
+  const printWindow = window.open('', '_blank')
 
-    const printContent = `
+  const printContent = `
     <!DOCTYPE html>
     <html>
       <head>
@@ -114,7 +114,6 @@ export const printEntranceReport = ({
         <div class="header">
           <div class="event-title">Entrance Tally Report</div>
           <div class="event-details">${event?.eventName || 'Event'}</div>
-          <div class="event-details">${event?.location || 'N/A'}</div>
           <div class="event-details">${formatDate(event?.date || new Date())}</div>
         </div>
 
@@ -167,12 +166,12 @@ export const printEntranceReport = ({
     </html>
   `
 
-    printWindow.document.write(printContent)
-    printWindow.document.close()
-    printWindow.focus()
-    setTimeout(() => {
-        printWindow.print()
-        printWindow.close()
-    }, 250)
+  printWindow.document.write(printContent)
+  printWindow.document.close()
+  printWindow.focus()
+  setTimeout(() => {
+    printWindow.print()
+    printWindow.close()
+  }, 250)
 }
 

@@ -97,7 +97,6 @@ export const printFightSchedule = ({
       <body>
         <div class="header">
           <div class="event-title">${event?.eventName || 'Event'}</div>
-          <div class="event-details">${event?.location || 'N/A'}</div>
           <div class="event-details">${formatDate(event?.date || new Date())}</div>
         </div>
 

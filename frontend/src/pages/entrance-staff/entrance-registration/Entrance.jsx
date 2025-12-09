@@ -10,6 +10,7 @@ import api from '@/services/api'
 import ConfirmationDialog from '@/components/custom/ConfirmationDialog'
 import DataTable from '@/components/custom/DataTable'
 import { printEntranceReport } from '@/lib/printEntranceReport'
+import { printEntranceTickets } from '@/lib/printEntranceTickets'
 
 // Import custom components
 import EventDetailsCard from '@/components/EventDetailsCard'
@@ -49,7 +50,20 @@ const Entrance = () => {
     errorMessage: (error) => {
       return error?.response?.data?.message || 'Failed to record entrance tally'
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      // Print tickets for the number of entrances recorded
+      const entranceCount = entranceFormData.count || 1
+      const entranceId = data?.data?._id || ''
+
+      printEntranceTickets({
+        event: selectedEvent,
+        count: entranceCount,
+        formatDate,
+        formatCurrency,
+        entranceTime: new Date(),
+        entranceId
+      })
+
       // Reset form but keep dialog open for quick consecutive entries
       resetEntranceForm()
       refetchEntrances()
