@@ -44,7 +44,6 @@ const Rentals = () => {
   // Form data
   const [rentalFormData, setRentalFormData] = useState({
     quantity: '0',
-    arena: '',
     date: new Date().toISOString().split('T')[0], // Default to today
     nameOfRenter: '',
     contactNumber: '',
@@ -190,7 +189,6 @@ const Rentals = () => {
   const resetRentalForm = () => {
     setRentalFormData({
       quantity: '0',
-      arena: '',
       date: new Date().toISOString().split('T')[0], // Default to today
       nameOfRenter: '',
       contactNumber: '',
@@ -260,7 +258,6 @@ const Rentals = () => {
     setSelectedRental(rental)
     setRentalFormData({
       quantity: rental.quantity.toString(),
-      arena: rental.arena,
       date: rental.date.split('T')[0], // Format date for input
       nameOfRenter: rental.nameOfRenter,
       contactNumber: rental.contactNumber || '',

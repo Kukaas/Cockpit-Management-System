@@ -11,7 +11,6 @@ export const createCageRental = async (req, res) => {
             nameOfRenter,
             contactNumber,
             eventID,
-            arena,
             selectedCageIds
         } = req.body;
 
@@ -48,14 +47,6 @@ export const createCageRental = async (req, res) => {
             });
         }
 
-        // Validate arena
-        const validArenas = ['Buenavista Cockpit Arena', 'Mogpog Cockpit Arena', 'Boac Cockpit Arena'];
-        if (!validArenas.includes(arena)) {
-            return res.status(400).json({
-                success: false,
-                message: `Invalid arena. Must be one of: ${validArenas.join(', ')}`
-            });
-        }
 
         // Validate date format
         const rentalDate = new Date(date);
@@ -78,7 +69,6 @@ export const createCageRental = async (req, res) => {
         // Validate that all selected cages exist and are available
         const selectedCages = await CageAvailability.find({
             _id: { $in: selectedCageIds },
-            arena: arena,
             status: 'active'
         });
 
@@ -115,14 +105,13 @@ export const createCageRental = async (req, res) => {
         // Create new cage rental
         const newCageRental = new CageRental({
             cages: selectedCages.map(cage => ({ cageNo: cage._id })),
-            arena,
             quantity,
             totalPrice,
             date: rentalDate,
             nameOfRenter,
             contactNumber,
             eventID,
-            paymentStatus: req.body.paymentStatus || 'paid', // Use paymentStatus from request body, default to 'paid'
+            paymentStatus: req.body.paymentStatus || 'paid',
             recordedBy: req.user._id
         });
 
@@ -178,13 +167,8 @@ export const getAllCageRentals = async (req, res) => {
             filter.paymentStatus = paymentStatus;
         }
 
-        if (arena) {
-            filter.arena = arena;
-        }
-
         if (search) {
             filter.$or = [
-                { arena: { $regex: search, $options: 'i' } },
                 { nameOfRenter: { $regex: search, $options: 'i' } },
                 { contactNumber: { $regex: search, $options: 'i' } }
             ];
@@ -283,16 +267,6 @@ export const updateCageRental = async (req, res) => {
             });
         }
 
-        // Validate arena if it's being updated
-        if (updateData.arena) {
-            const validArenas = ['Buenavista Cockpit Arena', 'Mogpog Cockpit Arena', 'Boac Cockpit Arena'];
-            if (!validArenas.includes(updateData.arena)) {
-                return res.status(400).json({
-                    success: false,
-                    message: `Invalid arena. Must be one of: ${validArenas.join(', ')}`
-                });
-            }
-        }
 
         // Validate date if it's being updated
         if (updateData.date) {
@@ -316,12 +290,10 @@ export const updateCageRental = async (req, res) => {
 
         // If quantity is being updated, validate availability
         if (updateData.quantity) {
-            const targetArena = updateData.arena || cageRental.arena;
             const targetDate = updateData.date ? new Date(updateData.date) : cageRental.date;
 
             // Check available cages for the new quantity
             const availableCages = await CageAvailability.find({
-                arena: targetArena,
                 status: 'active'
             }).sort({ cageNumber: 1 });
 

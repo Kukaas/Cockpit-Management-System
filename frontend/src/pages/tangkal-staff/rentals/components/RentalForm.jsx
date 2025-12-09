@@ -370,9 +370,14 @@ const RentalForm = ({
           <InputField
             id={isEdit ? "editContactNumber" : "contactNumber"}
             label="Contact Number"
+            type="number"
             value={formData.contactNumber}
-            onChange={(e) => onInputChange('contactNumber', e.target.value)}
-            placeholder="Enter contact number"
+            onChange={(e) => {
+              const value = e.target.value.replace(/\D/g, '').slice(0, 11)
+              onInputChange('contactNumber', value)
+            }}
+            placeholder="Enter contact number (max 11 digits)"
+            maxLength={11}
           />
 
           <div className="space-y-2">

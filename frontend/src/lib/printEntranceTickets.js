@@ -85,18 +85,15 @@ export const printEntranceTickets = ({
             width: 400px;
             margin: 0 auto 20px;
             background: white;
-            border: 2px solid #333;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border: 2px dashed #333;
+            padding: 20px;
           }
 
           .ticket-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
             text-align: center;
-            position: relative;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px dashed #333;
           }
 
           .ticket-header h1 {
@@ -109,7 +106,7 @@ export const printEntranceTickets = ({
           .ticket-number {
             font-size: 18px;
             font-weight: bold;
-            background: rgba(255,255,255,0.2);
+            background: #f0f0f0;
             display: inline-block;
             padding: 5px 15px;
             border-radius: 20px;
@@ -117,7 +114,7 @@ export const printEntranceTickets = ({
           }
 
           .ticket-body {
-            padding: 25px;
+            padding: 0;
           }
 
           .event-info,
@@ -169,16 +166,16 @@ export const printEntranceTickets = ({
           }
 
           .divider {
-            height: 2px;
-            background: linear-gradient(to right, transparent, #667eea, transparent);
-            margin: 20px 0;
+            border-top: 2px dashed #999;
+            margin: 15px 0;
           }
 
           .ticket-footer {
             background: #f9f9f9;
             padding: 15px;
             text-align: center;
-            border-top: 2px dashed #ddd;
+            border-top: 2px dashed #333;
+            margin: 15px -20px -20px -20px;
           }
 
           .ticket-footer p {
@@ -200,7 +197,6 @@ export const printEntranceTickets = ({
             }
 
             .ticket {
-              box-shadow: none;
               margin: 0 auto;
               page-break-after: always;
             }

@@ -13,12 +13,6 @@ const cageRentalSchema = new mongoose.Schema({
             default: null
         }
     }],
-    arena: {
-        type: String,
-        required: true,
-        enum: ['Buenavista Cockpit Arena', 'Mogpog Cockpit Arena', 'Boac Cockpit Arena'],
-        default: 'Buenavista Cockpit Arena'
-    },
     // Quantity of cages rented
     quantity: {
         type: Number,
@@ -81,7 +75,6 @@ const cageRentalSchema = new mongoose.Schema({
 
 // Indexes for better query performance
 cageRentalSchema.index({ 'cages.cageNo': 1, date: -1 });
-cageRentalSchema.index({ arena: 1, date: -1 });
 cageRentalSchema.index({ paymentStatus: 1, date: -1 });
 cageRentalSchema.index({ nameOfRenter: 1 });
 cageRentalSchema.index({ eventID: 1 });
