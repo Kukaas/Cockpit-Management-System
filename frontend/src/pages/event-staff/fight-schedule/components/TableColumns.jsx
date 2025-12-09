@@ -1,7 +1,7 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Edit, Trash2, Trophy, Clock, Users, Target, Award, Calendar, Info, Eye, Wallet } from 'lucide-react'
+import { Edit, Trash2, Trophy, Clock, Users, Target, Award, Calendar, Info, Eye, Wallet, Printer } from 'lucide-react'
 
 export const createFightColumns = (formatCurrency, formatDate, handleEditClick, handleDeleteClick, handleAddBetClick, handleAddResultClick, handleViewDetails, showAddResult = true) => [
   {
@@ -121,7 +121,7 @@ export const createFightColumns = (formatCurrency, formatDate, handleEditClick, 
   }
 ]
 
-export const createMatchResultColumns = (formatCurrency, formatDate, handleEditClick, handleViewDetails, eventType = 'regular') => [
+export const createMatchResultColumns = (formatCurrency, formatDate, handleEditClick, handleViewDetails, handlePrintReceipt, eventType = 'regular') => [
   {
     key: 'matchID',
     label: 'Fight #',
@@ -223,6 +223,20 @@ export const createMatchResultColumns = (formatCurrency, formatDate, handleEditC
             className="h-8 w-8 p-0"
           >
             <Edit className="h-4 w-4" />
+          </Button>
+        )}
+        {row.betWinner !== 'Draw' && row.betWinner !== 'Cancelled' && row.betWinner !== 'Pending' && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation()
+              handlePrintReceipt(row)
+            }}
+            className="h-8 w-8 p-0 text-green-600 hover:text-green-700"
+            title="Print Winner Receipt"
+          >
+            <Printer className="h-4 w-4" />
           </Button>
         )}
         <Button

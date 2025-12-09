@@ -22,6 +22,7 @@ import ChampionshipTab from './components/ChampionshipTab'
 import FastestKillWinnersTab from './components/FastestKillWinnersTab'
 import { createFightColumns, createMatchResultColumns } from './components/TableColumns'
 import { printFightSchedule } from '@/lib/printFightSchedule'
+import { printWinnerReceipt } from '@/lib/printWinnerReceipt'
 
 const FightSchedule = () => {
   const { eventId } = useParams()
@@ -536,11 +537,43 @@ const FightSchedule = () => {
     handleViewDetails
   )
 
+  // Print winner receipt
+  const handlePrintReceipt = (result) => {
+    const fight = result.matchID
+    const winner = result.resultMatch?.winnerParticipantID
+
+    // Get winner's bet to calculate payout
+    const winnerBet = result.participantBets?.find(bet => {
+      const betParticipantId = bet?.participantID?._id || bet?.participantID
+      const winnerId = winner?._id || winner
+      return betParticipantId === winnerId || betParticipantId?.toString() === winnerId?.toString()
+    })
+
+    // Determine position
+    const [bet1, bet2] = result.participantBets || []
+    const meronBet = bet1?.betAmount > bet2?.betAmount ? bet1 : bet2
+    const meronParticipantId = meronBet?.participantID?._id || meronBet?.participantID
+    const winnerId = winner?._id || winner
+    const isMeron = meronParticipantId === winnerId || meronParticipantId?.toString() === winnerId?.toString()
+    const position = isMeron ? 'Meron' : 'Wala'
+
+    printWinnerReceipt({
+      event,
+      fight,
+      winner,
+      payoutAmount: winnerBet?.betAmount || 0,
+      position,
+      formatDate,
+      formatCurrency
+    })
+  }
+
   const resultColumns = createMatchResultColumns(
     formatCurrency,
     formatDate,
     handleEditResultClick,
     handleViewDetails,
+    handlePrintReceipt,
     event?.eventType
   )
 
