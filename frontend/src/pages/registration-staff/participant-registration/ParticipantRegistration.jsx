@@ -903,7 +903,7 @@ const ParticipantRegistration = () => {
 
   // Determine if fight schedule tab should be shown
   const registrationDeadlinePassed = isRegistrationDeadlinePassed()
-  const showFightScheduleTab = isMinimumParticipantsMet() && registrationDeadlinePassed
+  const showFightScheduleTab = isMinimumParticipantsMet() && (selectedEvent?.eventType !== 'derby' || registrationDeadlinePassed)
 
   const deadlineApproaching = isDeadlineApproaching()
 
