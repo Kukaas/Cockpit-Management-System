@@ -233,13 +233,6 @@ const EventForm = ({
                     required
                   />
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  <strong>Weight Range:</strong> Specify the acceptable weight range for participants.
-                  For example, minimum weight of 1600g and maximum weight of 2000g means participants
-                  with weights between 1600-2000g are acceptable. Participants outside this range will
-                  receive a warning but can still be registered.
-                </p>
-
                 <div className='grid grid-cols-1 gap-4'>
                   {/* Weight Gap */}
                   <InputField

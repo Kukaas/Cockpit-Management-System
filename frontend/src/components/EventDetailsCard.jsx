@@ -226,16 +226,6 @@ const EventDetailsCard = ({ event, formatDate, formatCurrency, showCapacity = fa
                         </div>
                     )}
 
-                    {/* Show Fastest Kill Winner Count */}
-                    {event.eventType === 'fastest_kill' && event.winnerCount && (
-                        <div className="space-y-1">
-                            <p className="text-sm font-medium text-muted-foreground">Number of Winners</p>
-                            <p className="flex items-center gap-1">
-                                <Award className="h-4 w-4" />
-                                Top {event.winnerCount}
-                            </p>
-                        </div>
-                    )}
 
                     {/* Show Prize Pool for fastest_kill events */}
                     {event.eventType === 'fastest_kill' && event.prize && (

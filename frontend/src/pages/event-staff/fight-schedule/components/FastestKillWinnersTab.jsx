@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Trophy, Award, Target, Users,  Clock, Zap, Edit, Save, X } from 'lucide-react'
+import { Trophy, Award, Target, Users, Clock, Zap, Edit, Save, X } from 'lucide-react'
 import { useGetAll } from '@/hooks/useApiQueries'
 import { useCustomMutation } from '@/hooks/useApiMutations'
 import { toast } from 'sonner'
@@ -53,7 +53,7 @@ const FastestKillWinnersTab = ({ eventId, eventType, formatCurrency }) => {
         }
     }, [event])
 
-    // Calculate default prize distribution
+    // Calculate and save prize distribution when results change
     useEffect(() => {
         if (matchResults.length > 0 && prizePool > 0) {
             setIsCalculating(true)
@@ -71,13 +71,26 @@ const FastestKillWinnersTab = ({ eventId, eventType, formatCurrency }) => {
                 }))
 
             if (fastestKillResults.length > 0) {
-                // Use prize amounts from match results
-                const distribution = fastestKillResults.map((result, index) => ({
-                    ...result,
-                    prizeAmount: result.prizeAmount || 0,
-                    prizePercentage: prizePool > 0 ? ((result.prizeAmount || 0) / prizePool * 100).toFixed(1) : 0
-                }))
-                setPrizeDistribution(distribution)
+                // Calculate new prize distribution
+                const newDistribution = calculatePrizeDistribution(fastestKillResults, prizePool)
+
+                // Check if prizes need to be updated (compare with existing prizeAmount)
+                const needsUpdate = newDistribution.some((result, index) => {
+                    const existingPrize = matchResults[index]?.prizeAmount || 0
+                    return Math.abs(result.prizeAmount - existingPrize) > 0.01 // Allow small floating point differences
+                })
+
+                // Auto-save the calculated distribution if it changed
+                if (needsUpdate) {
+                    const distributionData = newDistribution.map(result => ({
+                        resultId: result._id,
+                        prizeAmount: result.prizeAmount
+                    }))
+
+                    updatePrizeDistributionMutation.mutate(distributionData)
+                }
+
+                setPrizeDistribution(newDistribution)
             }
 
             setIsCalculating(false)
@@ -87,28 +100,30 @@ const FastestKillWinnersTab = ({ eventId, eventType, formatCurrency }) => {
     // Calculate prize distribution based on position
     const calculatePrizeDistribution = (results, totalPrize) => {
         const distribution = []
-        let remainingPrize = totalPrize
 
-        // Define prize tiers (you can adjust these percentages)
-        const prizeTiers = [
-            { positions: [1, 2], percentage: 0.30 }, // 30% for positions 1-2
-            { positions: [3, 4, 5, 6], percentage: 0.20 }, // 20% for positions 3-6
-            { positions: [7, 8, 9, 10], percentage: 0.15 }, // 15% for positions 7-10
-            { positions: [11, 12, 13, 14, 15, 16], percentage: 0.10 }, // 10% for positions 11-16
-            { positions: [17, 18, 19, 20], percentage: 0.05 }, // 5% for positions 17-20
-        ]
+        // New prize distribution:
+        // Top 1-10: 80% of prize pool (8% each)
+        // Top 11-20: 20% of prize pool (2% each)
+        // Position 21+: 0%
+
+        const top10Share = totalPrize * 0.80 // 80% for top 10
+        const top1120Share = totalPrize * 0.20 // 20% for top 11-20
+
+        const prizePerTop10 = top10Share / 10 // 8% each
+        const prizePerTop1120 = top1120Share / 10 // 2% each
 
         results.forEach((result, index) => {
             const position = index + 1
             let prizeAmount = 0
 
-            // Find the appropriate tier for this position
-            const tier = prizeTiers.find(t => t.positions.includes(position))
-            if (tier) {
-                const tierPrize = (totalPrize * tier.percentage) / tier.positions.length
-                prizeAmount = Math.min(tierPrize, remainingPrize)
-                remainingPrize -= prizeAmount
+            if (position <= 10) {
+                // Top 1-10: Each gets 8% of total prize pool
+                prizeAmount = prizePerTop10
+            } else if (position <= 20) {
+                // Top 11-20: Each gets 2% of total prize pool
+                prizeAmount = prizePerTop1120
             }
+            // Position 21+: Gets 0
 
             distribution.push({
                 ...result,
@@ -264,6 +279,50 @@ const FastestKillWinnersTab = ({ eventId, eventType, formatCurrency }) => {
                 )
             }
         },
+        {
+            key: 'position',
+            label: 'Prize Tier',
+            sortable: false,
+            filterable: false,
+            render: (value) => {
+                if (value <= 10) {
+                    return (
+                        <div className="flex items-center gap-2">
+                            <div className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">
+                                Top 10 (80%)
+                            </div>
+                        </div>
+                    )
+                } else if (value <= 20) {
+                    return (
+                        <div className="flex items-center gap-2">
+                            <div className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold">
+                                Top 11-20 (20%)
+                            </div>
+                        </div>
+                    )
+                } else {
+                    return (
+                        <div className="flex items-center gap-2">
+                            <div className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-semibold">
+                                No Prize
+                            </div>
+                        </div>
+                    )
+                }
+            }
+        },
+        {
+            key: 'prizeAmount',
+            label: 'Prize Amount',
+            sortable: true,
+            filterable: false,
+            render: (value) => (
+                <span className={`font-semibold ${value > 0 ? 'text-green-600' : 'text-gray-400'}`}>
+                    {formatCurrency(value || 0)}
+                </span>
+            )
+        },
     ]
 
     return (
@@ -277,14 +336,61 @@ const FastestKillWinnersTab = ({ eventId, eventType, formatCurrency }) => {
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="text-center p-4 bg-yellow-50 rounded-lg">
-                            <div className="text-2xl font-bold text-yellow-600">{fastestKillResultsCount}</div>
-                            <div className="text-sm text-yellow-600">Total Winners</div>
+                            <div className="text-2xl font-bold text-yellow-600">{Math.min(fastestKillResultsCount, 20)}</div>
+                            <div className="text-sm text-yellow-600">Prize Winners (Top 20)</div>
                         </div>
                         <div className="text-center p-4 bg-green-50 rounded-lg">
                             <div className="text-2xl font-bold text-green-600">{formatCurrency(prizePool)}</div>
                             <div className="text-sm text-green-600">Total Prize Pool</div>
+                        </div>
+                        <div className="text-center p-4 bg-blue-50 rounded-lg">
+                            <div className="text-2xl font-bold text-blue-600">{fastestKillResultsCount}</div>
+                            <div className="text-sm text-blue-600">Total Participants</div>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Prize Distribution Legend */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <Award className="h-5 w-5 text-purple-600" />
+                        Prize Distribution
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="flex items-center gap-3 p-4 bg-green-50 rounded-lg border-2 border-green-200">
+                            <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white font-bold">
+                                80%
+                            </div>
+                            <div>
+                                <div className="font-semibold text-green-900">Top 1-10</div>
+                                <div className="text-sm text-green-700">Each gets 8% of prize pool</div>
+                                <div className="text-xs text-green-600 mt-1">
+                                    {formatCurrency(prizePool * 0.08)} per winner
+                                </div>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-lg border-2 border-blue-200">
+                            <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
+                                20%
+                            </div>
+                            <div>
+                                <div className="font-semibold text-blue-900">Top 11-20</div>
+                                <div className="text-sm text-blue-700">Each gets 2% of prize pool</div>
+                                <div className="text-xs text-blue-600 mt-1">
+                                    {formatCurrency(prizePool * 0.02)} per winner
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <div className="text-sm text-gray-600 text-center">
+                            <span className="font-semibold">Note:</span> Participants ranked 21st and below do not receive prizes
                         </div>
                     </div>
                 </CardContent>

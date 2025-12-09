@@ -204,14 +204,24 @@ const MatchResultForm = ({
   // Handle time input changes
   const handleMinutesChange = (value) => {
     setMatchMinutes(value)
-    const totalSeconds = minutesAndSecondsToSeconds(value, matchSeconds)
-    onInputChange('matchTimeSeconds', totalSeconds)
+    // Allow empty string, only calculate if both fields have values
+    if (value === '' && matchSeconds === '') {
+      onInputChange('matchTimeSeconds', 0)
+    } else {
+      const totalSeconds = minutesAndSecondsToSeconds(value, matchSeconds)
+      onInputChange('matchTimeSeconds', totalSeconds)
+    }
   }
 
   const handleSecondsChange = (value) => {
     setMatchSeconds(value)
-    const totalSeconds = minutesAndSecondsToSeconds(matchMinutes, value)
-    onInputChange('matchTimeSeconds', totalSeconds)
+    // Allow empty string, only calculate if both fields have values
+    if (value === '' && matchMinutes === '') {
+      onInputChange('matchTimeSeconds', 0)
+    } else {
+      const totalSeconds = minutesAndSecondsToSeconds(matchMinutes, value)
+      onInputChange('matchTimeSeconds', totalSeconds)
+    }
   }
 
   return (
@@ -308,17 +318,17 @@ const MatchResultForm = ({
 
                   return (
                     <div key={participant._id} className={`p-4 rounded-lg border-2 ${position === 'Meron'
-                        ? 'bg-red-50 border-red-300'
-                        : position === 'Wala'
-                          ? 'bg-blue-50 border-blue-300'
-                          : 'bg-gray-50 border-gray-300'
+                      ? 'bg-red-50 border-red-300'
+                      : position === 'Wala'
+                        ? 'bg-blue-50 border-blue-300'
+                        : 'bg-gray-50 border-gray-300'
                       }`}>
                       <div className="flex items-center justify-between mb-2">
                         <span className="font-medium text-gray-900">{participant.participantName}</span>
                         {position && (
                           <span className={`text-xs font-bold uppercase px-2 py-1 rounded ${position === 'Meron'
-                              ? 'bg-red-200 text-red-800'
-                              : 'bg-blue-200 text-blue-800'
+                            ? 'bg-red-200 text-red-800'
+                            : 'bg-blue-200 text-blue-800'
                             }`}>
                             {position}
                           </span>
