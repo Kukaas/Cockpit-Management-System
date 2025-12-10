@@ -38,7 +38,10 @@ const Events = () => {
     minWeight: '',
     maxWeight: '',
     weightGap: '',
-    winnerCount: ''
+    prizeDistribution: [
+      { tierName: 'Top 1-15', startRank: 1, endRank: 15, percentage: 80 },
+      { tierName: 'Top 16-20', startRank: 16, endRank: 20, percentage: 20 }
+    ]
   })
   const [editFormData, setEditFormData] = useState({
     eventName: '',
@@ -55,7 +58,10 @@ const Events = () => {
     minWeight: '',
     maxWeight: '',
     weightGap: '',
-    winnerCount: ''
+    prizeDistribution: [
+      { tierName: 'Top 1-15', startRank: 1, endRank: 15, percentage: 80 },
+      { tierName: 'Top 16-20', startRank: 16, endRank: 20, percentage: 20 }
+    ]
   })
 
   // Fetch events with general hook
@@ -174,7 +180,7 @@ const Events = () => {
 
     // Additional required fields for fastest_kill events
     if (formData.eventType === 'fastest_kill') {
-      const additionalRequiredFields = ['prize', 'winnerCount']
+      const additionalRequiredFields = ['prize', 'prizeDistribution']
       const missingAdditionalFields = additionalRequiredFields.filter(field => !formData[field])
 
       if (missingAdditionalFields.length > 0) {
@@ -202,7 +208,7 @@ const Events = () => {
       numericFields.push('minWeight', 'maxWeight', 'weightGap')
     }
     if (formData.eventType === 'fastest_kill') {
-      numericFields.push('prize', 'winnerCount')
+      numericFields.push('prize')
     }
 
     for (const field of numericFields) {
@@ -297,7 +303,7 @@ const Events = () => {
 
     // Additional required fields for fastest_kill events
     if (editFormData.eventType === 'fastest_kill') {
-      const additionalRequiredFields = ['prize', 'winnerCount']
+      const additionalRequiredFields = ['prize', 'prizeDistribution']
       const missingAdditionalFields = additionalRequiredFields.filter(field => !editFormData[field])
 
       if (missingAdditionalFields.length > 0) {
@@ -327,7 +333,7 @@ const Events = () => {
       numericFields.push('minWeight', 'maxWeight', 'weightGap')
     }
     if (editFormData.eventType === 'fastest_kill') {
-      numericFields.push('prize', 'winnerCount')
+      numericFields.push('prize')
     }
 
     for (const field of numericFields) {
@@ -415,7 +421,10 @@ const Events = () => {
       minWeight: '',
       maxWeight: '',
       weightGap: '',
-      winnerCount: ''
+      prizeDistribution: [
+        { tierName: 'Top 1-15', startRank: 1, endRank: 15, percentage: 80 },
+        { tierName: 'Top 16-20', startRank: 16, endRank: 20, percentage: 20 }
+      ]
     })
   }
 
@@ -435,7 +444,10 @@ const Events = () => {
       minWeight: '',
       maxWeight: '',
       weightGap: '',
-      winnerCount: ''
+      prizeDistribution: [
+        { tierName: 'Top 1-15', startRank: 1, endRank: 15, percentage: 80 },
+        { tierName: 'Top 16-20', startRank: 16, endRank: 20, percentage: 20 }
+      ]
     })
   }
 
@@ -544,7 +556,10 @@ const Events = () => {
       minWeight: event.minWeight ? event.minWeight.toString() : '',
       maxWeight: event.maxWeight ? event.maxWeight.toString() : '',
       weightGap: event.weightGap ? event.weightGap.toString() : '',
-      winnerCount: event.winnerCount ? event.winnerCount.toString() : ''
+      prizeDistribution: event.prizeDistribution || [
+        { tierName: 'Top 1-15', startRank: 1, endRank: 15, percentage: 80 },
+        { tierName: 'Top 16-20', startRank: 16, endRank: 20, percentage: 20 }
+      ]
     })
     setEditEventDialogOpen(true)
   }

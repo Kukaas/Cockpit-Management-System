@@ -245,6 +245,48 @@ const EventDetailsCard = ({ event, formatDate, formatCurrency, showCapacity = fa
                         </div>
                     )}
                 </div>
+
+                {/* Prize Distribution for Fastest Kill Events */}
+                {event.eventType === 'fastest_kill' && event.prizeDistribution && event.prizeDistribution.length > 0 && (
+                    <>
+                        <Separator className="my-4" />
+                        <div className="space-y-3">
+                            <div className="flex items-center gap-2">
+                                <Award className="h-5 w-5 text-purple-600" />
+                                <h3 className="text-lg font-semibold">Prize Distribution</h3>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                {event.prizeDistribution.map((tier, index) => {
+                                    const tierPrizePool = event.prize * (tier.percentage / 100)
+                                    const winnersInTier = tier.endRank - tier.startRank + 1
+                                    const prizePerWinner = tierPrizePool / winnersInTier
+
+                                    // Determine color based on percentage
+                                    const colorClass = tier.percentage >= 50 ? 'green' :
+                                        tier.percentage >= 20 ? 'blue' :
+                                            tier.percentage > 0 ? 'purple' : 'gray'
+
+                                    return (
+                                        <div key={index} className={`flex items-center gap-3 p-3 bg-${colorClass}-50 rounded-lg border border-${colorClass}-200`}>
+                                            <div className={`w-12 h-12 bg-${colorClass}-500 rounded-full flex items-center justify-center text-white font-bold text-sm`}>
+                                                {tier.percentage}%
+                                            </div>
+                                            <div className="flex-1">
+                                                <div className={`font-semibold text-${colorClass}-900`}>{tier.tierName}</div>
+                                                <div className={`text-xs text-${colorClass}-700`}>
+                                                    Ranks {tier.startRank}-{tier.endRank} ({winnersInTier} {winnersInTier === 1 ? 'winner' : 'winners'})
+                                                </div>
+                                                <div className={`text-xs text-${colorClass}-600 mt-1 font-medium`}>
+                                                    {formatCurrency(prizePerWinner)} per winner
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        </div>
+                    </>
+                )}
             </CardContent>
         </Card>
     )

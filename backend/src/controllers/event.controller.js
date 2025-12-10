@@ -18,7 +18,8 @@ export const createEvent = async (req, res) => {
             minWeight,
             maxWeight,
             weightGap,
-            winnerCount
+            winnerCount,
+            prizeDistribution
         } = req.body;
 
         // Validate required fields based on event type
@@ -60,7 +61,7 @@ export const createEvent = async (req, res) => {
 
         // Additional required fields for fastest_kill events
         if (eventType === 'fastest_kill') {
-            const additionalRequiredFields = ['prize', 'winnerCount'];
+            const additionalRequiredFields = ['prize', 'prizeDistribution'];
             const missingAdditionalFields = additionalRequiredFields.filter(field => !req.body[field]);
 
             if (missingAdditionalFields.length > 0) {
@@ -68,6 +69,44 @@ export const createEvent = async (req, res) => {
                     success: false,
                     message: `For fastest kill events, missing required fields: ${missingAdditionalFields.join(', ')}`
                 });
+            }
+
+            // Validate prizeDistribution
+            if (!Array.isArray(prizeDistribution) || prizeDistribution.length === 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Prize distribution must be a non-empty array'
+                });
+            }
+
+            // Validate that percentages sum to 100
+            const totalPercentage = prizeDistribution.reduce((sum, tier) => sum + Number(tier.percentage), 0);
+            if (Math.abs(totalPercentage - 100) > 0.01) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Prize distribution percentages must sum to 100%. Current total: ${totalPercentage}%`
+                });
+            }
+
+            // Validate rank ranges
+            for (const tier of prizeDistribution) {
+                if (tier.startRank > tier.endRank) {
+                    return res.status(400).json({
+                        success: false,
+                        message: `Invalid rank range in tier "${tier.tierName}": startRank (${tier.startRank}) must be <= endRank (${tier.endRank})`
+                    });
+                }
+            }
+
+            // Validate that rank ranges are continuous and don't overlap
+            const sortedTiers = [...prizeDistribution].sort((a, b) => a.startRank - b.startRank);
+            for (let i = 0; i < sortedTiers.length - 1; i++) {
+                if (sortedTiers[i].endRank + 1 !== sortedTiers[i + 1].startRank) {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Prize distribution tiers must be continuous without gaps or overlaps'
+                    });
+                }
             }
         }
 
@@ -125,7 +164,12 @@ export const createEvent = async (req, res) => {
         // Only add prize for fastest_kill events
         if (eventType === 'fastest_kill') {
             eventData.prize = Number(prize);
-            eventData.winnerCount = Number(winnerCount);
+            eventData.prizeDistribution = prizeDistribution.map(tier => ({
+                tierName: tier.tierName,
+                startRank: Number(tier.startRank),
+                endRank: Number(tier.endRank),
+                percentage: Number(tier.percentage)
+            }));
         }
 
         const newEvent = new Event(eventData);
@@ -293,7 +337,7 @@ export const updateEvent = async (req, res) => {
 
         // Additional required fields for fastest_kill events
         if (eventType === 'fastest_kill') {
-            const additionalRequiredFields = ['prize', 'winnerCount'];
+            const additionalRequiredFields = ['prize', 'prizeDistribution'];
             const missingAdditionalFields = additionalRequiredFields.filter(field => !updateData[field] && !event[field]);
 
             if (missingAdditionalFields.length > 0) {
@@ -302,6 +346,67 @@ export const updateEvent = async (req, res) => {
                     message: `For fastest kill events, missing required fields: ${missingAdditionalFields.join(', ')}`
                 });
             }
+
+            // Validate prizeDistribution if provided
+            const prizeDistribution = updateData.prizeDistribution || event.prizeDistribution;
+
+            if (prizeDistribution) {
+                if (!Array.isArray(prizeDistribution) || prizeDistribution.length === 0) {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Prize distribution must be a non-empty array'
+                    });
+                }
+
+                // Validate that percentages sum to 100
+                const totalPercentage = prizeDistribution.reduce((sum, tier) => sum + Number(tier.percentage), 0);
+                if (Math.abs(totalPercentage - 100) > 0.01) {
+                    return res.status(400).json({
+                        success: false,
+                        message: `Prize distribution percentages must sum to 100%. Current total: ${totalPercentage}%`
+                    });
+                }
+
+                // Validate rank ranges
+                for (const tier of prizeDistribution) {
+                    if (tier.startRank > tier.endRank) {
+                        return res.status(400).json({
+                            success: false,
+                            message: `Invalid rank range in tier "${tier.tierName}": startRank (${tier.startRank}) must be <= endRank (${tier.endRank})`
+                        });
+                    }
+
+                    // Validate that rank ranges are continuous and don't overlap
+                    const sortedTiers = [...prizeDistribution].sort((a, b) => a.startRank - b.startRank);
+                    for (let i = 0; i < sortedTiers.length - 1; i++) {
+                        if (sortedTiers[i].endRank + 1 !== sortedTiers[i + 1].startRank) {
+                            return res.status(400).json({
+                                success: false,
+                                message: 'Prize distribution tiers must be continuous without gaps or overlaps'
+                            });
+                        }
+                    }
+                }
+            }
+
+            // Validate date if it's being updated
+            if (updateData.date) {
+                const eventDate = new Date(updateData.date);
+                if (eventDate <= new Date()) {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Event date must be in the future'
+                    });
+                }
+            }
+
+            // Convert numeric fields conditionally
+            if (updateData.prize) updateData.prize = Number(updateData.prize);
+            if (updateData.noCockRequirements) updateData.noCockRequirements = Number(updateData.noCockRequirements);
+            if (updateData.entranceFee) updateData.entranceFee = Number(updateData.entranceFee);
+            if (updateData.cageRentalFee) updateData.cageRentalFee = Number(updateData.cageRentalFee);
+            if (updateData.minimumBet) updateData.minimumBet = Number(updateData.minimumBet);
+            if (updateData.minimumParticipants) updateData.minimumParticipants = Number(updateData.minimumParticipants);
         }
 
         // Validate date if it's being updated
@@ -335,7 +440,15 @@ export const updateEvent = async (req, res) => {
                 });
             }
         }
-        if (updateData.winnerCount) updateData.winnerCount = Number(updateData.winnerCount);
+
+        if (updateData.prizeDistribution) {
+            updateData.prizeDistribution = updateData.prizeDistribution.map(tier => ({
+                tierName: tier.tierName,
+                startRank: Number(tier.startRank),
+                endRank: Number(tier.endRank),
+                percentage: Number(tier.percentage)
+            }));
+        }
 
         // Handle entryFee - can be set, updated, or removed (set to null)
         if (updateData.entryFee !== undefined) {
@@ -351,12 +464,27 @@ export const updateEvent = async (req, res) => {
             delete updateData.prize;
             delete updateData.noCockRequirements;
             delete updateData.registrationDeadline;
+            delete updateData.minWeight;
+            delete updateData.maxWeight;
+            delete updateData.weightGap;
+            delete updateData.prizeDistribution;
         }
 
-        // For fastest_kill events, remove derby-specific fields
-        if (eventType === 'fastest_kill') {
-            delete updateData.noCockRequirements;
+        // For non-derby events, remove derby-specific fields
+        if (eventType !== 'derby') {
+            delete updateData.minWeight;
+            delete updateData.maxWeight;
             delete updateData.registrationDeadline;
+        }
+
+        // For non-fastest_kill events, remove fastest kill-specific fields
+        if (eventType !== 'fastest_kill') {
+            delete updateData.prizeDistribution;
+        }
+
+        // For non-derby and non-hits_ulutan events, remove noCockRequirements
+        if (eventType !== 'derby' && eventType !== 'hits_ulutan') {
+            delete updateData.noCockRequirements;
         }
 
         // Update the event

@@ -79,14 +79,38 @@ const eventSchema = new mongoose.Schema({
         min: 0,
         max: 5000 // Maximum gap of 5000 grams (5 kg)
     },
-    // Fastest Kill-specific field
-    winnerCount: {
-        type: Number,
-        required: function () {
-            return this.eventType === 'fastest_kill';
+    // Fastest Kill-specific fields
+    prizeDistribution: [{
+        tierName: {
+            type: String,
+            required: function () {
+                return this.eventType === 'fastest_kill';
+            },
+            trim: true
         },
-        min: 1
-    },
+        startRank: {
+            type: Number,
+            required: function () {
+                return this.eventType === 'fastest_kill';
+            },
+            min: 1
+        },
+        endRank: {
+            type: Number,
+            required: function () {
+                return this.eventType === 'fastest_kill';
+            },
+            min: 1
+        },
+        percentage: {
+            type: Number,
+            required: function () {
+                return this.eventType === 'fastest_kill';
+            },
+            min: 0,
+            max: 100
+        }
+    }],
     adminID: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',

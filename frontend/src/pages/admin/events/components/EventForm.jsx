@@ -275,23 +275,127 @@ const EventForm = ({
                 step="0.01"
                 required
               />
-
-              {/* Winner Count */}
-              <InputField
-                id={isEdit ? "editWinnerCount" : "winnerCount"}
-                label="Number of Winners *"
-                icon={Hash}
-                type="number"
-                value={formData.winnerCount}
-                onChange={(e) => onInputChange('winnerCount', e.target.value)}
-                placeholder="e.g., 10"
-                min="1"
-                required
-              />
             </div>
-            <p className="text-xs text-muted-foreground">
-              Specify the ranking cutoff for fastest times (e.g., Top 10 or Top 20).
-            </p>
+
+            {/* Prize Distribution Configuration */}
+            <div className="space-y-3 mt-4">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-medium">Prize Distribution *</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const newTier = {
+                      tierName: `Tier ${formData.prizeDistribution.length + 1}`,
+                      startRank: formData.prizeDistribution.length > 0
+                        ? formData.prizeDistribution[formData.prizeDistribution.length - 1].endRank + 1
+                        : 1,
+                      endRank: formData.prizeDistribution.length > 0
+                        ? formData.prizeDistribution[formData.prizeDistribution.length - 1].endRank + 5
+                        : 5,
+                      percentage: 0
+                    };
+                    onInputChange('prizeDistribution', [...formData.prizeDistribution, newTier]);
+                  }}
+                >
+                  Add Tier
+                </Button>
+              </div>
+
+              {formData.prizeDistribution.map((tier, index) => (
+                <div key={index} className="p-3 border rounded-lg space-y-2 bg-muted/30">
+                  <div className="flex items-center justify-between">
+                    <InputField
+                      id={`tierName-${index}`}
+                      label=""
+                      value={tier.tierName}
+                      onChange={(e) => {
+                        const updated = [...formData.prizeDistribution];
+                        updated[index].tierName = e.target.value;
+                        onInputChange('prizeDistribution', updated);
+                      }}
+                      placeholder="Tier name"
+                      className="flex-1 mr-2"
+                    />
+                    {formData.prizeDistribution.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          const updated = formData.prizeDistribution.filter((_, i) => i !== index);
+                          onInputChange('prizeDistribution', updated);
+                        }}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        Remove
+                      </Button>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    <InputField
+                      id={`startRank-${index}`}
+                      label="Start Rank"
+                      type="number"
+                      value={tier.startRank}
+                      onChange={(e) => {
+                        const updated = [...formData.prizeDistribution];
+                        updated[index].startRank = e.target.value === '' ? '' : Number(e.target.value);
+                        onInputChange('prizeDistribution', updated);
+                      }}
+                      min="1"
+                      required
+                    />
+                    <InputField
+                      id={`endRank-${index}`}
+                      label="End Rank"
+                      type="number"
+                      value={tier.endRank}
+                      onChange={(e) => {
+                        const updated = [...formData.prizeDistribution];
+                        updated[index].endRank = e.target.value === '' ? '' : Number(e.target.value);
+                        onInputChange('prizeDistribution', updated);
+                      }}
+                      min="1"
+                      required
+                    />
+                    <InputField
+                      id={`percentage-${index}`}
+                      label="Percentage %"
+                      type="number"
+                      value={tier.percentage}
+                      onChange={(e) => {
+                        const updated = [...formData.prizeDistribution];
+                        const value = e.target.value === '' ? '' : Number(e.target.value);
+                        // Cap percentage at 100
+                        updated[index].percentage = value === '' ? '' : Math.min(value, 100);
+                        onInputChange('prizeDistribution', updated);
+                      }}
+                      min="0"
+                      max="100"
+                      step="0.01"
+                      required
+                    />
+                  </div>
+                </div>
+              ))}
+
+              <div className="flex items-center justify-between p-2 bg-primary/10 rounded">
+                <span className="text-sm font-medium">Total Percentage:</span>
+                <span className={`text-sm font-bold ${formData.prizeDistribution.reduce((sum, tier) => sum + Number(tier.percentage || 0), 0) === 100
+                  ? 'text-green-600'
+                  : 'text-destructive'
+                  }`}>
+                  {formData.prizeDistribution.reduce((sum, tier) => sum + Number(tier.percentage || 0), 0).toFixed(2)}%
+                </span>
+              </div>
+
+              <p className="text-xs text-muted-foreground">
+                Configure how the prize pool will be distributed among winners. Percentages must sum to 100%.
+              </p>
+            </div>
           </>
         )}
 

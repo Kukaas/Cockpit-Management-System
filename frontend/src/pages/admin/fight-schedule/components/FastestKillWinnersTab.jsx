@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Trophy, Award, Target, Users,  Clock, Zap, Edit, Save, X } from 'lucide-react'
+import { Trophy, Award, Target, Users, Clock, Zap, Edit, Save, X } from 'lucide-react'
 import { useGetAll } from '@/hooks/useApiQueries'
 import { useCustomMutation } from '@/hooks/useApiMutations'
 import { toast } from 'sonner'
@@ -53,7 +53,7 @@ const FastestKillWinnersTab = ({ eventId, eventType, formatCurrency }) => {
         }
     }, [event])
 
-    // Calculate default prize distribution
+    // Calculate and save prize distribution when results change
     useEffect(() => {
         if (matchResults.length > 0 && prizePool > 0) {
             setIsCalculating(true)
@@ -71,49 +71,70 @@ const FastestKillWinnersTab = ({ eventId, eventType, formatCurrency }) => {
                 }))
 
             if (fastestKillResults.length > 0) {
-                // Use prize amounts from match results
-                const distribution = fastestKillResults.map((result, index) => ({
-                    ...result,
-                    prizeAmount: result.prizeAmount || 0,
-                    prizePercentage: prizePool > 0 ? ((result.prizeAmount || 0) / prizePool * 100).toFixed(1) : 0
-                }))
-                setPrizeDistribution(distribution)
+                // Calculate new prize distribution
+                const newDistribution = calculatePrizeDistribution(fastestKillResults, prizePool)
+
+                // Check if prizes need to be updated (compare with existing prizeAmount)
+                const needsUpdate = newDistribution.some((result, index) => {
+                    const existingPrize = matchResults[index]?.prizeAmount || 0
+                    return Math.abs(result.prizeAmount - existingPrize) > 0.01 // Allow small floating point differences
+                })
+
+                // Auto-save the calculated distribution if it changed
+                if (needsUpdate) {
+                    const distributionData = newDistribution.map(result => ({
+                        resultId: result._id,
+                        prizeAmount: result.prizeAmount
+                    }))
+
+                    updatePrizeDistributionMutation.mutate(distributionData)
+                }
+
+                setPrizeDistribution(newDistribution)
             }
 
             setIsCalculating(false)
         }
     }, [matchResults, prizePool, event])
 
-    // Calculate prize distribution based on position
+    // Calculate prize distribution based on position and event's prize distribution tiers
     const calculatePrizeDistribution = (results, totalPrize) => {
         const distribution = []
-        let remainingPrize = totalPrize
 
-        // Define prize tiers (you can adjust these percentages)
-        const prizeTiers = [
-            { positions: [1, 2], percentage: 0.30 }, // 30% for positions 1-2
-            { positions: [3, 4, 5, 6], percentage: 0.20 }, // 20% for positions 3-6
-            { positions: [7, 8, 9, 10], percentage: 0.15 }, // 15% for positions 7-10
-            { positions: [11, 12, 13, 14, 15, 16], percentage: 0.10 }, // 10% for positions 11-16
-            { positions: [17, 18, 19, 20], percentage: 0.05 }, // 5% for positions 17-20
-        ]
+        // Get prize distribution tiers from event
+        const tiers = event?.prizeDistribution || []
+
+        // Fallback to default if no tiers defined
+        if (tiers.length === 0) {
+            // Default: Top 1-10: 80%, Top 11-20: 20%
+            tiers.push(
+                { tierName: 'Top 1-10', startRank: 1, endRank: 10, percentage: 80 },
+                { tierName: 'Top 11-20', startRank: 11, endRank: 20, percentage: 20 }
+            )
+        }
 
         results.forEach((result, index) => {
             const position = index + 1
             let prizeAmount = 0
+            let tierInfo = null
 
-            // Find the appropriate tier for this position
-            const tier = prizeTiers.find(t => t.positions.includes(position))
-            if (tier) {
-                const tierPrize = (totalPrize * tier.percentage) / tier.positions.length
-                prizeAmount = Math.min(tierPrize, remainingPrize)
-                remainingPrize -= prizeAmount
+            // Find which tier this position belongs to
+            for (const tier of tiers) {
+                if (position >= tier.startRank && position <= tier.endRank) {
+                    // Calculate prize for this tier
+                    const tierPrizePool = totalPrize * (tier.percentage / 100)
+                    const winnersInTier = tier.endRank - tier.startRank + 1
+                    prizeAmount = tierPrizePool / winnersInTier
+                    tierInfo = tier
+                    break
+                }
             }
 
             distribution.push({
                 ...result,
                 prizeAmount: Math.max(0, prizeAmount),
-                prizePercentage: totalPrize > 0 ? (prizeAmount / totalPrize * 100).toFixed(1) : 0
+                prizePercentage: totalPrize > 0 ? (prizeAmount / totalPrize * 100).toFixed(1) : 0,
+                tierInfo: tierInfo
             })
         })
 
@@ -264,6 +285,48 @@ const FastestKillWinnersTab = ({ eventId, eventType, formatCurrency }) => {
                 )
             }
         },
+        {
+            key: 'tierInfo',
+            label: 'Prize Tier',
+            sortable: false,
+            filterable: false,
+            render: (value, row) => {
+                if (value) {
+                    // Determine color based on percentage
+                    const bgColor = value.percentage >= 50 ? 'bg-green-100 text-green-800' :
+                        value.percentage >= 20 ? 'bg-blue-100 text-blue-800' :
+                            value.percentage > 0 ? 'bg-purple-100 text-purple-800' :
+                                'bg-gray-100 text-gray-600'
+
+                    return (
+                        <div className="flex items-center gap-2">
+                            <div className={`px-3 py-1 ${bgColor} rounded-full text-xs font-semibold`}>
+                                {value.tierName} ({value.percentage}%)
+                            </div>
+                        </div>
+                    )
+                } else {
+                    return (
+                        <div className="flex items-center gap-2">
+                            <div className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-semibold">
+                                No Prize
+                            </div>
+                        </div>
+                    )
+                }
+            }
+        },
+        {
+            key: 'prizeAmount',
+            label: 'Prize Amount',
+            sortable: true,
+            filterable: false,
+            render: (value) => (
+                <span className={`font-semibold ${value > 0 ? 'text-green-600' : 'text-gray-400'}`}>
+                    {formatCurrency(value || 0)}
+                </span>
+            )
+        },
     ]
 
     return (
@@ -277,14 +340,18 @@ const FastestKillWinnersTab = ({ eventId, eventType, formatCurrency }) => {
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="text-center p-4 bg-yellow-50 rounded-lg">
-                            <div className="text-2xl font-bold text-yellow-600">{fastestKillResultsCount}</div>
-                            <div className="text-sm text-yellow-600">Total Winners</div>
+                            <div className="text-2xl font-bold text-yellow-600">{Math.min(fastestKillResultsCount, 20)}</div>
+                            <div className="text-sm text-yellow-600">Prize Winners (Top 20)</div>
                         </div>
                         <div className="text-center p-4 bg-green-50 rounded-lg">
                             <div className="text-2xl font-bold text-green-600">{formatCurrency(prizePool)}</div>
                             <div className="text-sm text-green-600">Total Prize Pool</div>
+                        </div>
+                        <div className="text-center p-4 bg-blue-50 rounded-lg">
+                            <div className="text-2xl font-bold text-blue-600">{fastestKillResultsCount}</div>
+                            <div className="text-sm text-blue-600">Total Participants</div>
                         </div>
                     </div>
                 </CardContent>
