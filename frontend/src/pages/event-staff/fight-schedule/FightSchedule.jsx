@@ -109,9 +109,19 @@ const FightSchedule = () => {
   const participantsData = availableData.participants || []
   const cockProfilesData = availableData.cockProfiles || []
 
+  // Fetch ALL participants for this event to check minimum requirement
+  const { data: allParticipantsData = [] } = useGetAll(`/participants?eventID=${eventId}`)
+  const totalParticipants = allParticipantsData.filter(p => p.status === 'registered' || p.status === 'confirmed').length
+
+  // Check if minimum participants requirement is met
+  // Only apply this check for specific event types: regular, fastest_kill, hits_ulutan
+  const requiresMinimumCheck = event && ['regular', 'fastest_kill', 'hits_ulutan'].includes(event.eventType)
+  const minimumParticipantsMet = !requiresMinimumCheck || (event && totalParticipants >= event.minimumParticipants)
+
   // Show all participants, but only active cock profiles
   const availableParticipants = participantsData || []
   const availableCockProfiles = cockProfilesData || []
+
 
   // Mutations for fights
   const createFightMutation = useCreateMutation('/fight-schedules', {
@@ -624,51 +634,86 @@ const FightSchedule = () => {
         formatCurrency={formatCurrency}
       />
 
-      {/* Plazada Revenue Card */}
-      <div className="grid grid-cols-1 md:grid-cols-1 gap-4 mb-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Plazada Revenue</CardTitle> </CardHeader>
+      {/* Minimum Participants Check - Only for regular, fastest_kill, hits_ulutan */}
+      {!minimumParticipantsMet ? (
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-amber-600">
+              <Users className="h-5 w-5" />
+              Minimum Participants Requirement Not Met
+            </CardTitle>
+          </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              {formatCurrency(totalPlazada)}
+            <div className="space-y-4">
+              <p className="text-muted-foreground">
+                This event requires a minimum of <strong>{event.minimumParticipants} participants</strong> to proceed with fight scheduling.
+              </p>
+              <div className="flex items-center gap-2 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                <Users className="h-8 w-8 text-amber-600" />
+                <div>
+                  <p className="text-sm font-medium text-amber-900">
+                    Current Participants: {totalParticipants} / {event.minimumParticipants}
+                  </p>
+                  <p className="text-xs text-amber-700">
+                    {event.minimumParticipants - totalParticipants} more participant(s) needed
+                  </p>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Please register more participants before scheduling fights. Once the minimum requirement is met, the fight scheduling interface will be available.
+              </p>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Total plazada collected from match results
-            </p>
           </CardContent>
         </Card>
-      </div>
+      ) : (
+        <>
+          {/* Plazada Revenue Card */}
+          <div className="grid grid-cols-1 md:grid-cols-1 gap-4 mb-6">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Plazada Revenue</CardTitle> </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-green-600">
+                  {formatCurrency(totalPlazada)}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Total plazada collected from match results
+                </p>
+              </CardContent>
+            </Card>
+          </div>
 
-      {/* Fight and Results Tabs */}
-      <FightTabs
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        fights={enrichedFightsData}
-        results={resultsData}
-        fightColumns={fightColumns}
-        resultColumns={resultColumns}
-        eventType={event.eventType}
-        eventStatus={event.status}
-        onPrintFightSchedule={handlePrintFightSchedule}
-      />
+          {/* Fight and Results Tabs */}
+          <FightTabs
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            fights={enrichedFightsData}
+            results={resultsData}
+            fightColumns={fightColumns}
+            resultColumns={resultColumns}
+            eventType={event.eventType}
+            eventStatus={event.status}
+            onPrintFightSchedule={handlePrintFightSchedule}
+          />
 
-      {/* Championship Tab Content for Derby and Hits Ulutan Events */}
-      {(event.eventType === 'derby' || event.eventType === 'hits_ulutan') && activeTab === 'championship' && (
-        <ChampionshipTab
-          eventId={eventId}
-          eventType={event.eventType}
-          formatCurrency={formatCurrency}
-        />
-      )}
+          {/* Championship Tab Content for Derby and Hits Ulutan Events */}
+          {(event.eventType === 'derby' || event.eventType === 'hits_ulutan') && activeTab === 'championship' && (
+            <ChampionshipTab
+              eventId={eventId}
+              eventType={event.eventType}
+              formatCurrency={formatCurrency}
+            />
+          )}
 
-      {/* Fastest Kill Winners Tab Content for Fastest Kill Events */}
-      {event.eventType === 'fastest_kill' && activeTab === 'fastest-kill' && (
-        <FastestKillWinnersTab
-          eventId={eventId}
-          eventType={event.eventType}
-          formatCurrency={formatCurrency}
-        />
+          {/* Fastest Kill Winners Tab Content for Fastest Kill Events */}
+          {event.eventType === 'fastest_kill' && activeTab === 'fastest-kill' && (
+            <FastestKillWinnersTab
+              eventId={eventId}
+              eventType={event.eventType}
+              formatCurrency={formatCurrency}
+            />
+          )}
+        </>
       )}
 
       {/* Add Fight Dialog */}
