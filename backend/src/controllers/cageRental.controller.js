@@ -318,7 +318,7 @@ export const updateCageRental = async (req, res) => {
             if (trulyAvailableCages.length < updateData.quantity) {
                 return res.status(400).json({
                     success: false,
-                    message: `Only ${trulyAvailableCages.length} cages available in ${targetArena} for the selected date. Requested: ${updateData.quantity}`
+                    message: `Only ${trulyAvailableCages.length} cages available for the selected date. Requested: ${updateData.quantity}`
                 });
             }
 

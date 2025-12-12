@@ -171,7 +171,7 @@ export const createRentalColumns = (formatCurrency, formatDate, handleEditClick,
               <RotateCcw className="h-4 w-4" />
             </Button>
           )}
-          <Button
+          {/* <Button
             variant="ghost"
             size="sm"
             onClick={(e) => {
@@ -180,7 +180,7 @@ export const createRentalColumns = (formatCurrency, formatDate, handleEditClick,
             }}
           >
             <Edit className="h-4 w-4" />
-          </Button>
+          </Button> */}
           {/* <Button
             variant="ghost"
             size="sm"
