@@ -55,6 +55,34 @@ const FightForm = ({
   const participant1CockProfiles = getCockProfilesForParticipant(formData.participant1, formData.cockProfile1)
   const participant2CockProfiles = getCockProfilesForParticipant(formData.participant2, formData.cockProfile2)
 
+  // Filter participants to only show those with available cocks
+  // In edit mode, also include currently selected participants even if they have no available cocks
+  const getFilteredParticipants = () => {
+    if (!isEdit) {
+      // In add mode, only show participants with available cocks (backend already filters this)
+      return availableParticipants
+    }
+
+    // In edit mode, include currently selected participants even if they have no available cocks
+    const selectedParticipantIds = new Set([formData.participant1, formData.participant2].filter(Boolean))
+
+    // Get all unique participant IDs that have available cocks
+    const participantIdsWithCocks = new Set(
+      availableCockProfiles.map(cock => {
+        const participantId = typeof cock.participantID === 'object'
+          ? cock.participantID?._id
+          : cock.participantID
+        return participantId
+      }).filter(Boolean)
+    )
+
+    // Include participants that either have available cocks OR are currently selected
+    return availableParticipants.filter(participant =>
+      participantIdsWithCocks.has(participant._id) || selectedParticipantIds.has(participant._id)
+    )
+  }
+
+  const filteredParticipants = getFilteredParticipants()
 
   return (
     <CustomAlertDialog
@@ -96,7 +124,7 @@ const FightForm = ({
                 disabled={isEdit}
               >
                 <option value="">Select Participant 1</option>
-                {availableParticipants.map((participant) => (
+                {filteredParticipants.map((participant) => (
                   <option
                     key={participant._id}
                     value={participant._id}
@@ -124,7 +152,7 @@ const FightForm = ({
                 disabled={isEdit}
               >
                 <option value="">Select Participant 2</option>
-                {availableParticipants.map((participant) => (
+                {filteredParticipants.map((participant) => (
                   <option
                     key={participant._id}
                     value={participant._id}
@@ -226,10 +254,10 @@ const FightForm = ({
             <h4 className="font-medium text-yellow-800 mb-2">⚠️ Cock Availability Warning</h4>
             <div className="text-sm text-yellow-700 space-y-1">
               {participant1CockProfiles.length === 0 && formData.participant1 && (
-                <p>• <strong>{availableParticipants.find(p => p._id === formData.participant1)?.participantName}</strong> has no available cocks (all cocks are either scheduled or have already fought)</p>
+                <p>• <strong>{filteredParticipants.find(p => p._id === formData.participant1)?.participantName}</strong> has no available cocks (all cocks are either scheduled or have already fought)</p>
               )}
               {participant2CockProfiles.length === 0 && formData.participant2 && (
-                <p>• <strong>{availableParticipants.find(p => p._id === formData.participant2)?.participantName}</strong> has no available cocks (all cocks are either scheduled or have already fought)</p>
+                <p>• <strong>{filteredParticipants.find(p => p._id === formData.participant2)?.participantName}</strong> has no available cocks (all cocks are either scheduled or have already fought)</p>
               )}
               <p className="text-xs mt-2">Note: Cocks become unavailable when scheduled for a fight or after participating in a completed fight.</p>
             </div>

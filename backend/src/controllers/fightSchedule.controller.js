@@ -492,7 +492,7 @@ export const getAvailableParticipants = async (req, res) => {
     const { eventID } = req.params;
 
     // Get all participants registered for this event (regardless of cock status)
-    const participants = await Participant.find({
+    const allParticipants = await Participant.find({
       eventID,
       status: { $in: ['registered', 'confirmed'] }
     })
@@ -500,7 +500,7 @@ export const getAvailableParticipants = async (req, res) => {
       .sort({ participantName: 1 });
 
     // Get participant IDs
-    const participantIDs = participants.map(p => p._id);
+    const participantIDs = allParticipants.map(p => p._id);
 
     // Get their available cock profiles (only cocks that are available for scheduling)
     const cockProfiles = await CockProfile.find({
@@ -515,6 +515,15 @@ export const getAvailableParticipants = async (req, res) => {
       ...cock.toObject(),
       participantID: cock.participantID
     }));
+
+    // Filter participants to only include those with at least one available cock
+    const participantIDsWithAvailableCocks = new Set(
+      cockProfiles.map(cock => cock.participantID.toString())
+    );
+
+    const participants = allParticipants.filter(participant =>
+      participantIDsWithAvailableCocks.has(participant._id.toString())
+    );
 
     res.json({
       participants,
