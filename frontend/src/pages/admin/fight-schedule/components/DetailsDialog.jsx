@@ -27,23 +27,11 @@ const DetailsDialog = ({
           </div>
         </div>
 
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-3">
-              <div>
-                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Status</label>
-                <div className="mt-1">
-                  <span className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${fight.status === 'completed' ? 'bg-green-100 text-green-800' :
-                    fight.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
-                      fight.status === 'cancelled' ? 'bg-red-100 text-red-800' :
-                        'bg-gray-100 text-gray-800'
-                    }`}>
-                    {fight.status.replace('_', ' ').charAt(0).toUpperCase() + fight.status.replace('_', ' ').slice(1)}
-                  </span>
-                </div>
-              </div>
-
-            </div>
+        {/* Fight Number Display */}
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border-2 border-blue-200">
+          <div className="text-center">
+            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Fight Number</label>
+            <div className="mt-2 text-4xl font-bold text-blue-600">#{fight.fightNumber}</div>
           </div>
         </div>
       </div>

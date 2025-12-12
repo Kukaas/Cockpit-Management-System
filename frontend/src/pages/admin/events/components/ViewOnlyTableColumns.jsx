@@ -220,10 +220,10 @@ export const createViewOnlyMatchResultColumns = (formatCurrency, formatDate, han
       <div className="space-y-1">
         <div className="flex items-center gap-2 text-sm">
           <Trophy className="h-3 w-3 text-yellow-600" />
-          <span className="font-medium text-green-600">Winner: {value.winnerParticipantID?.participantName}</span>
+          <span className="font-medium text-green-600">Winner: {value?.winnerParticipantID?.participantName || 'N/A'}</span>
         </div>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span>Loser: {value.loserParticipantID?.participantName}</span>
+          <span>Loser: {value?.loserParticipantID?.participantName || 'N/A'}</span>
         </div>
       </div>
     )
