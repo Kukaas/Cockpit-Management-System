@@ -923,12 +923,13 @@ const ParticipantRegistration = () => {
     selectedEvent?.eventType
   )
 
-  // Create fight columns (without add result button for registration staff)
+  // Create fight columns (without add bet and add result buttons for registration staff)
   const fightColumns = createFightColumns(
     formatCurrency,
     formatDate,
     handleEditFightClick,
     handleDeleteFightClick,
+    () => { }, // No add bet handler for registration staff
     () => { }, // No add result handler for registration staff
     handleViewDetails,
     false // Hide "Add Result" button for registration staff
