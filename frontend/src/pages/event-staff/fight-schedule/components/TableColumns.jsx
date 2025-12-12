@@ -212,7 +212,8 @@ export const createMatchResultColumns = (formatCurrency, formatDate, handleEditC
     filterable: false,
     render: (_, row) => (
       <div className="flex items-center space-x-2">
-        {!row.verified && (
+        {/* Edit button - Commented out to prevent editing match results */}
+        {/* {!row.verified && (
           <Button
             variant="ghost"
             size="sm"
@@ -224,7 +225,7 @@ export const createMatchResultColumns = (formatCurrency, formatDate, handleEditC
           >
             <Edit className="h-4 w-4" />
           </Button>
-        )}
+        )} */}
         {row.betWinner !== 'Draw' && row.betWinner !== 'Cancelled' && row.betWinner !== 'Pending' && (
           <Button
             variant="ghost"

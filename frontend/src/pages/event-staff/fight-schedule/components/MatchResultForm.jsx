@@ -264,12 +264,6 @@ const MatchResultForm = ({
                     <span className="text-sm text-gray-600">Fight Number:</span>
                     <span className="font-semibold text-blue-600">#{selectedFight.fightNumber}</span>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Status:</span>
-                    <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
-                      {selectedFight.status?.replace('_', ' ').charAt(0).toUpperCase() + selectedFight.status?.replace('_', ' ').slice(1) || 'Scheduled'}
-                    </span>
-                  </div>
                 </div>
               </div>
 
@@ -495,38 +489,35 @@ const MatchResultForm = ({
           />
         </div>
 
-        {/* Match Timing */}
-        {event?.eventType === 'fastest_kill' && (
+        {/* Match Timing - Only show for fastest kill events AND when result is not cancelled or draw */}
+        {event?.eventType === 'fastest_kill' && !isSpecialOutcome && (
           <div className="space-y-4">
             <h4 className="font-medium">Match Timing</h4>
-            {/* Only show time inputs for fastest kill events */}
-            {event?.eventType === 'fastest_kill' && (
-              <div className="grid grid-cols-2 gap-4">
-                <InputField
-                  id={isEdit ? "editMatchMinutes" : "matchMinutes"}
-                  label="Minutes *"
-                  type="number"
-                  value={matchMinutes}
-                  onChange={(e) => handleMinutesChange(e.target.value)}
-                  placeholder="0"
-                  min="0"
-                  step="1"
-                  required
-                />
-                <InputField
-                  id={isEdit ? "editMatchSeconds" : "matchSeconds"}
-                  label="Seconds *"
-                  type="number"
-                  value={matchSeconds}
-                  onChange={(e) => handleSecondsChange(e.target.value)}
-                  placeholder="0.00"
-                  min="0"
-                  max="59.99"
-                  step="0.01"
-                  required
-                />
-              </div>
-            )}
+            <div className="grid grid-cols-2 gap-4">
+              <InputField
+                id={isEdit ? "editMatchMinutes" : "matchMinutes"}
+                label="Minutes *"
+                type="number"
+                value={matchMinutes}
+                onChange={(e) => handleMinutesChange(e.target.value)}
+                placeholder="0"
+                min="0"
+                step="1"
+                required
+              />
+              <InputField
+                id={isEdit ? "editMatchSeconds" : "matchSeconds"}
+                label="Seconds *"
+                type="number"
+                value={matchSeconds}
+                onChange={(e) => handleSecondsChange(e.target.value)}
+                placeholder="0.00"
+                min="0"
+                max="59.99"
+                step="0.01"
+                required
+              />
+            </div>
           </div>
         )}
 
