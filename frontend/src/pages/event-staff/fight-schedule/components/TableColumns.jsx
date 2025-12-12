@@ -72,6 +72,22 @@ export const createFightColumns = (formatCurrency, formatDate, handleEditClick, 
       <div className="flex items-center space-x-2">
         {row.status === 'scheduled' && (
           <>
+            {/* Show Record Bet button ONLY if bet has NOT been recorded */}
+            {!row.hasBet && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleAddBetClick(row)
+                }}
+                className="h-8 w-8 p-0 text-amber-600 hover:text-amber-700"
+                title="Record Bet"
+              >
+                <Wallet className="h-4 w-4" />
+              </Button>
+            )}
+
             {/* Show Add Result button ONLY if bet has been recorded AND result is not final */}
             {showAddResult && row.hasBet && !row.hasResult && (
               <Button
