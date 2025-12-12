@@ -140,9 +140,10 @@ export const autoScheduleFights = async (req, res) => {
       while (cocks.length >= 2) {
         const cock1 = cocks.shift();
 
-        // Find opponent with different entryName
+        // Find opponent with different entryName and participantName
         const opponentIndex = cocks.findIndex(
-          c => c.participantID.entryName !== cock1.participantID.entryName
+          c => c.participantID.entryName !== cock1.participantID.entryName &&
+            c.participantID.participantName !== cock1.participantID.participantName
         );
 
         if (opponentIndex >= 0) {
@@ -195,10 +196,11 @@ export const autoScheduleFights = async (req, res) => {
         const cock2 = remaining[j];
         const diff = Math.abs(cock1.weight - cock2.weight);
 
-        // Check weight gap and entry name
+        // Check weight gap, entry name, and participant name
         if (
           diff <= weightGap &&
           cock1.participantID.entryName !== cock2.participantID.entryName &&
+          cock1.participantID.participantName !== cock2.participantID.participantName &&
           diff < minDiff
         ) {
           bestMatch = j;
