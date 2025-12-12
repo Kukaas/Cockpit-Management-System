@@ -282,7 +282,7 @@ const BetEntryForm = ({
                         </div>
 
                         <div className="bg-white p-4 rounded-lg border border-emerald-100">
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="text-center p-3 bg-red-50 rounded-lg">
                                     <div className="text-xs text-gray-500 mb-1">Meron Bet</div>
                                     <div className="font-semibold text-red-700">₱{bettingPreview.meronBet.betAmount?.toLocaleString()}</div>
@@ -297,14 +297,6 @@ const BetEntryForm = ({
                                         {participants.find(p => p._id === bettingPreview.walaBet.participantID)?.participantName}
                                     </div>
                                 </div>
-                                <div className="text-center p-3 bg-gray-50 rounded-lg">
-                                    <div className="text-xs text-gray-500 mb-1">Outside Bets (Gap)</div>
-                                    <div className="font-semibold text-gray-700">₱{bettingPreview.gap?.toLocaleString()}</div>
-                                </div>
-                            </div>
-                            <div className="mt-4 text-center p-3 bg-emerald-100 rounded-lg">
-                                <div className="text-xs text-gray-600 mb-1">Total Bet Pool</div>
-                                <div className="font-bold text-xl text-emerald-800">₱{bettingPreview.totalBetPool?.toLocaleString()}</div>
                             </div>
                         </div>
                     </div>
