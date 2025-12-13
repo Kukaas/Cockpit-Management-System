@@ -79,7 +79,7 @@ const CombinedRegistrationForm = ({
 
   // Set default entryFee from event if available (separate effect to avoid infinite loop)
   useEffect(() => {
-    if (open && !isEdit && eventData?.entryFee && eventData.entryFee > 0 && !entryFeeSetRef.current) {
+    if (open && !isEdit && eventData?.entryFee && eventData.entryFee > 0) {
       let entryFeeValue;
 
       // For fastest_kill and regular events: calculate per cock
@@ -87,11 +87,14 @@ const CombinedRegistrationForm = ({
       if (eventData.eventType === 'fastest_kill' || eventData.eventType === 'regular') {
         entryFeeValue = (eventData.entryFee * cockProfiles.length).toString();
       } else {
-        entryFeeValue = eventData.entryFee.toString();
+        // Only set once for derby/hits_ulutan
+        if (!entryFeeSetRef.current) {
+          entryFeeValue = eventData.entryFee.toString();
+        }
       }
 
-      // Only set if the current value is different
-      if (formData.entryFee !== entryFeeValue) {
+      // Only set if the current value is different and we have a value to set
+      if (entryFeeValue && formData.entryFee !== entryFeeValue) {
         onInputChange('entryFee', entryFeeValue);
         entryFeeSetRef.current = true;
       }
@@ -213,7 +216,11 @@ const CombinedRegistrationForm = ({
               id="entryFee"
               label={`Entry Fee (PHP) *`}
               type="number"
-              value={formData.entryFee || eventData.entryFee.toString()}
+              value={
+                eventData.eventType === 'fastest_kill' || eventData.eventType === 'regular'
+                  ? (eventData.entryFee * cockProfiles.length).toString()
+                  : (formData.entryFee || eventData.entryFee.toString())
+              }
               onChange={(e) => onInputChange('entryFee', e.target.value)}
               placeholder={`Entry fee: ${eventData.entryFee} PHP`}
               min="0"
