@@ -64,10 +64,8 @@ const participantSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-participantSchema.index({ eventID: 1, participantName: 1 }, { unique: true });
 participantSchema.index({ eventID: 1, status: 1 });
 participantSchema.index({ registeredBy: 1 });
 participantSchema.index({ registrationDate: -1 });
-participantSchema.index({ participantName: 1 });
 
 export default mongoose.model('Participant', participantSchema);

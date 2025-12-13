@@ -44,10 +44,12 @@ export const registerParticipant = async (req, res) => {
     }
 
 
-    // Check if participant is already registered for this event
-    const existingRegistration = await Participant.findOne({ eventID, participantName });
-    if (existingRegistration) {
-      return res.status(400).json({ message: 'Participant is already registered for this event' });
+    // Check if entry name already exists for this event (for Derby events)
+    if (event.eventType === 'derby' && entryName) {
+      const existingEntry = await Participant.findOne({ eventID, entryName: entryName.trim() });
+      if (existingEntry) {
+        return res.status(400).json({ message: 'An entry with this name already exists for this event' });
+      }
     }
 
     // Validate entryFee - required if event has entryFee
@@ -176,17 +178,20 @@ export const updateParticipant = async (req, res) => {
 
 
 
-    // Check if participant name is being changed and if it conflicts with existing registration
-    if (participantName && participantName !== participant.participantName) {
-      const existingRegistration = await Participant.findOne({
+    // Check if entry name is being changed and if it conflicts with existing entry
+    if (entryName && entryName !== participant.entryName) {
+      const existingEntry = await Participant.findOne({
         eventID: participant.eventID,
-        participantName,
+        entryName: entryName.trim(),
         _id: { $ne: id }
       });
-      if (existingRegistration) {
-        return res.status(400).json({ message: 'Another participant with this name is already registered for this event' });
+      if (existingEntry) {
+        return res.status(400).json({ message: 'An entry with this name already exists for this event' });
       }
+    }
 
+    // Check if participant name is being changed and update cock profiles
+    if (participantName && participantName !== participant.participantName) {
       // Update all cock profiles with the old name to use the new name
       await CockProfile.updateMany(
         { ownerName: participant.participantName },
