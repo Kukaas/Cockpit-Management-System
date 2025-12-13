@@ -304,10 +304,18 @@ const CombinedRegistrationForm = ({
                         label="Weight (grams) *"
                         type="number"
                         value={profile.weight}
-                        onChange={(e) => handleCockProfileInputChange(index, 'weight', e.target.value)}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          // Prevent input if value exceeds maxWeight
+                          if (eventData?.maxWeight && value && Number(value) > eventData.maxWeight) {
+                            // Don't update if exceeds max
+                            return;
+                          }
+                          handleCockProfileInputChange(index, 'weight', value);
+                        }}
                         placeholder="Enter weight in grams (e.g., 2500)"
                         min="10"
-                        max="10000"
+                        max={eventData?.maxWeight || "10000"}
                         step="1"
                         required
                         helperText={eventData?.minWeight && eventData?.maxWeight ?

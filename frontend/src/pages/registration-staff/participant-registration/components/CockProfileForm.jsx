@@ -292,23 +292,34 @@ const CockProfileForm = ({
                           label="Weight (grams) *"
                           type="number"
                           value={profile.weight}
-                          onChange={(e) => handleCockProfileInputChange(index, 'weight', e.target.value)}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            // Prevent input if value exceeds maxWeight
+                            if (event?.maxWeight && value && Number(value) > event.maxWeight) {
+                              // Don't update if exceeds max
+                              return;
+                            }
+                            handleCockProfileInputChange(index, 'weight', value);
+                          }}
                           placeholder="Enter weight in grams (e.g., 2500)"
                           min="10"
-                          max="10000"
+                          max={event?.maxWeight || "10000"}
                           step="1"
                           required
-                          helperText={event?.desiredWeight ?
-                            `Minimum weight: ${event.desiredWeight}g` :
-                            "Weight in grams"
+                          helperText={event?.minWeight && event?.maxWeight ?
+                            `Acceptable range: ${event.minWeight}-${event.maxWeight}g` :
+                            event?.desiredWeight ?
+                              `Minimum weight: ${event.desiredWeight}g` :
+                              "Weight in grams"
                           }
                         />
                         {/* Weight validation warning */}
-                        {profile.weight && event?.desiredWeight &&
-                          Number(profile.weight) < event.desiredWeight && (
-                            <div className="p-3 bg-orange-50 border border-orange-200 rounded-md">
-                              <p className="text-xs text-orange-800">
-                                ⚠️ Warning: Weight must be at least {event.desiredWeight}g (entered: {profile.weight}g)
+                        {profile.weight && event?.minWeight && event?.maxWeight && (
+                          Number(profile.weight) < event.minWeight || Number(profile.weight) > event.maxWeight
+                        ) && (
+                            <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                              <p className="text-xs text-red-800">
+                                ❌ Error: Weight must be between {event.minWeight}g and {event.maxWeight}g (entered: {profile.weight}g). This entry cannot be saved until the weight is within the acceptable range.
                               </p>
                             </div>
                           )}
@@ -361,23 +372,34 @@ const CockProfileForm = ({
                       label="Weight (grams) *"
                       type="number"
                       value={formData.weight}
-                      onChange={(e) => onInputChange('weight', e.target.value)}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        // Prevent input if value exceeds maxWeight
+                        if (event?.maxWeight && value && Number(value) > event.maxWeight) {
+                          // Don't update if exceeds max
+                          return;
+                        }
+                        onInputChange('weight', value);
+                      }}
                       placeholder="Enter weight in grams (e.g., 2500)"
                       min="10"
-                      max="10000"
+                      max={event?.maxWeight || "10000"}
                       step="1"
                       required
-                      helperText={event?.desiredWeight ?
-                        `Minimum weight: ${event.desiredWeight}g` :
-                        "Weight in grams"
+                      helperText={event?.minWeight && event?.maxWeight ?
+                        `Acceptable range: ${event.minWeight}-${event.maxWeight}g` :
+                        event?.desiredWeight ?
+                          `Minimum weight: ${event.desiredWeight}g` :
+                          "Weight in grams"
                       }
                     />
                     {/* Weight validation warning */}
-                    {formData.weight && event?.desiredWeight &&
-                      Number(formData.weight) < event.desiredWeight && (
-                        <div className="p-3 bg-orange-50 border border-orange-200 rounded-md">
-                          <p className="text-xs text-orange-800">
-                            ⚠️ Warning: Weight must be at least {event.desiredWeight}g (entered: {formData.weight}g)
+                    {formData.weight && event?.minWeight && event?.maxWeight && (
+                      Number(formData.weight) < event.minWeight || Number(formData.weight) > event.maxWeight
+                    ) && (
+                        <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                          <p className="text-xs text-red-800">
+                            ❌ Error: Weight must be between {event.minWeight}g and {event.maxWeight}g (entered: {formData.weight}g). This entry cannot be saved until the weight is within the acceptable range.
                           </p>
                         </div>
                       )}
