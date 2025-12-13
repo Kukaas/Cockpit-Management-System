@@ -184,10 +184,37 @@ const ParticipantRegistration = () => {
         // Extract the actual error message from the backend response
         return error?.response?.data?.message || 'Failed to delete cock profile'
       },
-      onSuccess: () => {
+      onSuccess: async () => {
         setDeleteCockProfileDialogOpen(false)
         setSelectedCockProfile(null)
         refetchCockProfiles()
+
+        // For fastest_kill and regular events, update participant's entry fee
+        if (selectedCockProfile && selectedEvent && (selectedEvent.eventType === 'fastest_kill' || selectedEvent.eventType === 'regular')) {
+          if (selectedEvent.entryFee && selectedEvent.entryFee > 0) {
+            try {
+              const participantID = selectedCockProfile.participantID?._id || selectedCockProfile.participantID
+
+              // Get updated count of cock profiles for this participant
+              const cockProfilesResponse = await api.get(`/cock-profiles?eventID=${eventId}&participantID=${participantID}`)
+              const totalCocks = cockProfilesResponse.data.data?.length || 0
+
+              // Calculate new entry fee: base fee × total number of cocks
+              const newEntryFee = selectedEvent.entryFee * totalCocks
+
+              // Update participant's entry fee
+              await api.put(`/participants/${participantID}`, {
+                entryFee: newEntryFee
+              })
+
+              console.log(`Updated participant entry fee to ${newEntryFee} PHP (${selectedEvent.entryFee} × ${totalCocks} cocks)`)
+              refetchParticipants() // Refresh to show updated entry fee
+            } catch (feeUpdateError) {
+              console.error('Failed to update participant entry fee:', feeUpdateError)
+              // Don't show error to user as cock profile was deleted successfully
+            }
+          }
+        }
       }
     }
   )
@@ -542,9 +569,35 @@ const ParticipantRegistration = () => {
     try {
       const response = await api.post('/cock-profiles/bulk', bulkData)
       toast.success(`Successfully created ${response.data.data.length} cock profile(s)`)
+
+      // For fastest_kill and regular events, update participant's entry fee
+      if (selectedEvent?.eventType === 'fastest_kill' || selectedEvent?.eventType === 'regular') {
+        if (selectedEvent.entryFee && selectedEvent.entryFee > 0) {
+          try {
+            // Get updated count of cock profiles for this participant
+            const cockProfilesResponse = await api.get(`/cock-profiles?eventID=${eventId}&participantID=${cockProfileFormData.participantID}`)
+            const totalCocks = cockProfilesResponse.data.data?.length || 0
+
+            // Calculate new entry fee: base fee × total number of cocks
+            const newEntryFee = selectedEvent.entryFee * totalCocks
+
+            // Update participant's entry fee
+            await api.put(`/participants/${cockProfileFormData.participantID}`, {
+              entryFee: newEntryFee
+            })
+
+            console.log(`Updated participant entry fee to ${newEntryFee} PHP (${selectedEvent.entryFee} × ${totalCocks} cocks)`)
+          } catch (feeUpdateError) {
+            console.error('Failed to update participant entry fee:', feeUpdateError)
+            // Don't show error to user as cock profiles were created successfully
+          }
+        }
+      }
+
       setAddCockProfileDialogOpen(false)
       resetCockProfileForm()
       refetchCockProfiles()
+      refetchParticipants() // Refresh to show updated entry fee
     } catch (error) {
       const errorMessage = error?.response?.data?.message || 'Failed to create cock profiles'
       toast.error(errorMessage)
