@@ -102,6 +102,11 @@ const ParticipantForm = ({
               required
               disabled
               className="bg-muted cursor-not-allowed"
+              helperText={
+                event.eventType === 'fastest_kill' || event.eventType === 'regular'
+                  ? `Entry fee is calculated per cock registered (${event.entryFee} PHP per cock)`
+                  : `Entry fee is per participant (${event.entryFee} PHP)`
+              }
             />
           )}
         </div>

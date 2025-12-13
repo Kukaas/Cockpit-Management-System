@@ -80,15 +80,24 @@ const CombinedRegistrationForm = ({
   // Set default entryFee from event if available (separate effect to avoid infinite loop)
   useEffect(() => {
     if (open && !isEdit && eventData?.entryFee && eventData.entryFee > 0 && !entryFeeSetRef.current) {
-      const entryFeeValue = eventData.entryFee.toString()
+      let entryFeeValue;
+
+      // For fastest_kill and regular events: calculate per cock
+      // For derby and hits_ulutan: fixed per participant
+      if (eventData.eventType === 'fastest_kill' || eventData.eventType === 'regular') {
+        entryFeeValue = (eventData.entryFee * cockProfiles.length).toString();
+      } else {
+        entryFeeValue = eventData.entryFee.toString();
+      }
+
       // Only set if the current value is different
       if (formData.entryFee !== entryFeeValue) {
-        onInputChange('entryFee', entryFeeValue)
-        entryFeeSetRef.current = true
+        onInputChange('entryFee', entryFeeValue);
+        entryFeeSetRef.current = true;
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, isEdit, eventData?.entryFee])
+  }, [open, isEdit, eventData?.entryFee, eventData?.eventType, cockProfiles.length])
 
   // Update formData when cockProfiles changes
   useEffect(() => {
@@ -212,6 +221,11 @@ const CombinedRegistrationForm = ({
               required
               disabled
               className="bg-muted cursor-not-allowed"
+              helperText={
+                eventData.eventType === 'fastest_kill' || eventData.eventType === 'regular'
+                  ? `${eventData.entryFee} PHP × ${cockProfiles.length} cock${cockProfiles.length !== 1 ? 's' : ''} = ${eventData.entryFee * cockProfiles.length} PHP (per cock)`
+                  : `${eventData.entryFee} PHP (per participant)`
+              }
             />
           )}
         </div>

@@ -56,13 +56,27 @@ export const registerParticipant = async (req, res) => {
     if (event.entryFee && event.entryFee > 0) {
       if (!entryFee || entryFee === '' || isNaN(entryFee) || Number(entryFee) < 0) {
         return res.status(400).json({
-          message: `Entry fee is required for this event. Expected amount: ${event.entryFee}`
+          message: `Entry fee is required for this event. Base fee: ${event.entryFee}`
         });
       }
-      if (Number(entryFee) !== event.entryFee) {
-        return res.status(400).json({
-          message: `Entry fee must be exactly ${event.entryFee}. Provided: ${entryFee}`
-        });
+
+      // For derby and hits_ulutan: entry fee must match exactly (per participant)
+      // For fastest_kill and regular: entry fee is calculated per cock (validated on frontend)
+      if (event.eventType === 'derby' || event.eventType === 'hits_ulutan') {
+        if (Number(entryFee) !== event.entryFee) {
+          return res.status(400).json({
+            message: `Entry fee must be exactly ${event.entryFee}. Provided: ${entryFee}`
+          });
+        }
+      } else if (event.eventType === 'fastest_kill' || event.eventType === 'regular') {
+        // For fastest_kill and regular events, entry fee should be a multiple of the base fee
+        // (base fee × number of cocks registered)
+        const remainder = Number(entryFee) % event.entryFee;
+        if (remainder !== 0) {
+          return res.status(400).json({
+            message: `Entry fee must be a multiple of the base fee (${event.entryFee}). Provided: ${entryFee}`
+          });
+        }
       }
     }
 

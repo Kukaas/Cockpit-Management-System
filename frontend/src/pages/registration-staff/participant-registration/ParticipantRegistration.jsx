@@ -348,14 +348,34 @@ const ParticipantRegistration = () => {
       return
     }
 
+
     // Validate entryFee if event has it
     if (selectedEvent?.entryFee && selectedEvent.entryFee > 0) {
       if (!participantFormData.entryFee || participantFormData.entryFee === '') {
         toast.error(`Entry fee is required for this event (${selectedEvent.entryFee} PHP)`)
         return
       }
-      if (Number(participantFormData.entryFee) !== selectedEvent.entryFee) {
-        toast.error(`Entry fee must be exactly ${selectedEvent.entryFee} PHP`)
+
+      // Calculate expected entry fee based on event type
+      let expectedEntryFee;
+      if (selectedEvent.eventType === 'fastest_kill' || selectedEvent.eventType === 'regular') {
+        // For fastest_kill and regular: entry fee = base fee × number of cocks
+        expectedEntryFee = selectedEvent.entryFee * participantFormData.cockProfiles.length;
+      } else {
+        // For derby and hits_ulutan: entry fee = base fee (per participant)
+        expectedEntryFee = selectedEvent.entryFee;
+      }
+
+      if (Number(participantFormData.entryFee) !== expectedEntryFee) {
+        const eventTypeLabel = selectedEvent.eventType === 'fastest_kill' ? 'Fastest Kill' :
+          selectedEvent.eventType === 'regular' ? 'Regular' :
+            selectedEvent.eventType === 'derby' ? 'Derby' : 'Hits Ulutan';
+
+        if (selectedEvent.eventType === 'fastest_kill' || selectedEvent.eventType === 'regular') {
+          toast.error(`Entry fee must be ${selectedEvent.entryFee} PHP × ${participantFormData.cockProfiles.length} cock(s) = ${expectedEntryFee} PHP`)
+        } else {
+          toast.error(`Entry fee must be exactly ${selectedEvent.entryFee} PHP`)
+        }
         return
       }
     }
