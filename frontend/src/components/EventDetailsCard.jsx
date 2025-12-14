@@ -274,7 +274,10 @@ const EventDetailsCard = ({ event, formatDate, formatCurrency, showCapacity = fa
                                             <div className="flex-1">
                                                 <div className={`font-semibold text-${colorClass}-900`}>{tier.tierName}</div>
                                                 <div className={`text-xs text-${colorClass}-700`}>
-                                                    Ranks {tier.startRank}-{tier.endRank} ({winnersInTier} {winnersInTier === 1 ? 'winner' : 'winners'})
+                                                    {tier.startRank === tier.endRank
+                                                        ? `Top ${tier.startRank}`
+                                                        : `Top ${tier.startRank}-${tier.endRank}`
+                                                    } ({winnersInTier} {winnersInTier === 1 ? 'winner' : 'winners'})
                                                 </div>
                                                 <div className={`text-xs text-${colorClass}-600 mt-1 font-medium`}>
                                                     {formatCurrency(prizePerWinner)} per winner
