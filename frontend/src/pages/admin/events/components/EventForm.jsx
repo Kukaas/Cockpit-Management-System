@@ -115,17 +115,16 @@ const EventForm = ({
         </div>
 
         <div className='grid grid-cols-2 gap-4'>
-          {/* Entrance Fee - Always required */}
+          {/* Entrance Fee - Optional */}
           <InputField
             id={isEdit ? "editEntranceFee" : "entranceFee"}
-            label="Entrance Fee (PHP) *"
+            label="Entrance Fee (PHP)"
             type="number"
             value={formData.entranceFee}
             onChange={(e) => onInputChange('entranceFee', e.target.value)}
-            placeholder="Enter entrance fee per person"
+            placeholder="Enter entrance fee per person (optional)"
             min="0"
             step="0.01"
-            required
           />
 
           {/* Cage Rental Fee - Always required */}

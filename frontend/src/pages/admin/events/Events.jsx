@@ -148,7 +148,7 @@ const Events = () => {
 
   const handleAddEvent = async () => {
     // Basic required fields for all events
-    const basicRequiredFields = ['eventName', 'date', 'eventType', 'entranceFee', 'cageRentalFee', 'minimumBet', 'minimumParticipants']
+    const basicRequiredFields = ['eventName', 'date', 'eventType', 'cageRentalFee', 'minimumBet', 'minimumParticipants']
     const missingBasicFields = basicRequiredFields.filter(field => !formData[field])
 
     if (missingBasicFields.length > 0) {
@@ -197,7 +197,7 @@ const Events = () => {
     }
 
     // Validate numeric fields
-    const numericFields = ['entranceFee', 'cageRentalFee', 'minimumBet', 'minimumParticipants']
+    const numericFields = ['cageRentalFee', 'minimumBet', 'minimumParticipants']
     if (formData.entryFee) {
       numericFields.push('entryFee')
     }
@@ -238,6 +238,13 @@ const Events = () => {
       createData.entryFee = null
     }
 
+    // Handle entranceFee - convert to number if provided, otherwise set to 0
+    if (createData.entranceFee && createData.entranceFee !== '') {
+      createData.entranceFee = Number(createData.entranceFee)
+    } else {
+      createData.entranceFee = 0
+    }
+
     // For regular events, remove the fields that are not required
     if (formData.eventType === 'regular') {
       delete createData.prize
@@ -271,7 +278,7 @@ const Events = () => {
 
   const handleEditEvent = async () => {
     // Basic required fields for all events
-    const basicRequiredFields = ['eventName', 'date', 'eventType', 'entranceFee', 'cageRentalFee', 'minimumBet', 'minimumParticipants']
+    const basicRequiredFields = ['eventName', 'date', 'eventType', 'cageRentalFee', 'minimumBet', 'minimumParticipants']
     const missingBasicFields = basicRequiredFields.filter(field => !editFormData[field])
 
     if (missingBasicFields.length > 0) {
@@ -322,7 +329,7 @@ const Events = () => {
     }
 
     // Validate numeric fields
-    const numericFields = ['entranceFee', 'cageRentalFee', 'minimumBet', 'minimumParticipants']
+    const numericFields = ['cageRentalFee', 'minimumBet', 'minimumParticipants']
     if (editFormData.entryFee) {
       numericFields.push('entryFee')
     }
@@ -361,6 +368,13 @@ const Events = () => {
       updateData.entryFee = Number(updateData.entryFee)
     } else {
       updateData.entryFee = null
+    }
+
+    // Handle entranceFee - convert to number if provided, otherwise set to 0
+    if (updateData.entranceFee && updateData.entranceFee !== '') {
+      updateData.entranceFee = Number(updateData.entranceFee)
+    } else {
+      updateData.entranceFee = 0
     }
 
     // For regular events, remove the fields that are not required

@@ -127,9 +127,9 @@ const eventSchema = new mongoose.Schema({
     },
     entranceFee: {
         type: Number,
-        required: true,
+        required: false,
         min: 0,
-        default: 100
+        default: 0
     },
     entryFee: {
         type: Number,

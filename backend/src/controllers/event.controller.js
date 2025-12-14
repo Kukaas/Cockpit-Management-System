@@ -23,7 +23,7 @@ export const createEvent = async (req, res) => {
         } = req.body;
 
         // Validate required fields based on event type
-        const basicRequiredFields = ['eventName', 'date', 'eventType', 'entranceFee', 'cageRentalFee', 'minimumBet', 'minimumParticipants'];
+        const basicRequiredFields = ['eventName', 'date', 'eventType', 'cageRentalFee', 'minimumBet', 'minimumParticipants'];
         const missingBasicFields = basicRequiredFields.filter(field => !req.body[field]);
 
         if (missingBasicFields.length > 0) {
@@ -299,7 +299,7 @@ export const updateEvent = async (req, res) => {
 
         // Validate required fields based on event type
         const eventType = updateData.eventType || event.eventType;
-        const basicRequiredFields = ['eventName', 'date', 'eventType', 'entranceFee', 'minimumBet', 'minimumParticipants'];
+        const basicRequiredFields = ['eventName', 'date', 'eventType', 'minimumBet', 'minimumParticipants'];
         const missingBasicFields = basicRequiredFields.filter(field => !updateData[field] && !event[field]);
 
         if (missingBasicFields.length > 0) {
