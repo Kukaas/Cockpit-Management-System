@@ -17,7 +17,6 @@ export const createEvent = async (req, res) => {
             cageRentalFee,
             minWeight,
             maxWeight,
-            weightGap,
             winnerCount,
             prizeDistribution
         } = req.body;
@@ -35,7 +34,7 @@ export const createEvent = async (req, res) => {
 
         // Additional required fields for derby events
         if (eventType === 'derby') {
-            const additionalRequiredFields = ['prize', 'noCockRequirements', 'registrationDeadline', 'minWeight', 'maxWeight', 'weightGap'];
+            const additionalRequiredFields = ['prize', 'noCockRequirements', 'registrationDeadline', 'minWeight', 'maxWeight'];
             const missingAdditionalFields = additionalRequiredFields.filter(field => !req.body[field]);
 
             if (missingAdditionalFields.length > 0) {
@@ -150,7 +149,6 @@ export const createEvent = async (req, res) => {
         if (eventType === 'derby') {
             eventData.minWeight = Number(minWeight);
             eventData.maxWeight = Number(maxWeight);
-            eventData.weightGap = Number(weightGap);
 
             // Validate weight range
             if (eventData.minWeight >= eventData.maxWeight) {
@@ -311,7 +309,7 @@ export const updateEvent = async (req, res) => {
 
         // Additional required fields for derby events
         if (eventType === 'derby') {
-            const additionalRequiredFields = ['prize', 'noCockRequirements', 'registrationDeadline', 'minWeight', 'maxWeight', 'weightGap'];
+            const additionalRequiredFields = ['prize', 'noCockRequirements', 'registrationDeadline', 'minWeight', 'maxWeight'];
             const missingAdditionalFields = additionalRequiredFields.filter(field => !updateData[field] && !event[field]);
 
             if (missingAdditionalFields.length > 0) {
@@ -429,7 +427,6 @@ export const updateEvent = async (req, res) => {
         if (updateData.minimumParticipants) updateData.minimumParticipants = Number(updateData.minimumParticipants);
         if (updateData.minWeight) updateData.minWeight = Number(updateData.minWeight);
         if (updateData.maxWeight) updateData.maxWeight = Number(updateData.maxWeight);
-        if (updateData.weightGap) updateData.weightGap = Number(updateData.weightGap);
 
         // Validate weight range if both are being updated
         if (updateData.minWeight && updateData.maxWeight) {
@@ -466,7 +463,6 @@ export const updateEvent = async (req, res) => {
             delete updateData.registrationDeadline;
             delete updateData.minWeight;
             delete updateData.maxWeight;
-            delete updateData.weightGap;
             delete updateData.prizeDistribution;
         }
 

@@ -232,26 +232,6 @@ const EventForm = ({
                     required
                   />
                 </div>
-                <div className='grid grid-cols-1 gap-4'>
-                  {/* Weight Gap */}
-                  <InputField
-                    id={isEdit ? "editWeightGap" : "weightGap"}
-                    label="Weight Gap (±g) *"
-                    icon={Weight}
-                    type="number"
-                    value={formData.weightGap}
-                    onChange={(e) => onInputChange('weightGap', e.target.value)}
-                    placeholder="e.g., 100"
-                    min="0"
-                    max="5000"
-                    step="1"
-                    required
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  <strong>Weight Gap Explanation:</strong> The allowable weight difference for matching participants in fights.
-                  For example, if weight gap is 100g, participants with weights differing by up to 100g can be matched together.
-                </p>
               </div>
             )}
 

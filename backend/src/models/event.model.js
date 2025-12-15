@@ -71,14 +71,6 @@ const eventSchema = new mongoose.Schema({
             message: 'maxWeight must be greater than or equal to minWeight'
         }
     },
-    weightGap: {
-        type: Number,
-        required: function () {
-            return this.eventType === 'derby';
-        },
-        min: 0,
-        max: 5000 // Maximum gap of 5000 grams (5 kg)
-    },
     // Fastest Kill-specific fields
     prizeDistribution: [{
         tierName: {

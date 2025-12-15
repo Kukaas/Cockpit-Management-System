@@ -29,6 +29,11 @@ export const createFightSchedule = async (req, res) => {
       return res.status(404).json({ message: 'One or more participants not found' });
     }
 
+    // Validate that participants are different (prevent same participant from fighting themselves)
+    if (participants[0].participantName === participants[1].participantName) {
+      return res.status(400).json({ message: 'Cannot schedule a fight with the same participant' });
+    }
+
     // Validate cock profiles
     if (!cockProfileID || cockProfileID.length !== 2) {
       return res.status(400).json({ message: 'Exactly 2 cock profiles are required for a fight' });
@@ -93,8 +98,8 @@ export const autoScheduleFights = async (req, res) => {
       return res.status(400).json({ message: 'Auto-scheduling is only available for Derby events' });
     }
 
-    if (!event.minWeight || !event.maxWeight || !event.weightGap) {
-      return res.status(400).json({ message: 'Event must have minWeight, maxWeight, and weightGap configured' });
+    if (!event.minWeight || !event.maxWeight) {
+      return res.status(400).json({ message: 'Event must have minWeight and maxWeight configured' });
     }
 
     // Get all available cock profiles for this event
@@ -121,7 +126,6 @@ export const autoScheduleFights = async (req, res) => {
 
     const createdFights = [];
     const unmatched = [];
-    const { weightGap } = event;
 
     // Step 1: Group by exact weight
     const weightGroups = {};
@@ -196,9 +200,8 @@ export const autoScheduleFights = async (req, res) => {
         const cock2 = remaining[j];
         const diff = Math.abs(cock1.weight - cock2.weight);
 
-        // Check weight gap, entry name, and participant name
+        // Check entry name and participant name (weight gap removed)
         if (
-          diff <= weightGap &&
           cock1.participantID.entryName !== cock2.participantID.entryName &&
           cock1.participantID.participantName !== cock2.participantID.participantName &&
           diff < minDiff

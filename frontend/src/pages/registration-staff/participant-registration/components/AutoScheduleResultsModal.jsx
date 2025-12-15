@@ -71,21 +71,29 @@ const AutoScheduleResultsModal = ({
                                 </h3>
                                 <div className="space-y-2 max-h-64 overflow-y-auto">
                                     {fights.map((fight, index) => (
-                                        <div key={index} className="p-3 bg-green-50 border border-green-200 rounded-md">
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-3">
-                                                    <Badge variant="outline" className="font-mono">
-                                                        Fight #{fight.fightNumber}
-                                                    </Badge>
-                                                    <div className="text-sm">
-                                                        <span className="font-medium">Entry #{fight.cockProfileID[0]?.entryNo || 'N/A'}</span>
-                                                        <span className="text-muted-foreground mx-2">vs</span>
-                                                        <span className="font-medium">Entry #{fight.cockProfileID[1]?.entryNo || 'N/A'}</span>
+                                        <div key={index} className="space-y-2">
+                                            <div className="p-3 bg-green-50 border border-green-200 rounded-md">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-3">
+                                                        <Badge variant="outline" className="font-mono">
+                                                            Fight #{fight.fightNumber}
+                                                        </Badge>
+                                                        <div className="text-sm">
+                                                            <span className="font-medium">Entry #{fight.cockProfileID[0]?.entryNo || 'N/A'}</span>
+                                                            <span className="text-muted-foreground mx-2">vs</span>
+                                                            <span className="font-medium">Entry #{fight.cockProfileID[1]?.entryNo || 'N/A'}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-xs text-muted-foreground">
+                                                        {fight.cockProfileID[0]?.weight || 'N/A'}g vs {fight.cockProfileID[1]?.weight || 'N/A'}g
                                                     </div>
                                                 </div>
-                                                <div className="text-xs text-muted-foreground">
-                                                    {fight.cockProfileID[0]?.weight || 'N/A'}g vs {fight.cockProfileID[1]?.weight || 'N/A'}g
-                                                </div>
+                                            </div>
+                                            {/* Red Preview Box */}
+                                            <div className="p-3 bg-red-600 rounded-md text-center">
+                                                <p className="text-white text-sm font-semibold">
+                                                    fight#{fight.fightNumber} entry#{fight.cockProfileID[0]?.entryNo || 'N/A'} {fight.participantsID[0]?.entryName || 'N/A'} VS entry#{fight.cockProfileID[1]?.entryNo || 'N/A'} {fight.participantsID[1]?.entryName || 'N/A'}
+                                                </p>
                                             </div>
                                         </div>
                                     ))}

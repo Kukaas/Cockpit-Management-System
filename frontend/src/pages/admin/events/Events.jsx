@@ -158,7 +158,7 @@ const Events = () => {
 
     // Additional required fields for derby events
     if (formData.eventType === 'derby') {
-      const additionalRequiredFields = ['prize', 'noCockRequirements', 'registrationDeadline', 'minWeight', 'maxWeight', 'weightGap']
+      const additionalRequiredFields = ['prize', 'noCockRequirements', 'registrationDeadline', 'minWeight', 'maxWeight']
       const missingAdditionalFields = additionalRequiredFields.filter(field => !formData[field])
 
       if (missingAdditionalFields.length > 0) {
@@ -205,7 +205,7 @@ const Events = () => {
       numericFields.push('prize', 'noCockRequirements')
     }
     if (formData.eventType === 'derby') {
-      numericFields.push('minWeight', 'maxWeight', 'weightGap')
+      numericFields.push('minWeight', 'maxWeight')
     }
     if (formData.eventType === 'fastest_kill') {
       numericFields.push('prize')
@@ -252,7 +252,6 @@ const Events = () => {
       delete createData.registrationDeadline
       delete createData.minWeight
       delete createData.maxWeight
-      delete createData.weightGap
       delete createData.winnerCount
     }
 
@@ -288,7 +287,7 @@ const Events = () => {
 
     // Additional required fields for derby events
     if (editFormData.eventType === 'derby') {
-      const additionalRequiredFields = ['prize', 'noCockRequirements', 'registrationDeadline', 'minWeight', 'maxWeight', 'weightGap']
+      const additionalRequiredFields = ['prize', 'noCockRequirements', 'registrationDeadline', 'minWeight', 'maxWeight']
       const missingAdditionalFields = additionalRequiredFields.filter(field => !editFormData[field])
 
       if (missingAdditionalFields.length > 0) {
@@ -337,7 +336,7 @@ const Events = () => {
       numericFields.push('prize', 'noCockRequirements')
     }
     if (editFormData.eventType === 'derby') {
-      numericFields.push('minWeight', 'maxWeight', 'weightGap')
+      numericFields.push('minWeight', 'maxWeight')
     }
     if (editFormData.eventType === 'fastest_kill') {
       numericFields.push('prize')
@@ -384,7 +383,6 @@ const Events = () => {
       delete updateData.registrationDeadline
       delete updateData.minWeight
       delete updateData.maxWeight
-      delete updateData.weightGap
       delete updateData.winnerCount
     }
 
@@ -569,7 +567,6 @@ const Events = () => {
       cageRentalFee: event.cageRentalFee ? event.cageRentalFee.toString() : '',
       minWeight: event.minWeight ? event.minWeight.toString() : '',
       maxWeight: event.maxWeight ? event.maxWeight.toString() : '',
-      weightGap: event.weightGap ? event.weightGap.toString() : '',
       prizeDistribution: event.prizeDistribution || [
         { tierName: 'Top 1-15', startRank: 1, endRank: 15, percentage: 80 },
         { tierName: 'Top 16-20', startRank: 16, endRank: 20, percentage: 20 }
