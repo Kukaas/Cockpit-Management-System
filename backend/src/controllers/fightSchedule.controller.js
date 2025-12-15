@@ -88,18 +88,15 @@ export const autoScheduleFights = async (req, res) => {
     const { eventID } = req.params;
     const scheduledBy = req.user.id;
 
-    // Validate event exists and is Derby type
+    // Validate event exists
     const event = await Event.findById(eventID);
     if (!event) {
       return res.status(404).json({ message: 'Event not found' });
     }
 
-    if (event.eventType !== 'derby') {
-      return res.status(400).json({ message: 'Auto-scheduling is only available for Derby events' });
-    }
-
-    if (!event.minWeight || !event.maxWeight) {
-      return res.status(400).json({ message: 'Event must have minWeight and maxWeight configured' });
+    // Validate weight configuration for derby events only
+    if (event.eventType === 'derby' && (!event.minWeight || !event.maxWeight)) {
+      return res.status(400).json({ message: 'Derby events must have minWeight and maxWeight configured' });
     }
 
     // Get all available cock profiles for this event
@@ -113,15 +110,23 @@ export const autoScheduleFights = async (req, res) => {
       return res.status(400).json({ message: 'Not enough available chickens to schedule fights (minimum 2 required)' });
     }
 
-    // Filter out cocks without entryName and warn
-    const cocksWithEntryName = availableCocks.filter(cock => cock.participantID?.entryName);
-    const cocksWithoutEntryName = availableCocks.filter(cock => !cock.participantID?.entryName);
+    // For derby events only, filter out cocks without entryName
+    // For regular, fastest_kill, and hits_ulutan events, use all available cocks
+    let cocksToSchedule = availableCocks;
+    let cocksWithoutEntryName = [];
 
-    if (cocksWithEntryName.length < 2) {
-      return res.status(400).json({
-        message: 'Not enough chickens with entry names to schedule fights',
-        unmatchedCount: cocksWithoutEntryName.length
-      });
+    if (event.eventType === 'derby') {
+      const cocksWithEntryName = availableCocks.filter(cock => cock.participantID?.entryName);
+      cocksWithoutEntryName = availableCocks.filter(cock => !cock.participantID?.entryName);
+
+      if (cocksWithEntryName.length < 2) {
+        return res.status(400).json({
+          message: 'Not enough chickens with entry names to schedule fights',
+          unmatchedCount: cocksWithoutEntryName.length
+        });
+      }
+
+      cocksToSchedule = cocksWithEntryName;
     }
 
     const createdFights = [];
@@ -129,7 +134,7 @@ export const autoScheduleFights = async (req, res) => {
 
     // Step 1: Group by exact weight
     const weightGroups = {};
-    cocksWithEntryName.forEach(cock => {
+    cocksToSchedule.forEach(cock => {
       const weight = cock.weight;
       if (!weightGroups[weight]) {
         weightGroups[weight] = [];
@@ -145,10 +150,17 @@ export const autoScheduleFights = async (req, res) => {
         const cock1 = cocks.shift();
 
         // Find opponent with different entryName and participantName
-        const opponentIndex = cocks.findIndex(
-          c => c.participantID.entryName !== cock1.participantID.entryName &&
-            c.participantID.participantName !== cock1.participantID.participantName
-        );
+        // For derby: check both entryName and participantName
+        // For regular/fastest_kill/hits_ulutan: only check participantName
+        const opponentIndex = cocks.findIndex(c => {
+          const sameParticipant = c.participantID.participantName !== cock1.participantID.participantName;
+
+          if (event.eventType === 'derby') {
+            return c.participantID.entryName !== cock1.participantID.entryName && sameParticipant;
+          }
+
+          return sameParticipant;
+        });
 
         if (opponentIndex >= 0) {
           const cock2 = cocks.splice(opponentIndex, 1)[0];
@@ -200,12 +212,21 @@ export const autoScheduleFights = async (req, res) => {
         const cock2 = remaining[j];
         const diff = Math.abs(cock1.weight - cock2.weight);
 
-        // Check entry name and participant name (weight gap removed)
-        if (
-          cock1.participantID.entryName !== cock2.participantID.entryName &&
-          cock1.participantID.participantName !== cock2.participantID.participantName &&
-          diff < minDiff
-        ) {
+        // Check entry name and participant name conditionally based on event type
+        let canMatch = false;
+
+        if (event.eventType === 'derby') {
+          // For derby: check both entryName and participantName
+          canMatch = cock1.participantID.entryName !== cock2.participantID.entryName &&
+            cock1.participantID.participantName !== cock2.participantID.participantName &&
+            diff < minDiff;
+        } else {
+          // For regular/fastest_kill/hits_ulutan: only check participantName
+          canMatch = cock1.participantID.participantName !== cock2.participantID.participantName &&
+            diff < minDiff;
+        }
+
+        if (canMatch) {
           bestMatch = j;
           minDiff = diff;
         }

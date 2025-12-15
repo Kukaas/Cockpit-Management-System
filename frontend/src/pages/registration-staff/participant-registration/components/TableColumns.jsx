@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Edit, Trash2, User, Phone, Feather, Hash, Scale, Eye } from 'lucide-react'
 
-export const createParticipantColumns = (handleEditClick, handleDeleteClick, handleViewDetails, isEventCompleted = false) => [
+export const createParticipantColumns = (handleEditClick, handleDeleteClick, handleViewDetails, isEventCompleted = false, eventType = 'regular') => [
   {
     key: 'participantName',
     label: 'Participant Name',
@@ -28,17 +28,20 @@ export const createParticipantColumns = (handleEditClick, handleDeleteClick, han
       </div>
     )
   },
-  {
-    key: 'entryName',
-    label: 'Entry Name',
-    sortable: true,
-    filterable: false,
-    render: (value) => (
-      <div className="flex items-center gap-2">
-        <span className="font-medium text-blue-600">{value || 'N/A'}</span>
-      </div>
-    )
-  },
+  // Include entry name column only for derby events
+  ...(eventType === 'derby' ? [
+    {
+      key: 'entryName',
+      label: 'Entry Name',
+      sortable: true,
+      filterable: false,
+      render: (value) => (
+        <div className="flex items-center gap-2">
+          <span className="font-medium text-blue-600">{value || 'N/A'}</span>
+        </div>
+      )
+    }
+  ] : []),
   {
     key: 'actions',
     label: 'Actions',

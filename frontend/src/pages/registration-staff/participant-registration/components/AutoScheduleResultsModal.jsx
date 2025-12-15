@@ -8,7 +8,8 @@ const AutoScheduleResultsModal = ({
     open,
     onOpenChange,
     isLoading,
-    results
+    results,
+    event
 }) => {
     const { created = 0, fights = [], unmatched = [] } = results || {}
 
@@ -84,15 +85,21 @@ const AutoScheduleResultsModal = ({
                                                             <span className="font-medium">Entry #{fight.cockProfileID[1]?.entryNo || 'N/A'}</span>
                                                         </div>
                                                     </div>
-                                                    <div className="text-xs text-muted-foreground">
-                                                        {fight.cockProfileID[0]?.weight || 'N/A'}g vs {fight.cockProfileID[1]?.weight || 'N/A'}g
-                                                    </div>
+                                                    {event?.eventType === 'derby' && (
+                                                        <div className="text-xs text-muted-foreground">
+                                                            {fight.cockProfileID[0]?.weight || 'N/A'}g vs {fight.cockProfileID[1]?.weight || 'N/A'}g
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                             {/* Red Preview Box */}
                                             <div className="p-3 bg-red-600 rounded-md text-center">
                                                 <p className="text-white text-sm font-semibold">
-                                                    fight#{fight.fightNumber} entry#{fight.cockProfileID[0]?.entryNo || 'N/A'} {fight.participantsID[0]?.entryName || 'N/A'} VS entry#{fight.cockProfileID[1]?.entryNo || 'N/A'} {fight.participantsID[1]?.entryName || 'N/A'}
+                                                    {event?.eventType === 'derby' ? (
+                                                        <>fight#{fight.fightNumber} entry#{fight.cockProfileID[0]?.entryNo || 'N/A'} {fight.participantsID[0]?.entryName || 'N/A'} VS entry#{fight.cockProfileID[1]?.entryNo || 'N/A'} {fight.participantsID[1]?.entryName || 'N/A'}</>
+                                                    ) : (
+                                                        <>fight#{fight.fightNumber} entry#{fight.cockProfileID[0]?.entryNo || 'N/A'} {fight.participantsID[0]?.participantName || 'N/A'} VS entry#{fight.cockProfileID[1]?.entryNo || 'N/A'} {fight.participantsID[1]?.participantName || 'N/A'}</>
+                                                    )}
                                                 </p>
                                             </div>
                                         </div>

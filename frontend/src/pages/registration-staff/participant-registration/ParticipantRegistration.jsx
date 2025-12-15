@@ -985,7 +985,8 @@ const ParticipantRegistration = () => {
     handleEditParticipantClick,
     handleDeleteParticipantClick,
     handleViewDetails,
-    isEventCompleted
+    isEventCompleted,
+    selectedEvent?.eventType
   )
 
   const cockProfileColumns = createCockProfileColumns(
@@ -1534,6 +1535,7 @@ const ParticipantRegistration = () => {
         onOpenChange={setAutoScheduleResultsOpen}
         isLoading={autoScheduleLoading}
         results={autoScheduleResults}
+        event={selectedEvent}
       />
     </PageLayout>
   )
