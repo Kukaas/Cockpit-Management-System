@@ -664,24 +664,37 @@ export const getDerbyChampionshipStandings = async (req, res) => {
     }
 
     const matchResults = await MatchResult.find({ matchID: { $in: matchIDs } })
+      .populate('matchID', 'participantsID')
       .populate('resultMatch.winnerParticipantID', 'participantName')
       .populate('resultMatch.loserParticipantID', 'participantName');
 
-    // Count wins for each participant
+    // Count wins and draws for each participant
     const participantWins = {};
+    const participantDraws = {};
     const participantMatches = {};
 
     matchResults.forEach(result => {
-      const winnerId = result.resultMatch.winnerParticipantID._id.toString();
-      const loserId = result.resultMatch.loserParticipantID._id.toString();
+      // Get participants from the fight schedule itself to ensure we count matches correctly even for draws
+      const participants = result.matchID?.participantsID || [];
 
-      // Count wins
-      participantWins[winnerId] = (participantWins[winnerId] || 0) + 1;
-      participantWins[loserId] = participantWins[loserId] || 0;
+      participants.forEach(pId => {
+        const idStr = pId.toString();
+        participantMatches[idStr] = (participantMatches[idStr] || 0) + 1;
+        participantWins[idStr] = participantWins[idStr] || 0;
+        participantDraws[idStr] = participantDraws[idStr] || 0;
+      });
 
-      // Count total matches
-      participantMatches[winnerId] = (participantMatches[winnerId] || 0) + 1;
-      participantMatches[loserId] = (participantMatches[loserId] || 0) + 1;
+      // Count a win only if there's a winnerParticipantID
+      if (result.resultMatch?.winnerParticipantID?._id) {
+        const winnerId = result.resultMatch.winnerParticipantID._id.toString();
+        participantWins[winnerId] = (participantWins[winnerId] || 0) + 1;
+      } else if (result.betWinner === 'Draw') {
+        // If it's a draw, count it for both participants
+        participants.forEach(pId => {
+          const idStr = pId.toString();
+          participantDraws[idStr] = (participantDraws[idStr] || 0) + 1;
+        });
+      }
     });
 
     // Get all participants for this event
@@ -692,8 +705,9 @@ export const getDerbyChampionshipStandings = async (req, res) => {
     const standings = participants.map(participant => {
       const participantId = participant._id.toString();
       const wins = participantWins[participantId] || 0;
+      const draws = participantDraws[participantId] || 0;
       const totalMatches = participantMatches[participantId] || 0;
-      const losses = totalMatches - wins;
+      const losses = totalMatches - wins - draws;
       const remainingCocks = event.noCockRequirements - totalMatches;
       const isChampion = wins >= winRequirement;
       const isEliminated = losses >= winRequirement;
@@ -705,6 +719,7 @@ export const getDerbyChampionshipStandings = async (req, res) => {
           contactNumber: participant.contactNumber
         },
         wins,
+        draws,
         losses,
         totalMatches,
         remainingCocks: Math.max(0, remainingCocks),

@@ -315,7 +315,18 @@ export const createChampionshipColumns = (formatCurrency) => [
     sortable: true,
     filterable: false,
     render: (value) => (
-      <Badge variant="default" className="bg-green-100 text-green-800">
+      <Badge variant="default" className="bg-green-100 text-green-800 border-green-200">
+        {value}
+      </Badge>
+    )
+  },
+  {
+    key: 'draws',
+    label: 'Draws',
+    sortable: true,
+    filterable: false,
+    render: (value) => (
+      <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
         {value}
       </Badge>
     )
@@ -326,7 +337,7 @@ export const createChampionshipColumns = (formatCurrency) => [
     sortable: true,
     filterable: false,
     render: (value) => (
-      <Badge variant="secondary" className="bg-red-100 text-red-800">
+      <Badge variant="secondary" className="bg-red-50 text-red-700 border-red-200">
         {value}
       </Badge>
     )
