@@ -298,11 +298,18 @@ const Entrance = () => {
       <div className="space-y-4">
         <div className="flex justify-end items-center">
           <div className="flex gap-2">
-            <Button variant="outline" onClick={handlePrint}>
+            <Button
+              variant="outline"
+              onClick={handlePrint}
+              disabled={!selectedEvent?.entranceFee || selectedEvent?.entranceFee === 0}
+            >
               <Printer className="h-4 w-4 mr-2" />
               Print Report
             </Button>
-            <Button onClick={() => setAddEntranceDialogOpen(true)} disabled={isEventDisabled || isAtCapacity}>
+            <Button
+              onClick={() => setAddEntranceDialogOpen(true)}
+              disabled={isEventDisabled || isAtCapacity || !selectedEvent?.entranceFee || selectedEvent?.entranceFee === 0}
+            >
               <Plus className="h-4 w-4 mr-2" />
               Add Tally
             </Button>

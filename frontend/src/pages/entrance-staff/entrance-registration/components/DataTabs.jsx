@@ -24,7 +24,10 @@ const DataTabs = ({
       <TabsContent value="entrances" className="space-y-4">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold">Entrance Tally Records</h3>
-          <Button onClick={onAddEntrance} disabled={isEventDisabled}>
+          <Button
+            onClick={onAddEntrance}
+            disabled={isEventDisabled}
+          >
             <Plus className="h-4 w-4 mr-2" />
             Add Tally
           </Button>
