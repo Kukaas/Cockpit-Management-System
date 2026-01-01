@@ -1006,7 +1006,8 @@ const ParticipantRegistration = () => {
     () => { }, // No add bet handler for registration staff
     () => { }, // No add result handler for registration staff
     handleViewDetails,
-    false // Hide "Add Result" button for registration staff
+    false, // Hide "Add Result" button for registration staff
+    selectedEvent?.eventType
   )
 
   // Print functionality for fight schedules

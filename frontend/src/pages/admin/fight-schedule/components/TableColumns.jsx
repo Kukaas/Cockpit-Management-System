@@ -32,6 +32,24 @@ export const createFightColumns = (formatCurrency, formatDate, handleViewDetails
       </div>
     )
   },
+  // Dedicated Entry Name column for Derby events
+  ...(eventType === 'derby' ? [
+    {
+      key: 'entryNames',
+      label: 'Entry Names',
+      sortable: false,
+      filterable: false,
+      render: (_, row) => (
+        <div className="space-y-1">
+          {row.participantsID?.map((participant) => (
+            <div key={participant._id} className="text-sm font-semibold text-blue-600 truncate py-0.5">
+              {participant.entryName || 'N/A'}
+            </div>
+          ))}
+        </div>
+      )
+    }
+  ] : []),
   {
     key: 'cockProfileID',
     label: 'Cock Profiles',

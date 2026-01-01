@@ -1,9 +1,9 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Edit, Trash2, Trophy, Clock, Users, Target, Award, Calendar, Info, Eye, Wallet, Printer } from 'lucide-react'
+import { Edit, Trash2, Trophy, Clock, Users, Target, Award, Calendar, Info, Eye, Wallet, Printer, Hash } from 'lucide-react'
 
-export const createFightColumns = (formatCurrency, formatDate, handleEditClick, handleDeleteClick, handleAddBetClick, handleAddResultClick, handleViewDetails, showAddResult = true) => [
+export const createFightColumns = (formatCurrency, formatDate, handleEditClick, handleDeleteClick, handleAddBetClick, handleAddResultClick, handleViewDetails, showAddResult = true, eventType = 'regular') => [
   {
     key: 'fightNumber',
     label: 'Fight #',
@@ -11,8 +11,8 @@ export const createFightColumns = (formatCurrency, formatDate, handleEditClick, 
     filterable: false,
     render: (value) => (
       <div className="flex items-center gap-2">
-        <Target className="h-4 w-4 text-muted-foreground" />
-        <span className="font-medium">#{value}</span>
+        <Hash className="h-4 w-4 text-muted-foreground" />
+        <span className="font-medium">{value}</span>
       </div>
     )
   },
@@ -37,6 +37,24 @@ export const createFightColumns = (formatCurrency, formatDate, handleEditClick, 
       </div>
     )
   },
+  // Dedicated Entry Name column for Derby events
+  ...(eventType === 'derby' ? [
+    {
+      key: 'entryNames',
+      label: 'Entry Names',
+      sortable: false,
+      filterable: false,
+      render: (_, row) => (
+        <div className="space-y-1">
+          {row.participantsID?.map((participant) => (
+            <div key={participant._id} className="text-sm font-semibold text-blue-600 truncate py-0.5">
+              {participant.entryName || 'N/A'}
+            </div>
+          ))}
+        </div>
+      )
+    }
+  ] : []),
   {
     key: 'status',
     label: 'Status',

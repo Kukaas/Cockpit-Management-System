@@ -544,7 +544,9 @@ const FightSchedule = () => {
     handleDeleteFightClick,
     handleAddBetClick,
     handleAddResultClick,
-    handleViewDetails
+    handleViewDetails,
+    true, // showAddResult
+    event?.eventType
   )
 
   // Print winner receipt
