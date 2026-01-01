@@ -1,5 +1,6 @@
 import CockProfile from '../models/cockProfile.model.js';
 import Event from '../models/event.model.js';
+import { matchAndScheduleFight } from '../services/matching.service.js';
 
 // Create new cock profile
 export const createCockProfile = async (req, res) => {
@@ -94,7 +95,14 @@ export const createCockProfile = async (req, res) => {
       { path: 'participantID', select: 'participantName contactNumber address' }
     ]);
 
-    res.status(201).json({ message: 'Cock profile created successfully', data: cockProfile });
+    // Trigger real-time matching for non-derby events
+    const fight = await matchAndScheduleFight(cockProfile, req.user.id);
+
+    res.status(201).json({
+      message: fight ? 'Cock registered and fight scheduled!' : 'Cock profile created successfully',
+      data: cockProfile,
+      scheduledFight: fight
+    });
   } catch (error) {
     res.status(500).json({ message: 'Failed to create cock profile', error: error.message });
   }
@@ -227,9 +235,23 @@ export const createBulkCockProfiles = async (req, res) => {
       { path: 'participantID', select: 'participantName contactNumber address' }
     ]);
 
+    // Trigger real-time matching for non-derby events for each created profile
+    const scheduledFights = [];
+    for (const profile of createdProfiles) {
+      // Refresh status because it might have been matched by a previous cock in this loop
+      const currentProfile = await CockProfile.findById(profile._id);
+      if (currentProfile && currentProfile.status === 'available') {
+        const fight = await matchAndScheduleFight(currentProfile, req.user.id);
+        if (fight) scheduledFights.push(fight);
+      }
+    }
+
     res.status(201).json({
-      message: `Successfully created ${createdProfiles.length} cock profile(s)`,
-      data: createdProfiles
+      message: scheduledFights.length > 0
+        ? `Successfully created ${createdProfiles.length} cock profile(s) and scheduled ${scheduledFights.length} fight(s)`
+        : `Successfully created ${createdProfiles.length} cock profile(s)`,
+      data: createdProfiles,
+      scheduledFights
     });
   } catch (error) {
     res.status(500).json({ message: 'Failed to create cock profiles', error: error.message });

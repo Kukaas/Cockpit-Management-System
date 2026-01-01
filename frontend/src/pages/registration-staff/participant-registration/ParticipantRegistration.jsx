@@ -118,6 +118,7 @@ const ParticipantRegistration = () => {
       setAddCockProfileDialogOpen(false)
       resetCockProfileForm()
       refetchCockProfiles()
+      refetchFights()
     }
   })
 
@@ -492,11 +493,12 @@ const ParticipantRegistration = () => {
 
       const cockProfilesResponse = await api.post('/cock-profiles/bulk', bulkData)
 
-      toast.success(`Successfully registered participant and ${cockProfilesResponse.data.data.length} cock profile(s)`)
+      toast.success(cockProfilesResponse.data.message || `Successfully registered participant and ${cockProfilesResponse.data.data.length} cock profile(s)`)
       setAddCombinedDialogOpen(false)
       resetParticipantForm()
       refetchParticipants()
       refetchCockProfiles()
+      refetchFights()
     } catch (error) {
       const errorMessage = error?.response?.data?.message || 'Failed to register participant and cock profiles'
       toast.error(errorMessage)
@@ -568,7 +570,7 @@ const ParticipantRegistration = () => {
     setIsCreatingBulk(true)
     try {
       const response = await api.post('/cock-profiles/bulk', bulkData)
-      toast.success(`Successfully created ${response.data.data.length} cock profile(s)`)
+      toast.success(response.data.message || `Successfully created ${response.data.data.length} cock profile(s)`)
 
       // For fastest_kill and regular events, update participant's entry fee
       if (selectedEvent?.eventType === 'fastest_kill' || selectedEvent?.eventType === 'regular') {
@@ -598,6 +600,7 @@ const ParticipantRegistration = () => {
       resetCockProfileForm()
       refetchCockProfiles()
       refetchParticipants() // Refresh to show updated entry fee
+      refetchFights()
     } catch (error) {
       const errorMessage = error?.response?.data?.message || 'Failed to create cock profiles'
       toast.error(errorMessage)
