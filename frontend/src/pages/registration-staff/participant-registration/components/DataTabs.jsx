@@ -101,15 +101,17 @@ const DataTabs = ({
                   Print Schedule
                 </Button>
               )}
-              <Button
-                variant="secondary"
-                onClick={onAutoSchedule}
-                disabled={isEventDisabled || cockProfiles.filter(c => c.status === 'available').length < 2}
-                title={isEventDisabled ? "Cannot auto-schedule for completed/cancelled events" : "Automatically schedule all available chickens"}
-              >
-                <Zap className="h-4 w-4 mr-2" />
-                Auto-Schedule All
-              </Button>
+              {event?.eventType === 'derby' && (
+                <Button
+                  variant="secondary"
+                  onClick={onAutoSchedule}
+                  disabled={isEventDisabled || cockProfiles.filter(c => c.status === 'available').length < 2}
+                  title={isEventDisabled ? "Cannot auto-schedule for completed/cancelled events" : "Automatically schedule all available chickens"}
+                >
+                  <Zap className="h-4 w-4 mr-2" />
+                  Auto-Schedule All
+                </Button>
+              )}
               <Button
                 onClick={onAddFight}
                 disabled={isEventDisabled}
