@@ -47,63 +47,52 @@ const AutoScheduleResultsModal = ({
                     <div className="space-y-6">
                         {/* Summary Stats */}
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                                <div className="flex items-center gap-2 mb-1">
-                                    <CheckCircle2 className="h-4 w-4 text-green-600" />
-                                    <p className="text-sm font-medium text-green-900">Fights Created</p>
-                                </div>
-                                <p className="text-2xl font-bold text-green-700">{created}</p>
+                            <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Fights Created</p>
+                                <p className="text-2xl font-black text-slate-900">{created}</p>
                             </div>
-                            <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
-                                <div className="flex items-center gap-2 mb-1">
-                                    <AlertCircle className="h-4 w-4 text-orange-600" />
-                                    <p className="text-sm font-medium text-orange-900">Unmatched</p>
-                                </div>
-                                <p className="text-2xl font-bold text-orange-700">{unmatched.length}</p>
+                            <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Unmatched</p>
+                                <p className="text-2xl font-black text-orange-600">{unmatched.length}</p>
                             </div>
                         </div>
 
                         {/* Created Fights */}
                         {fights.length > 0 && (
                             <div className="space-y-3">
-                                <h3 className="font-semibold text-sm flex items-center gap-2">
+                                <h3 className="font-bold text-sm text-slate-800 flex items-center gap-2">
                                     <CheckCircle2 className="h-4 w-4 text-green-600" />
-                                    Scheduled Fights ({fights.length})
+                                    Scheduled Matchups
                                 </h3>
-                                <div className="space-y-2 max-h-64 overflow-y-auto">
-                                    {fights.map((fight, index) => (
-                                        <div key={index} className="space-y-2">
-                                            <div className="p-3 bg-green-50 border border-green-200 rounded-md">
-                                                <div className="flex items-center justify-between">
-                                                    <div className="flex items-center gap-3">
-                                                        <Badge variant="outline" className="font-mono">
-                                                            Fight #{fight.fightNumber}
-                                                        </Badge>
-                                                        <div className="text-sm">
-                                                            <span className="font-medium">Entry #{fight.cockProfileID[0]?.entryNo || 'N/A'}</span>
-                                                            <span className="text-muted-foreground mx-2">vs</span>
-                                                            <span className="font-medium">Entry #{fight.cockProfileID[1]?.entryNo || 'N/A'}</span>
-                                                        </div>
+                                <div className="space-y-1.5">
+                                    {fights.map((fight, index) => {
+                                        const p1 = fight.participantsID[0];
+                                        const p2 = fight.participantsID[1];
+                                        const name1 = event?.eventType === 'derby' ? p1?.entryName : p1?.participantName;
+                                        const name2 = event?.eventType === 'derby' ? p2?.entryName : p2?.participantName;
+
+                                        return (
+                                            <div key={index} className="p-3 bg-white border border-slate-100 rounded-lg hover:border-slate-200 transition-all group">
+                                                <div className="flex items-center justify-between gap-4">
+                                                    <div className="flex items-center gap-3 min-w-0">
+                                                        <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded shrink-0">
+                                                            {fight.fightNumber}
+                                                        </span>
+                                                        <p className="text-sm font-semibold text-slate-700 uppercase tracking-tight break-words">
+                                                            entry#{fight.cockProfileID[0]?.entryNo} {name1}
+                                                            <span className="mx-2 text-slate-300 font-bold whitespace-nowrap">VS</span>
+                                                            entry#{fight.cockProfileID[1]?.entryNo} {name2}
+                                                        </p>
                                                     </div>
                                                     {event?.eventType === 'derby' && (
-                                                        <div className="text-xs text-muted-foreground">
-                                                            {fight.cockProfileID[0]?.weight || 'N/A'}g vs {fight.cockProfileID[1]?.weight || 'N/A'}g
+                                                        <div className="text-[10px] font-mono font-bold text-slate-400 shrink-0">
+                                                            {fight.cockProfileID[0]?.weight}g / {fight.cockProfileID[1]?.weight}g
                                                         </div>
                                                     )}
                                                 </div>
                                             </div>
-                                            {/* Red Preview Box */}
-                                            <div className="p-3 bg-red-600 rounded-md text-center">
-                                                <p className="text-white text-sm font-semibold">
-                                                    {event?.eventType === 'derby' ? (
-                                                        <>fight#{fight.fightNumber} entry#{fight.cockProfileID[0]?.entryNo || 'N/A'} {fight.participantsID[0]?.entryName || 'N/A'} VS entry#{fight.cockProfileID[1]?.entryNo || 'N/A'} {fight.participantsID[1]?.entryName || 'N/A'}</>
-                                                    ) : (
-                                                        <>fight#{fight.fightNumber} entry#{fight.cockProfileID[0]?.entryNo || 'N/A'} {fight.participantsID[0]?.participantName || 'N/A'} VS entry#{fight.cockProfileID[1]?.entryNo || 'N/A'} {fight.participantsID[1]?.participantName || 'N/A'}</>
-                                                    )}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    ))}
+                                        )
+                                    })}
                                 </div>
                             </div>
                         )}
@@ -111,29 +100,24 @@ const AutoScheduleResultsModal = ({
                         {/* Unmatched Chickens */}
                         {unmatched.length > 0 && (
                             <div className="space-y-3">
-                                <h3 className="font-semibold text-sm flex items-center gap-2">
+                                <h3 className="font-bold text-sm text-slate-800 flex items-center gap-2">
                                     <AlertCircle className="h-4 w-4 text-orange-600" />
-                                    Unmatched Chickens ({unmatched.length})
+                                    Unmatched Chickens
                                 </h3>
-                                <div className="space-y-2 max-h-64 overflow-y-auto">
+                                <div className="space-y-1.5">
                                     {unmatched.map((chicken, index) => (
-                                        <div key={index} className="p-3 bg-orange-50 border border-orange-200 rounded-md">
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-3">
-                                                    <Badge variant="outline" className="font-mono">
-                                                        Entry #{chicken.entryNo}
-                                                    </Badge>
-                                                    <div className="text-sm">
-                                                        <span className="font-medium">{chicken.weight}g</span>
-                                                        {chicken.entryName && (
-                                                            <span className="text-muted-foreground ml-2">({chicken.entryName})</span>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                                <div className="text-xs text-orange-700 italic">
-                                                    {chicken.reason}
-                                                </div>
+                                        <div key={index} className="p-2.5 bg-slate-50 border border-slate-100 rounded-lg flex items-center justify-between gap-3">
+                                            <div className="flex items-center gap-3 min-w-0">
+                                                <span className="text-[10px] font-bold text-slate-500 bg-white border border-slate-200 px-1.5 py-0.5 rounded shrink-0">
+                                                    #{chicken.entryNo}
+                                                </span>
+                                                <span className="text-sm font-semibold text-slate-700 break-words">
+                                                    {chicken.weight}g {chicken.entryName && <span className="text-slate-400 font-normal ml-1">({chicken.entryName})</span>}
+                                                </span>
                                             </div>
+                                            <span className="text-[9px] font-bold text-orange-600 uppercase bg-orange-100/50 px-2 py-0.5 rounded-full shrink-0">
+                                                {chicken.reason}
+                                            </span>
                                         </div>
                                     ))}
                                 </div>
