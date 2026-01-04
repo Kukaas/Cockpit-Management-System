@@ -68,7 +68,7 @@ export const createFightSchedule = async (req, res) => {
     // Populate references for response
     await fightSchedule.populate([
       { path: 'eventID', select: 'eventName date location' },
-      { path: 'participantsID', select: 'participantName contactNumber' },
+      { path: 'participantsID', select: 'participantName contactNumber entryName' },
       { path: 'cockProfileID', select: 'legband weight entryNo ownerName' },
       { path: 'scheduledBy', select: 'username' }
     ]);
@@ -378,7 +378,7 @@ export const getFightScheduleById = async (req, res) => {
     const { id } = req.params;
     const fightSchedule = await FightSchedule.findById(id)
       .populate('eventID', 'eventName date location')
-      .populate('participantsID', 'participantName contactNumber')
+      .populate('participantsID', 'participantName contactNumber entryName')
       .populate('cockProfileID', 'legband weight ownerName entryNo')
       .populate('scheduledBy', 'username');
 
@@ -418,7 +418,7 @@ export const updateFightSchedule = async (req, res) => {
     // Populate references for response
     await fightSchedule.populate([
       { path: 'eventID', select: 'eventName date location' },
-      { path: 'participantsID', select: 'participantName contactNumber' },
+      { path: 'participantsID', select: 'participantName contactNumber entryName' },
       { path: 'cockProfileID', select: 'legband weight entryNo ownerName' },
       { path: 'scheduledBy', select: 'username' }
     ]);
@@ -498,7 +498,7 @@ export const updateFightStatus = async (req, res) => {
       { new: true, runValidators: true }
     ).populate([
       { path: 'eventID', select: 'eventName date location' },
-      { path: 'participantsID', select: 'participantName contactNumber' },
+      { path: 'participantsID', select: 'participantName contactNumber entryName' },
       { path: 'cockProfileID', select: 'legband weight entryNo ownerName' }
     ]);
 

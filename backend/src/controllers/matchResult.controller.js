@@ -534,7 +534,7 @@ export const getMatchResultsByEvent = async (req, res) => {
           },
           {
             path: 'participantsID',
-            select: 'participantName contactNumber address'
+            select: 'participantName contactNumber address entryName'
           },
           {
             path: 'cockProfileID',
@@ -543,8 +543,8 @@ export const getMatchResultsByEvent = async (req, res) => {
         ]
       })
       .populate('participantBets.participantID', 'participantName')
-      .populate('resultMatch.winnerParticipantID', 'participantName')
-      .populate('resultMatch.loserParticipantID', 'participantName')
+      .populate('resultMatch.winnerParticipantID', 'participantName entryName')
+      .populate('resultMatch.loserParticipantID', 'participantName entryName')
       .populate('resultMatch.winnerCockProfileID', 'legband weight entryNo ownerName')
       .populate('resultMatch.loserCockProfileID', 'legband weight entryNo ownerName')
       .sort({ createdAt: -1 });
@@ -665,8 +665,8 @@ export const getDerbyChampionshipStandings = async (req, res) => {
 
     const matchResults = await MatchResult.find({ matchID: { $in: matchIDs } })
       .populate('matchID', 'participantsID')
-      .populate('resultMatch.winnerParticipantID', 'participantName')
-      .populate('resultMatch.loserParticipantID', 'participantName');
+      .populate('resultMatch.winnerParticipantID', 'participantName entryName')
+      .populate('resultMatch.loserParticipantID', 'participantName entryName');
 
     // Count wins and draws for each participant
     const participantWins = {};

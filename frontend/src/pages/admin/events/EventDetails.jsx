@@ -107,7 +107,8 @@ const EventDetails = () => {
   const fightScheduleColumns = createViewOnlyFightScheduleColumns(
     formatCurrency,
     formatDate,
-    handleViewDetails
+    handleViewDetails,
+    selectedEvent?.eventType
   )
 
   const matchResultColumns = createViewOnlyMatchResultColumns(
@@ -407,6 +408,13 @@ const EventDetails = () => {
                             <p className="mt-1 text-sm text-gray-900">{participant.participantName}</p>
                           </div>
 
+                          {selectedEvent?.eventType === 'derby' && participant.entryName && (
+                            <div>
+                              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Entry Name</label>
+                              <p className="mt-1 text-sm font-semibold text-blue-600">{participant.entryName}</p>
+                            </div>
+                          )}
+
                           <div>
                             <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Contact</label>
                             <p className="mt-1 text-sm text-gray-900">{participant.contactNumber}</p>
@@ -549,8 +557,8 @@ const EventDetails = () => {
                   </div>
 
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {selectedItem.participantBets?.map((bet) => (
-                      <div key={bet.participantID._id} className="bg-gray-50 rounded-lg p-4">
+                    {selectedItem.participantBets?.map((bet, index) => (
+                      <div key={bet.participantID?._id || `bet-${index}`} className="bg-gray-50 rounded-lg p-4">
                         <div className="flex items-center gap-3 mb-4">
                           <div className={`w-3 h-3 rounded-full ${bet.position === 'Meron' ? 'bg-blue-500' : 'bg-gray-500'
                             }`}></div>
@@ -560,8 +568,15 @@ const EventDetails = () => {
                         <div className="space-y-3">
                           <div>
                             <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Participant</label>
-                            <p className="mt-1 text-sm text-gray-900">{bet.participantID.participantName}</p>
+                            <p className="mt-1 text-sm text-gray-900">{bet.participantID?.participantName || 'N/A'}</p>
                           </div>
+
+                          {selectedEvent?.eventType === 'derby' && bet.participantID?.entryName && (
+                            <div>
+                              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Entry Name</label>
+                              <p className="mt-1 text-sm font-semibold text-blue-600">{bet.participantID.entryName}</p>
+                            </div>
+                          )}
 
                           <div>
                             <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Bet Amount</label>
@@ -614,6 +629,13 @@ const EventDetails = () => {
                             <p className="mt-1 text-sm text-gray-900">{selectedItem.resultMatch?.winnerParticipantID?.participantName}</p>
                           </div>
 
+                          {selectedEvent?.eventType === 'derby' && selectedItem.resultMatch?.winnerParticipantID?.entryName && (
+                            <div>
+                              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Entry Name</label>
+                              <p className="mt-1 text-sm font-bold text-blue-700">{selectedItem.resultMatch?.winnerParticipantID?.entryName}</p>
+                            </div>
+                          )}
+
                           <div>
                             <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Entry Number</label>
                             <p className="mt-1 text-sm text-gray-900">#{selectedItem.resultMatch?.winnerCockProfileID?.entryNo}</p>
@@ -646,6 +668,13 @@ const EventDetails = () => {
                             <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Participant</label>
                             <p className="mt-1 text-sm text-gray-900">{selectedItem.resultMatch?.loserParticipantID?.participantName}</p>
                           </div>
+
+                          {selectedEvent?.eventType === 'derby' && selectedItem.resultMatch?.loserParticipantID?.entryName && (
+                            <div>
+                              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Entry Name</label>
+                              <p className="mt-1 text-sm font-semibold text-blue-600">{selectedItem.resultMatch?.loserParticipantID?.entryName}</p>
+                            </div>
+                          )}
 
                           <div>
                             <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Entry Number</label>

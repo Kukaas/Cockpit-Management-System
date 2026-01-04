@@ -152,13 +152,37 @@ export const createMatchResultColumns = (formatCurrency, formatDate, handleViewD
             <Trophy className="h-3 w-3 text-yellow-600" />
             <span className="font-medium text-green-600">Winner: {winnerName}</span>
           </div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground border-t border-gray-50 pt-1 mt-1">
             <span>Loser: {loserName}</span>
           </div>
         </div>
       )
     }
   },
+  // Dedicated Entry Name column for Derby events
+  ...(eventType === 'derby' ? [
+    {
+      key: 'entryNames',
+      label: 'Entry Names',
+      sortable: false,
+      filterable: false,
+      render: (_, row) => {
+        const winnerEntry = row.resultMatch?.winnerParticipantID?.entryName || 'N/A'
+        const loserEntry = row.resultMatch?.loserParticipantID?.entryName || 'N/A'
+
+        return (
+          <div className="space-y-1">
+            <div className="text-xs font-semibold text-blue-600 truncate py-0.5">
+              W: {winnerEntry}
+            </div>
+            <div className="text-xs font-medium text-blue-500 truncate border-t border-gray-50 pt-1">
+              L: {loserEntry}
+            </div>
+          </div>
+        )
+      }
+    }
+  ] : []),
   {
     key: 'betWinner',
     label: 'Bet Winner',

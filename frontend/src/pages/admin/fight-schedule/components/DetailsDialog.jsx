@@ -22,8 +22,6 @@ const DetailsDialog = ({
             <span className="text-blue-600 font-semibold text-lg">#</span>
           </div>
           <div>
-            <h3 className="font-semibold text-lg text-gray-900">Fight Information</h3>
-            <p className="text-sm text-gray-500">Fight #{fight.fightNumber}</p>
           </div>
         </div>
 
@@ -63,6 +61,13 @@ const DetailsDialog = ({
                   <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Name</label>
                   <p className="mt-1 text-sm text-gray-900">{participant.participantName}</p>
                 </div>
+
+                {event?.eventType === 'derby' && participant.entryName && (
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Entry Name</label>
+                    <p className="mt-1 text-sm font-semibold text-blue-600">{participant.entryName}</p>
+                  </div>
+                )}
 
                 <div>
                   <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Contact</label>
@@ -213,6 +218,13 @@ const DetailsDialog = ({
                   <p className="mt-1 text-sm text-gray-900">{bet.participantID?.participantName || 'N/A'}</p>
                 </div>
 
+                {event?.eventType === 'derby' && bet.participantID?.entryName && (
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Entry Name</label>
+                    <p className="mt-1 text-sm font-semibold text-blue-600">{bet.participantID.entryName}</p>
+                  </div>
+                )}
+
                 <div>
                   <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Bet Amount</label>
                   <p className="mt-1 text-sm font-semibold text-gray-900">{formatCurrency(bet.betAmount)}</p>
@@ -275,6 +287,13 @@ const DetailsDialog = ({
                   <p className="mt-1 text-sm text-gray-900">{result.resultMatch?.winnerParticipantID?.participantName}</p>
                 </div>
 
+                {event?.eventType === 'derby' && result.resultMatch?.winnerParticipantID?.entryName && (
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Entry Name</label>
+                    <p className="mt-1 text-sm font-bold text-blue-700">{result.resultMatch?.winnerParticipantID?.entryName}</p>
+                  </div>
+                )}
+
                 {(event?.eventType === 'derby' || event?.eventType === 'hits_ulutan') && (
                   <>
                     <div>
@@ -307,6 +326,13 @@ const DetailsDialog = ({
                   <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Participant</label>
                   <p className="mt-1 text-sm text-gray-900">{result.resultMatch?.loserParticipantID?.participantName}</p>
                 </div>
+
+                {event?.eventType === 'derby' && result.resultMatch?.loserParticipantID?.entryName && (
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Entry Name</label>
+                    <p className="mt-1 text-sm font-semibold text-blue-600">{result.resultMatch?.loserParticipantID?.entryName}</p>
+                  </div>
+                )}
 
                 {(event?.eventType === 'derby' || event?.eventType === 'hits_ulutan') && (
                   <>

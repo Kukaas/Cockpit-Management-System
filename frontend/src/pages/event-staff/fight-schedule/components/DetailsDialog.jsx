@@ -63,6 +63,13 @@ const DetailsDialog = ({
                   <p className="mt-1 text-sm text-gray-900">{participant.participantName}</p>
                 </div>
 
+                {event?.eventType === 'derby' && participant.entryName && (
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Entry Name</label>
+                    <p className="mt-1 text-sm font-semibold text-blue-600">{participant.entryName}</p>
+                  </div>
+                )}
+
                 <div>
                   <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Contact</label>
                   <p className="mt-1 text-sm text-gray-900">{participant.contactNumber}</p>
@@ -224,6 +231,13 @@ const DetailsDialog = ({
                   <p className="mt-1 text-sm text-gray-900">{bet.participantID?.participantName || 'N/A'}</p>
                 </div>
 
+                {event?.eventType === 'derby' && bet.participantID?.entryName && (
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Entry Name</label>
+                    <p className="mt-1 text-sm font-semibold text-blue-600">{bet.participantID.entryName}</p>
+                  </div>
+                )}
+
                 <div>
                   <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Bet Amount</label>
                   <p className="mt-1 text-sm font-semibold text-gray-900">{formatCurrency(bet.betAmount)}</p>
@@ -275,6 +289,13 @@ const DetailsDialog = ({
                   <p className="mt-1 text-sm text-gray-900">{result.resultMatch?.winnerParticipantID?.participantName}</p>
                 </div>
 
+                {event?.eventType === 'derby' && result.resultMatch?.winnerParticipantID?.entryName && (
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Entry Name</label>
+                    <p className="mt-1 text-sm font-bold text-blue-700">{result.resultMatch?.winnerParticipantID?.entryName}</p>
+                  </div>
+                )}
+
                 <div>
                   <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Entry Number</label>
                   <p className="mt-1 text-sm text-gray-900">#{result.resultMatch?.winnerCockProfileID?.entryNo}</p>
@@ -307,6 +328,13 @@ const DetailsDialog = ({
                   <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Participant</label>
                   <p className="mt-1 text-sm text-gray-900">{result.resultMatch?.loserParticipantID?.participantName}</p>
                 </div>
+
+                {event?.eventType === 'derby' && result.resultMatch?.loserParticipantID?.entryName && (
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Entry Name</label>
+                    <p className="mt-1 text-sm font-semibold text-blue-600">{result.resultMatch?.loserParticipantID?.entryName}</p>
+                  </div>
+                )}
 
                 <div>
                   <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Entry Number</label>

@@ -59,7 +59,7 @@ const AdminFightSchedule = () => {
   }
 
   // Create table columns (view-only)
-  const fightColumns = createFightColumns(formatCurrency, formatDate, null, null, null, null, handleViewDetails, false, event?.eventType)
+  const fightColumns = createFightColumns(formatCurrency, formatDate, handleViewDetails, event?.eventType)
   const resultColumns = createMatchResultColumns(formatCurrency, formatDate, handleViewDetails, event?.eventType)
 
   if (eventLoading) {
