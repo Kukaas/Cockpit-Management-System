@@ -13,6 +13,7 @@ import NativeSelect from '@/components/custom/NativeSelect'
 import { useGetAll } from '@/hooks/useApiQueries'
 import { useCreateMutation, usePutMutation, useCustomMutation } from '@/hooks/useApiMutations'
 import api from '@/services/api'
+import { formatDateTime } from '@/lib/utils'
 
 const UserManagement = () => {
   const [addUserDialogOpen, setAddUserDialogOpen] = useState(false)
@@ -195,6 +196,17 @@ const UserManagement = () => {
       )
     },
     {
+      key: 'lastLogin',
+      label: 'Last Login',
+      sortable: true,
+      filterable: false,
+      render: (value) => (
+        <span className="text-xs text-muted-foreground italic">
+          {formatDateTime(value)}
+        </span>
+      )
+    },
+    {
       key: 'isActive',
       label: 'Status',
       sortable: true,
@@ -250,17 +262,17 @@ const UserManagement = () => {
           >
             <Edit className="h-4 w-4" />
           </Button>
-                     <Button
-             variant="ghost"
-             size="sm"
-             onClick={(e) => {
-               e.stopPropagation()
-               handleToggleStatus(row)
-             }}
-             className={`h-8 w-8 p-0 ${row.isActive ? 'text-orange-600 hover:text-orange-700' : 'text-green-600 hover:text-green-700'}`}
-           >
-             {row.isActive ? <Lock className="h-4 w-4" /> : <Unlock className="h-4 w-4" />}
-           </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation()
+              handleToggleStatus(row)
+            }}
+            className={`h-8 w-8 p-0 ${row.isActive ? 'text-orange-600 hover:text-orange-700' : 'text-green-600 hover:text-green-700'}`}
+          >
+            {row.isActive ? <Lock className="h-4 w-4" /> : <Unlock className="h-4 w-4" />}
+          </Button>
         </div>
       )
     }
@@ -310,9 +322,9 @@ const UserManagement = () => {
             <Button variant="outline" onClick={handleDialogClose}>
               Cancel
             </Button>
-                         <Button onClick={handleAddUser} disabled={createUserMutation.isPending}>
-               {createUserMutation.isPending ? 'Creating...' : 'Create User'}
-             </Button>
+            <Button onClick={handleAddUser} disabled={createUserMutation.isPending}>
+              {createUserMutation.isPending ? 'Creating...' : 'Create User'}
+            </Button>
           </>
         }
       >
@@ -455,21 +467,21 @@ const UserManagement = () => {
       </CustomAlertDialog>
 
       {/* Status Toggle Confirmation Dialog */}
-       <ConfirmationDialog
-         open={statusToggleDialogOpen}
-         onOpenChange={setStatusToggleDialogOpen}
-         title={selectedUser?.isActive ? "Disable Staff Account" : "Enable Staff Account"}
-         description={
-           selectedUser?.isActive
-             ? `Are you sure you want to disable ${selectedUser?.fullName}'s account? They will not be able to log in until the account is re-enabled.`
-             : `Are you sure you want to enable ${selectedUser?.fullName}'s account? They will be able to log in again.`
-         }
-         confirmText={selectedUser?.isActive ? 'Disable Account' : 'Enable Account'}
-         onConfirm={handleStatusToggle}
-         onCancel={handleStatusToggleClose}
-         variant={selectedUser?.isActive ? "destructive" : "default"}
-         loading={toggleStatusMutation.isPending}
-       />
+      <ConfirmationDialog
+        open={statusToggleDialogOpen}
+        onOpenChange={setStatusToggleDialogOpen}
+        title={selectedUser?.isActive ? "Disable Staff Account" : "Enable Staff Account"}
+        description={
+          selectedUser?.isActive
+            ? `Are you sure you want to disable ${selectedUser?.fullName}'s account? They will not be able to log in until the account is re-enabled.`
+            : `Are you sure you want to enable ${selectedUser?.fullName}'s account? They will be able to log in again.`
+        }
+        confirmText={selectedUser?.isActive ? 'Disable Account' : 'Enable Account'}
+        onConfirm={handleStatusToggle}
+        onCancel={handleStatusToggleClose}
+        variant={selectedUser?.isActive ? "destructive" : "default"}
+        loading={toggleStatusMutation.isPending}
+      />
 
       {/* Data Table */}
       <DataTable
@@ -480,8 +492,8 @@ const UserManagement = () => {
         filterable={true}
         title="Users"
         onRowClick={handleRowClick}
-                 loading={isLoading}
-         emptyMessage="No users found"
+        loading={isLoading}
+        emptyMessage="No users found"
         className="shadow-sm"
       />
     </PageLayout>

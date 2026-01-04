@@ -54,3 +54,20 @@ export function formatDate(date) {
     day: '2-digit',
   });
 }
+
+// Date and Time format utility "January 4, 2026 at 10:00 AM"
+export function formatDateTime(date) {
+  if (!date) return 'Never';
+  const d = new Date(date);
+  const dateStr = d.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+  const timeStr = d.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  });
+  return `${dateStr} at ${timeStr}`;
+}
