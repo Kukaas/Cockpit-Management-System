@@ -237,7 +237,7 @@ export const createMatchResultColumns = (formatCurrency, formatDate, handleViewD
   }
 ]
 
-export const createChampionshipColumns = (formatCurrency) => [
+export const createChampionshipColumns = (formatCurrency, eventType = 'regular') => [
   {
     key: 'position',
     label: 'Position',
@@ -272,6 +272,20 @@ export const createChampionshipColumns = (formatCurrency) => [
       </div>
     )
   },
+  // Dedicated Entry Name column for Derby events
+  ...(eventType === 'derby' ? [
+    {
+      key: 'entryName',
+      label: 'Entry Name',
+      sortable: true,
+      filterable: false,
+      render: (_, row) => (
+        <div className="text-sm font-semibold text-blue-600 truncate py-0.5">
+          {row.participant?.entryName || 'N/A'}
+        </div>
+      )
+    }
+  ] : []),
   {
     key: 'wins',
     label: 'Wins',

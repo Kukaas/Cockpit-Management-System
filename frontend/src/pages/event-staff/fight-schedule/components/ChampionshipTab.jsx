@@ -1,6 +1,6 @@
 import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Trophy, Award, Target, Users,  TrendingUp } from 'lucide-react'
+import { Trophy, Award, Target, Users, TrendingUp } from 'lucide-react'
 import { useGetAll } from '@/hooks/useApiQueries'
 import { createChampionshipColumns } from './TableColumns'
 import DataTable from '@/components/custom/DataTable'
@@ -43,7 +43,7 @@ const ChampionshipTab = ({ eventId, eventType, formatCurrency }) => {
   }) || []
 
   // Create championship columns
-  const championshipColumns = createChampionshipColumns(formatCurrency)
+  const championshipColumns = createChampionshipColumns(formatCurrency, eventType)
 
   return (
     <div className="space-y-6">
@@ -81,28 +81,15 @@ const ChampionshipTab = ({ eventId, eventType, formatCurrency }) => {
       </Card>
 
       {/* Championship Standings */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Target className="h-5 w-5 text-blue-600" />
-            Championship Standings
-          </CardTitle>
-          <CardDescription>
-            Current participant standings and progress
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <DataTable
-            data={tableData}
-            columns={championshipColumns}
-            title="Championship Standings"
-            searchable={true}
-            filterable={true}
-            pageSize={10}
-            emptyMessage="No championship data available"
-          />
-        </CardContent>
-      </Card>
+      <DataTable
+        data={tableData}
+        columns={championshipColumns}
+        title="Championship Standings"
+        searchable={true}
+        filterable={true}
+        pageSize={10}
+        emptyMessage="No championship data available"
+      />
 
       {/* Progress Summary */}
       <Card>

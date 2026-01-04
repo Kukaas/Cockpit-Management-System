@@ -699,7 +699,7 @@ export const getDerbyChampionshipStandings = async (req, res) => {
 
     // Get all participants for this event
     const participants = await Participant.find({ eventID })
-      .select('participantName contactNumber');
+      .select('participantName contactNumber entryName');
 
     // Create standings with win counts
     const standings = participants.map(participant => {
@@ -716,7 +716,8 @@ export const getDerbyChampionshipStandings = async (req, res) => {
         participant: {
           _id: participant._id,
           participantName: participant.participantName,
-          contactNumber: participant.contactNumber
+          contactNumber: participant.contactNumber,
+          entryName: participant.entryName
         },
         wins,
         draws,
