@@ -15,8 +15,8 @@ export const matchAndScheduleFight = async (newCock, scheduledBy) => {
         // 1. Get event details to check type
         const event = await Event.findById(newCock.eventID);
 
-        // As per user request: "all events except derby"
-        if (!event || event.eventType === 'derby') {
+        // As per user request: "all events except derby and hits_ulutan"
+        if (!event || event.eventType === 'derby' || event.eventType === 'hits_ulutan') {
             return null;
         }
 
