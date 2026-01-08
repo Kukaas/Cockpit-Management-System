@@ -82,6 +82,51 @@ const BetEntryForm = ({
         onSubmit()
     }
 
+    const handleSetPosition = (participantId, position) => {
+        const newBets = [...participantBets]
+
+        // Find or create bet for target participant
+        let existingBetIndex = newBets.findIndex(bet => {
+            const betId = bet?.participantID?._id || bet?.participantID
+            // Handle both string and object IDs
+            return betId === participantId || betId?.toString() === participantId?.toString()
+        })
+
+        if (existingBetIndex === -1) {
+            newBets.push({
+                participantID: participantId,
+                betAmount: '',
+                position: position
+            })
+            existingBetIndex = newBets.length - 1
+        } else {
+            newBets[existingBetIndex] = { ...newBets[existingBetIndex], position }
+        }
+
+        // Set the other participant to the opposite position
+        const oppositePosition = position === 'Meron' ? 'Wala' : 'Meron'
+        const otherParticipant = participants.find(p => p._id !== participantId)
+
+        if (otherParticipant) {
+            const otherBetIndex = newBets.findIndex(bet => {
+                const betId = bet?.participantID?._id || bet?.participantID
+                return betId === otherParticipant._id || betId?.toString() === otherParticipant._id?.toString()
+            })
+
+            if (otherBetIndex === -1) {
+                newBets.push({
+                    participantID: otherParticipant._id,
+                    betAmount: '',
+                    position: oppositePosition
+                })
+            } else {
+                newBets[otherBetIndex] = { ...newBets[otherBetIndex], position: oppositePosition }
+            }
+        }
+
+        onInputChange('participantBets', newBets)
+    }
+
     return (
         <CustomAlertDialog
             open={open}
@@ -225,6 +270,7 @@ const BetEntryForm = ({
                                         const validBets = newBets.filter(bet => bet.betAmount !== '' && bet.betAmount > 0)
                                         if (validBets.length === 2) {
                                             const [bet1, bet2] = validBets
+                                            // Only auto-assign if amounts are DIFFERENT
                                             if (bet1.betAmount > bet2.betAmount) {
                                                 bet1.position = 'Meron'
                                                 bet2.position = 'Wala'
@@ -232,9 +278,10 @@ const BetEntryForm = ({
                                                 bet2.position = 'Meron'
                                                 bet1.position = 'Wala'
                                             } else {
-                                                bet1.position = undefined
-                                                bet2.position = undefined
+                                                // If amounts are equal, keep existing positions if they are set
+                                                // Do NOT clear them, allowing manual selection to persist
                                             }
+
                                             newBets.forEach(bet => {
                                                 const validBet = validBets.find(vb => {
                                                     const betId = bet?.participantID?._id || bet?.participantID
@@ -243,13 +290,7 @@ const BetEntryForm = ({
                                                 })
                                                 if (validBet) {
                                                     bet.position = validBet.position
-                                                } else {
-                                                    bet.position = undefined
                                                 }
-                                            })
-                                        } else {
-                                            newBets.forEach(bet => {
-                                                bet.position = undefined
                                             })
                                         }
 
@@ -266,6 +307,36 @@ const BetEntryForm = ({
                                         <span>Must meet the minimum bet (₱{event.minimumBet.toLocaleString()})</span>
                                     </div>
                                 )}
+                                {(() => {
+                                    // Check if bets are equal to show position buttons
+                                    const areBetsEqual = participantBets.length === 2 && (() => {
+                                        const [b1, b2] = participantBets
+                                        const v1 = parseFloat(b1.betAmount) || 0
+                                        const v2 = parseFloat(b2.betAmount) || 0
+                                        return v1 > 0 && v2 > 0 && v1 === v2
+                                    })()
+
+                                    return areBetsEqual && (
+                                        <div className="flex gap-2 mt-1">
+                                            <Button
+                                                size="sm"
+                                                variant={participantBet?.position === 'Meron' ? 'destructive' : 'outline'}
+                                                className={`flex-1 ${participantBet?.position === 'Meron' ? 'bg-red-600 hover:bg-red-700' : ''}`}
+                                                onClick={() => handleSetPosition(participant._id, 'Meron')}
+                                            >
+                                                Meron
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant={participantBet?.position === 'Wala' ? 'default' : 'outline'}
+                                                className={`flex-1 ${participantBet?.position === 'Wala' ? 'bg-blue-600 hover:bg-blue-700' : ''}`}
+                                                onClick={() => handleSetPosition(participant._id, 'Wala')}
+                                            >
+                                                Wala
+                                            </Button>
+                                        </div>
+                                    )
+                                })()}
                             </div>
                         )
                     })}
