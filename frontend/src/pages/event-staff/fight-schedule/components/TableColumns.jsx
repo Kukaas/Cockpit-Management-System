@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Edit, Trash2, Trophy, Clock, Users, Target, Award, Calendar, Info, Eye, Wallet, Printer, Hash } from 'lucide-react'
 
-export const createFightColumns = (formatCurrency, formatDate, handleEditClick, handleDeleteClick, handleAddBetClick, handleAddResultClick, handleViewDetails, showAddResult = true, eventType = 'regular') => [
+export const createFightColumns = (formatCurrency, formatDate, handleEditClick, handleDeleteClick, handleAddBetClick, handleAddResultClick, handleViewDetails, showAddResult = true, eventType = 'regular', handleReprintTickets) => [
   {
     key: 'fightNumber',
     label: 'Fight #',
@@ -121,9 +121,26 @@ export const createFightColumns = (formatCurrency, formatDate, handleEditClick, 
                 <Trophy className="h-4 w-4" />
               </Button>
             )}
+
+            {/* Show Reprint Tickets button if bet has been recorded */}
+            {row.hasBet && handleReprintTickets && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleReprintTickets(row)
+                }}
+                className="h-8 w-8 p-0 text-gray-600 hover:text-gray-900"
+                title="Reprint Tickets"
+              >
+                <Printer className="h-4 w-4" />
+              </Button>
+            )}
           </>
-        )}
-        <Button
+        )
+        }
+        < Button
           variant="ghost"
           size="sm"
           onClick={(e) => {
@@ -133,8 +150,8 @@ export const createFightColumns = (formatCurrency, formatDate, handleEditClick, 
           className="h-8 w-8 p-0"
         >
           <Eye className="h-4 w-4" />
-        </Button>
-      </div>
+        </Button >
+      </div >
     )
   }
 ]

@@ -23,6 +23,7 @@ import FastestKillWinnersTab from './components/FastestKillWinnersTab'
 import { createFightColumns, createMatchResultColumns } from './components/TableColumns'
 import { printFightSchedule } from '@/lib/printFightSchedule'
 import { printWinnerReceipt } from '@/lib/printWinnerReceipt'
+import { printBetTickets } from '@/lib/printBetTickets'
 
 const FightSchedule = () => {
   const { eventId } = useParams()
@@ -204,22 +205,81 @@ const FightSchedule = () => {
   const createBetMutation = useCreateMutation('/match-results', {
     successMessage: 'Bets recorded successfully',
     errorMessage: (error) => error?.response?.data?.message || 'Failed to record bets',
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       setAddBetDialogOpen(false)
       resetBetForm()
       refetchResults()
       refetchFights()
+
+      // Print bet tickets
+      // Combine variable data with selectedFight info to get participant names
+      const printedBets = variables.participantBets.map(bet => {
+        const participant = selectedFight?.participantsID?.find(p =>
+          (p._id === bet.participantID) || (p._id?.toString() === bet.participantID?.toString())
+        )
+        return {
+          ...bet,
+          participantName: participant?.participantName || 'Unknown',
+          // Determine position if not explicit (based on amount comparison from form logic, or just print participant name)
+          // But we can try to re-derive position if needed, or rely on what was passed if we passed it.
+          // Form calculates position but might not pass it in mutation if backend doesn't save it.
+          // Let's rely on what's available. If position isn't saved, we might need to recalculate or just show name.
+          // Actually, BetEntryForm logic assigns position in UI state. Let's assume it might not be in payload if backend doesn't take it.
+          // But for printing we want it.
+          // Re-calculating position for print:
+          position: bet.position || (variables.participantBets.length === 2 && (() => {
+            const otherBet = variables.participantBets.find(b => b.participantID !== bet.participantID)
+            if (!otherBet) return ''
+            if (bet.betAmount > otherBet.betAmount) return 'Meron'
+            if (bet.betAmount < otherBet.betAmount) return 'Wala'
+            return ''
+          })())
+        }
+      })
+
+      printBetTickets({
+        event,
+        fight: selectedFight,
+        bets: printedBets,
+        formatCurrency,
+        formatDate
+      })
     }
   })
 
   const updateBetMutation = usePutMutation('/match-results', {
     successMessage: 'Bets updated successfully',
     errorMessage: (error) => error?.response?.data?.message || 'Failed to update bets',
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       setAddBetDialogOpen(false)
       resetBetForm()
       refetchResults()
       refetchFights()
+      // Print bet tickets (same logic as create)
+      const printedBets = variables.data.participantBets.map(bet => {
+        const participant = selectedFight?.participantsID?.find(p =>
+          (p._id === bet.participantID) || (p._id?.toString() === bet.participantID?.toString())
+        )
+        return {
+          ...bet,
+          participantName: participant?.participantName || 'Unknown',
+          position: bet.position || (variables.data.participantBets.length === 2 && (() => {
+            const otherBet = variables.data.participantBets.find(b => b.participantID !== bet.participantID)
+            if (!otherBet) return ''
+            if (bet.betAmount > otherBet.betAmount) return 'Meron'
+            if (bet.betAmount < otherBet.betAmount) return 'Wala'
+            return ''
+          })())
+        }
+      })
+
+      printBetTickets({
+        event,
+        fight: selectedFight,
+        bets: printedBets,
+        formatCurrency,
+        formatDate
+      })
     }
   })
 
@@ -529,6 +589,52 @@ const FightSchedule = () => {
     return `${year}-${month}-${day}T${hours}:${minutes}`
   }
 
+  // Handle reprint tickets
+  const handleReprintTickets = (fight) => {
+    // Find the match result with the bets
+    const matchResult = resultsData.find(result => {
+      const matchId = result.matchID?._id || result.matchID
+      const fightId = fight._id
+      return matchId === fightId || matchId?.toString() === fightId?.toString()
+    })
+
+    if (!matchResult || !matchResult.participantBets || matchResult.participantBets.length === 0) {
+      toast.error('No bets record found for this fight')
+      return
+    }
+
+    // Reconstruct bets for printing
+    const printedBets = matchResult.participantBets.map(bet => {
+      const participant = fight.participantsID?.find(p =>
+        (p._id === bet.participantID) || (p._id?.toString() === bet.participantID?.toString())
+      )
+
+      // Try to determine position if not saved
+      let position = bet.position
+      if (!position && matchResult.participantBets.length === 2) {
+        const otherBet = matchResult.participantBets.find(b => b._id !== bet._id) // Assuming subdoc _id or just different object
+        if (otherBet) {
+          if (bet.betAmount > otherBet.betAmount) position = 'Meron'
+          else if (bet.betAmount < otherBet.betAmount) position = 'Wala'
+        }
+      }
+
+      return {
+        ...bet,
+        participantName: participant?.participantName || 'Unknown',
+        position
+      }
+    })
+
+    printBetTickets({
+      event,
+      fight,
+      bets: printedBets,
+      formatCurrency,
+      formatDate
+    })
+  }
+
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-PH', {
       style: 'currency',
@@ -546,7 +652,8 @@ const FightSchedule = () => {
     handleAddResultClick,
     handleViewDetails,
     true, // showAddResult
-    event?.eventType
+    event?.eventType,
+    handleReprintTickets
   )
 
   // Print winner receipt
