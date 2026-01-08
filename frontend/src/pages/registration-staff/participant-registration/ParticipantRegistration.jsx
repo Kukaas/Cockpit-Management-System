@@ -979,7 +979,10 @@ const ParticipantRegistration = () => {
 
   // Determine if fight schedule tab should be shown
   const registrationDeadlinePassed = isRegistrationDeadlinePassed()
-  const showFightScheduleTab = selectedEvent?.eventType === 'hits_ulutan' || (isMinimumParticipantsMet() && (selectedEvent?.eventType !== 'derby' || registrationDeadlinePassed))
+  // Show fight schedule tab if:
+  // 1. It's NOT a derby event (allows regular/hackfight, fastest_kill, hits_ulutan to proceed freely)
+  // 2. OR if it is a derby event, minimum participants must be met AND registration deadline passed
+  const showFightScheduleTab = selectedEvent?.eventType !== 'derby' || (isMinimumParticipantsMet() && registrationDeadlinePassed)
 
   const deadlineApproaching = isDeadlineApproaching()
 
