@@ -9,17 +9,35 @@
  * @param {String} params.entranceId - MongoDB entrance record ID
  */
 export const printEntranceTickets = ({
-    event,
-    count = 1,
-    formatDate,
-    formatCurrency,
-    entranceTime = new Date(),
-    entranceId = ''
+  event,
+  count = 1,
+  formatDate,
+  formatCurrency,
+  entranceTime = new Date(),
+  entranceId = ''
 }) => {
-    const printWindow = window.open('', '_blank')
+  // Create an invisible iframe for printing
+  const iframeId = 'print-entrance-ticket-frame'
+  let printFrame = document.getElementById(iframeId)
 
-    // Generate ticket HTML for each entrance
-    const ticketsHTML = Array.from({ length: count }, (_, index) => `
+  if (printFrame) {
+    document.body.removeChild(printFrame)
+  }
+
+  printFrame = document.createElement('iframe')
+  printFrame.id = iframeId
+  printFrame.style.position = 'fixed'
+  printFrame.style.right = '0'
+  printFrame.style.bottom = '0'
+  printFrame.style.width = '0'
+  printFrame.style.height = '0'
+  printFrame.style.border = '0'
+  document.body.appendChild(printFrame)
+
+  const printWindow = printFrame.contentWindow
+
+  // Generate ticket HTML for each entrance
+  const ticketsHTML = Array.from({ length: count }, (_, index) => `
         <div class="ticket" style="page-break-after: ${index < count - 1 ? 'always' : 'auto'};">
             <div class="ticket-header">
                 <h1>ENTRANCE TICKET</h1>
@@ -63,7 +81,7 @@ export const printEntranceTickets = ({
         </div>
     `).join('')
 
-    const printContent = `
+  const printContent = `
     <!DOCTYPE html>
     <html>
       <head>
@@ -213,13 +231,12 @@ export const printEntranceTickets = ({
     </html>
   `
 
-    printWindow.document.write(printContent)
-    printWindow.document.close()
-    printWindow.focus()
+  printWindow.document.write(printContent)
+  printWindow.document.close()
 
-    // Auto-print after a short delay
-    setTimeout(() => {
-        printWindow.print()
-        // Don't close automatically - let user close after printing
-    }, 500)
+  // Auto-print after a short delay
+  setTimeout(() => {
+    printWindow.focus()
+    printWindow.print()
+  }, 500)
 }

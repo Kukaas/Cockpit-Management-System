@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Plus, Printer } from 'lucide-react'
+import { ArrowLeft, Printer, Ticket } from 'lucide-react'
 import PageLayout from '@/layouts/PageLayout'
 import { toast } from 'sonner'
 import { useGetAll, useGetById } from '@/hooks/useApiQueries'
@@ -26,7 +26,7 @@ const Entrance = () => {
   const [selectedEvent, setSelectedEvent] = useState(null)
 
   // Dialog states
-  const [addEntranceDialogOpen, setAddEntranceDialogOpen] = useState(false)
+
   const [editEntranceDialogOpen, setEditEntranceDialogOpen] = useState(false)
   const [deleteEntranceDialogOpen, setDeleteEntranceDialogOpen] = useState(false)
 
@@ -50,9 +50,9 @@ const Entrance = () => {
     errorMessage: (error) => {
       return error?.response?.data?.message || 'Failed to record entrance tally'
     },
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       // Print tickets for the number of entrances recorded
-      const entranceCount = entranceFormData.count || 1
+      const entranceCount = variables.count || 1
       const entranceId = data?.data?._id || ''
 
       printEntranceTickets({
@@ -132,19 +132,7 @@ const Entrance = () => {
   }
 
   // Submit handlers
-  const handleAddEntrance = async () => {
-    if (!entranceFormData.count || entranceFormData.count < 1) {
-      toast.error('Please enter a valid count (minimum 1)')
-      return
-    }
 
-    const entranceData = {
-      eventID: eventId,
-      count: Number(entranceFormData.count)
-    }
-
-    createEntranceMutation.mutate(entranceData)
-  }
 
   const handleEditEntrance = async () => {
     if (!selectedEntrance) return
@@ -209,7 +197,7 @@ const Entrance = () => {
   const isEventDatePassed = eventDate ? eventDate < new Date() : false
 
   // Combined check for disabling actions
-  const isEventDisabled = isEventCompleted || isEventDatePassed
+  const isEventDisabled = isEventCompleted
 
   // Calculate total entrances and revenue
   const totalEntrances = entrances.reduce((sum, entrance) => sum + entrance.count, 0)
@@ -307,11 +295,17 @@ const Entrance = () => {
               Print Report
             </Button>
             <Button
-              onClick={() => setAddEntranceDialogOpen(true)}
-              disabled={isEventDisabled || isAtCapacity || !selectedEvent?.entranceFee || selectedEvent?.entranceFee === 0}
+              onClick={() => {
+                setEntranceFormData({ count: 1 })
+                createEntranceMutation.mutate({
+                  eventID: eventId,
+                  count: 1
+                })
+              }}
+              disabled={createEntranceMutation.isPending || isEventDisabled || isAtCapacity || !selectedEvent?.entranceFee || selectedEvent?.entranceFee === 0}
             >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Tally
+              <Ticket className="h-4 w-4 mr-2" />
+              Entrance Ticket
             </Button>
           </div>
         </div>
@@ -328,19 +322,7 @@ const Entrance = () => {
         />
       </div>
 
-      {/* Add Entrance Dialog */}
-      <EntranceForm
-        open={addEntranceDialogOpen}
-        onOpenChange={setAddEntranceDialogOpen}
-        title="Add Entrance Tally"
-        description="Record a new entrance tally"
-        formData={entranceFormData}
-        onInputChange={handleEntranceInputChange}
-        onSubmit={handleAddEntrance}
-        onCancel={() => setAddEntranceDialogOpen(false)}
-        isPending={createEntranceMutation.isPending}
-        isEdit={false}
-      />
+
 
       {/* Edit Entrance Dialog */}
       <EntranceForm
