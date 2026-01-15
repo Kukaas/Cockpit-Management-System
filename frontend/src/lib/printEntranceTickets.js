@@ -37,11 +37,16 @@ export const printEntranceTickets = ({
   const printWindow = printFrame.contentWindow
 
   // Generate ticket HTML for each entrance
-  const ticketsHTML = Array.from({ length: count }, (_, index) => `
+  const ticketsHTML = Array.from({ length: count }, (_, index) => {
+    // Generate a unique ID for each ticket if there are multiple
+    // If only 1 ticket, just use the entranceId. If multiple, append -1, -2, etc.
+    const uniqueId = count > 1 ? `${entranceId}-${index + 1}` : entranceId
+
+    return `
         <div class="ticket" style="page-break-after: ${index < count - 1 ? 'always' : 'auto'};">
             <div class="ticket-header">
                 <h1>ENTRANCE TICKET</h1>
-                ${entranceId ? `<div class="ticket-number">#${entranceId}</div>` : ''}
+                ${uniqueId ? `<div class="ticket-number">#${uniqueId}</div>` : ''}
             </div>
 
             <div class="ticket-body">
@@ -79,7 +84,8 @@ export const printEntranceTickets = ({
                 <p class="print-time">Printed: ${formatDate(new Date())}</p>
             </div>
         </div>
-    `).join('')
+    `.trim()
+  }).join('')
 
   const printContent = `
     <!DOCTYPE html>

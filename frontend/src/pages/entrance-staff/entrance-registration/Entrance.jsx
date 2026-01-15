@@ -27,6 +27,7 @@ const Entrance = () => {
 
   // Dialog states
 
+  const [addEntranceDialogOpen, setAddEntranceDialogOpen] = useState(false)
   const [editEntranceDialogOpen, setEditEntranceDialogOpen] = useState(false)
   const [deleteEntranceDialogOpen, setDeleteEntranceDialogOpen] = useState(false)
 
@@ -64,10 +65,10 @@ const Entrance = () => {
         entranceId
       })
 
-      // Reset form but keep dialog open for quick consecutive entries
+      // Reset form and close dialog
       resetEntranceForm()
       refetchEntrances()
-      // Keep the dialog open - don't close it
+      setAddEntranceDialogOpen(false)
     }
   })
 
@@ -132,7 +133,17 @@ const Entrance = () => {
   }
 
   // Submit handlers
+  const handleAddEntrance = async () => {
+    if (!entranceFormData.count || entranceFormData.count < 1) {
+      toast.error('Please enter a valid count (minimum 1)')
+      return
+    }
 
+    createEntranceMutation.mutate({
+      eventID: eventId,
+      count: Number(entranceFormData.count)
+    })
+  }
 
   const handleEditEntrance = async () => {
     if (!selectedEntrance) return
@@ -297,10 +308,7 @@ const Entrance = () => {
             <Button
               onClick={() => {
                 setEntranceFormData({ count: 1 })
-                createEntranceMutation.mutate({
-                  eventID: eventId,
-                  count: 1
-                })
+                setAddEntranceDialogOpen(true)
               }}
               disabled={createEntranceMutation.isPending || isEventDisabled || isAtCapacity || !selectedEvent?.entranceFee || selectedEvent?.entranceFee === 0}
             >
@@ -323,6 +331,23 @@ const Entrance = () => {
       </div>
 
 
+
+      {/* Add Entrance Dialog */}
+      <EntranceForm
+        open={addEntranceDialogOpen}
+        onOpenChange={setAddEntranceDialogOpen}
+        title="New Entrance Tally"
+        description="Record a new entrance tally for this event"
+        formData={entranceFormData}
+        onInputChange={handleEntranceInputChange}
+        onSubmit={handleAddEntrance}
+        onCancel={() => {
+          setAddEntranceDialogOpen(false)
+          resetEntranceForm()
+        }}
+        isPending={createEntranceMutation.isPending}
+        isEdit={false}
+      />
 
       {/* Edit Entrance Dialog */}
       <EntranceForm
