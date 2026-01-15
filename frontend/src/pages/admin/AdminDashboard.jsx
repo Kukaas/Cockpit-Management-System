@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { 
+import {
   Users,
   TrendingUp,
   Filter,
@@ -27,7 +27,7 @@ import NativeSelect from '@/components/custom/NativeSelect'
 import { useNavigate } from 'react-router-dom'
 
 // Import chart components
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer } from 'recharts'
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend } from 'recharts'
 import {
   ChartContainer,
   ChartLegend,
@@ -143,6 +143,33 @@ const AdminDashboard = () => {
     totalEntryFee: filteredParticipants.reduce((sum, participant) => sum + (participant.entryFee || 0), 0),
     participantsWithEntryFee: filteredParticipants.filter(p => p.entryFee && p.entryFee > 0).length,
   }
+
+  // Calculate Participant Analytics for Charts
+  const participantsByEventType = filteredParticipants.reduce((acc, p) => {
+    const type = p.eventID?.eventType;
+    if (type) {
+      acc[type] = (acc[type] || 0) + 1;
+    }
+    return acc;
+  }, {});
+
+  const eventTypeData = Object.entries(participantsByEventType)
+    .map(([name, count]) => ({ name: name.replace('_', ' ').toUpperCase(), count }))
+    .sort((a, b) => b.count - a.count);
+
+  const participantsByEvent = filteredParticipants.reduce((acc, p) => {
+    const name = p.eventID?.eventName;
+    if (name) {
+      acc[name] = (acc[name] || 0) + 1;
+    }
+    return acc;
+  }, {});
+
+  const topEventsData = Object.entries(participantsByEvent)
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5); // Top 5 events
+
 
   // Month options
   const months = [
@@ -263,6 +290,13 @@ const AdminDashboard = () => {
     entryFees: {
       label: "Entry Fees",
       color: "var(--chart-4)",
+    },
+  }
+
+  const participantsChartConfig = {
+    participants: {
+      label: "Participants",
+      color: "hsl(var(--chart-1))",
     },
   }
 
@@ -416,6 +450,82 @@ const AdminDashboard = () => {
           </Card>
         </div>
 
+        {/* Participant Analytics Charts */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                <Users className="h-4 w-4" />
+                Participants by Event Type
+              </CardTitle>
+              <CardDescription>Distribution across event categories</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer config={participantsChartConfig} className="h-[250px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={eventTypeData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis
+                      dataKey="name"
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={10}
+                      fontSize={12}
+                    />
+                    <YAxis
+                      tickLine={false}
+                      axisLine={false}
+                      allowDecimals={false}
+                    />
+                    <ChartTooltip
+                      cursor={false}
+                      content={<ChartTooltipContent indicator="dashed" />}
+                    />
+                    <Bar dataKey="count" fill="var(--color-entrances)" radius={4} barSize={40} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                <Trophy className="h-4 w-4 text-amber-500" />
+                Top 5 Events by Participation
+              </CardTitle>
+              <CardDescription>Events with highest attendance</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer config={participantsChartConfig} className="h-[250px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={topEventsData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis
+                      dataKey="name"
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={10}
+                      fontSize={11}
+                      interval={0}
+                      height={50}
+                    />
+                    <YAxis
+                      tickLine={false}
+                      axisLine={false}
+                      allowDecimals={false}
+                    />
+                    <ChartTooltip
+                      cursor={false}
+                      content={<ChartTooltipContent indicator="dashed" />}
+                    />
+                    <Bar dataKey="count" fill="#f59e0b" radius={4} barSize={40} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Revenue Chart */}
         <Card className="pt-0">
@@ -598,10 +708,10 @@ const AdminDashboard = () => {
               </div>
             )}
           </CardContent>
-        </Card>
+        </Card >
 
         {/* Quick Actions */}
-        <Card>
+        < Card >
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Activity className="h-5 w-5" />
@@ -650,9 +760,9 @@ const AdminDashboard = () => {
               </Button>
             </div>
           </CardContent>
-        </Card>
-      </div>
-    </PageLayout>
+        </Card >
+      </div >
+    </PageLayout >
   )
 }
 
