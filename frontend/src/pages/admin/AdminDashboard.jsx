@@ -461,30 +461,42 @@ const AdminDashboard = () => {
               <CardDescription>Distribution across event categories</CardDescription>
             </CardHeader>
             <CardContent>
-              <ChartContainer config={participantsChartConfig} className="h-[250px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={eventTypeData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis
-                      dataKey="name"
-                      tickLine={false}
-                      axisLine={false}
-                      tickMargin={10}
-                      fontSize={12}
-                    />
-                    <YAxis
-                      tickLine={false}
-                      axisLine={false}
-                      allowDecimals={false}
-                    />
-                    <ChartTooltip
-                      cursor={false}
-                      content={<ChartTooltipContent indicator="dashed" />}
-                    />
-                    <Bar dataKey="count" fill="var(--color-entrances)" radius={4} barSize={40} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </ChartContainer>
+              {eventTypeData.length > 0 ? (
+                <ChartContainer config={participantsChartConfig} className="h-[250px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={eventTypeData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                      <XAxis
+                        dataKey="name"
+                        tickLine={false}
+                        axisLine={false}
+                        tickMargin={10}
+                        fontSize={12}
+                      />
+                      <YAxis
+                        tickLine={false}
+                        axisLine={false}
+                        allowDecimals={false}
+                      />
+                      <ChartTooltip
+                        cursor={false}
+                        content={<ChartTooltipContent indicator="dashed" />}
+                      />
+                      <Bar dataKey="count" fill="var(--color-entrances)" radius={4} barSize={40} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
+              ) : (
+                <div className="flex h-[250px] w-full flex-col items-center justify-center gap-2 text-center">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                    <Users className="h-6 w-6 text-muted-foreground" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-muted-foreground">No participation data available</p>
+                    <p className="text-xs text-muted-foreground">There are no participants recorded for this period.</p>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -497,32 +509,44 @@ const AdminDashboard = () => {
               <CardDescription>Events with highest attendance</CardDescription>
             </CardHeader>
             <CardContent>
-              <ChartContainer config={participantsChartConfig} className="h-[250px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={topEventsData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis
-                      dataKey="name"
-                      tickLine={false}
-                      axisLine={false}
-                      tickMargin={10}
-                      fontSize={11}
-                      interval={0}
-                      height={50}
-                    />
-                    <YAxis
-                      tickLine={false}
-                      axisLine={false}
-                      allowDecimals={false}
-                    />
-                    <ChartTooltip
-                      cursor={false}
-                      content={<ChartTooltipContent indicator="dashed" />}
-                    />
-                    <Bar dataKey="count" fill="#f59e0b" radius={4} barSize={40} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </ChartContainer>
+              {topEventsData.length > 0 ? (
+                <ChartContainer config={participantsChartConfig} className="h-[250px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={topEventsData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                      <XAxis
+                        dataKey="name"
+                        tickLine={false}
+                        axisLine={false}
+                        tickMargin={10}
+                        fontSize={11}
+                        interval={0}
+                        height={50}
+                      />
+                      <YAxis
+                        tickLine={false}
+                        axisLine={false}
+                        allowDecimals={false}
+                      />
+                      <ChartTooltip
+                        cursor={false}
+                        content={<ChartTooltipContent indicator="dashed" />}
+                      />
+                      <Bar dataKey="count" fill="#f59e0b" radius={4} barSize={40} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
+              ) : (
+                <div className="flex h-[250px] w-full flex-col items-center justify-center gap-2 text-center">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                    <Trophy className="h-6 w-6 text-muted-foreground" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-muted-foreground">No top events available</p>
+                    <p className="text-xs text-muted-foreground">No events found with participants for this period.</p>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -703,8 +727,14 @@ const AdminDashboard = () => {
                 </ResponsiveContainer>
               </ChartContainer>
             ) : (
-              <div className="flex items-center justify-center h-[250px] text-muted-foreground">
-                <p>No revenue data available</p>
+              <div className="flex h-[250px] w-full flex-col items-center justify-center gap-2 text-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                  <TrendingUp className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-muted-foreground">No revenue data available</p>
+                  <p className="text-xs text-muted-foreground">No financial records found for this period.</p>
+                </div>
               </div>
             )}
           </CardContent>
