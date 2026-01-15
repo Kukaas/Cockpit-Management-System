@@ -6,6 +6,7 @@ import PageLayout from '@/layouts/PageLayout'
 import { useGetAll } from '@/hooks/useApiQueries'
 import { useNavigate } from 'react-router-dom'
 import { Badge } from '@/components/ui/badge'
+import AggregateReportButton from './components/AggregateReportButton'
 
 const Reports = () => {
     const navigate = useNavigate()
@@ -107,9 +108,12 @@ const Reports = () => {
             title="Reports"
             description="View financial reports for events - Rentals, Entrances, Plazada, and Entry Fees"
             headerButton={
-                <Button variant="outline" onClick={() => navigate('/admin')}>
-                    Back to Dashboard
-                </Button>
+                <div className="flex gap-2">
+                    <AggregateReportButton events={events} />
+                    <Button variant="outline" onClick={() => navigate('/admin')}>
+                        Back to Dashboard
+                    </Button>
+                </div>
             }
         >
             <DataTable
