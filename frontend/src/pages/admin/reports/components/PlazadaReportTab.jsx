@@ -120,7 +120,6 @@ const PlazadaReportTab = ({ event, formatCurrency, formatDate }) => {
       minute: '2-digit',
       hour12: true
     }) : 'N/A'}</div>
-            <div class="event-details">Location: ${event?.location || 'N/A'}</div>
             <div class="event-details">Report Generated: ${new Date().toLocaleString('en-US')}</div>
           </div>
 

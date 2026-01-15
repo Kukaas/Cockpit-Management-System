@@ -160,7 +160,6 @@ const UnifiedPrintButton = ({ event, formatCurrency, formatDate }) => {
             month: 'long',
             day: 'numeric'
         }) : 'N/A'}</div>
-            <div class="event-details">Location: ${event?.location || 'N/A'}</div>
             <div class="event-details">Report Generated: ${new Date().toLocaleString('en-US')}</div>
           </div>
 
