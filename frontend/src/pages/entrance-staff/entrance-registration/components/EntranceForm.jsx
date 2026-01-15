@@ -53,7 +53,7 @@ const EntranceForm = ({
             Cancel
           </Button>
           <Button onClick={onSubmit} disabled={isPending}>
-            {isPending ? (isEdit ? 'Updating...' : 'Recording...') : (isEdit ? 'Update Tally' : 'Record Tally')}
+            {isPending ? (isEdit ? 'Updating...' : 'Recording...') : (isEdit ? 'Update Tally' : 'Generate Ticket')}
           </Button>
         </>
       }
