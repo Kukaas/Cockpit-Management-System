@@ -39,8 +39,7 @@ const Events = () => {
     maxWeight: '',
     weightGap: '',
     prizeDistribution: [
-      { tierName: 'Top 1-15', startRank: 1, endRank: 15, percentage: 80 },
-      { tierName: 'Top 16-20', startRank: 16, endRank: 20, percentage: 20 }
+      { tierName: 'Tier 1', startRank: 1, endRank: 5, percentage: 100 }
     ]
   })
   const [editFormData, setEditFormData] = useState({
@@ -59,8 +58,7 @@ const Events = () => {
     maxWeight: '',
     weightGap: '',
     prizeDistribution: [
-      { tierName: 'Top 1-15', startRank: 1, endRank: 15, percentage: 80 },
-      { tierName: 'Top 16-20', startRank: 16, endRank: 20, percentage: 20 }
+      { tierName: 'Tier 1', startRank: 1, endRank: 5, percentage: 100 }
     ]
   })
 
@@ -434,8 +432,7 @@ const Events = () => {
       maxWeight: '',
       weightGap: '',
       prizeDistribution: [
-        { tierName: 'Top 1-15', startRank: 1, endRank: 15, percentage: 80 },
-        { tierName: 'Top 16-20', startRank: 16, endRank: 20, percentage: 20 }
+        { tierName: 'Tier 1', startRank: 1, endRank: 5, percentage: 100 }
       ]
     })
   }
@@ -457,8 +454,7 @@ const Events = () => {
       maxWeight: '',
       weightGap: '',
       prizeDistribution: [
-        { tierName: 'Top 1-15', startRank: 1, endRank: 15, percentage: 80 },
-        { tierName: 'Top 16-20', startRank: 16, endRank: 20, percentage: 20 }
+        { tierName: 'Tier 1', startRank: 1, endRank: 5, percentage: 100 }
       ]
     })
   }
@@ -568,8 +564,7 @@ const Events = () => {
       minWeight: event.minWeight ? event.minWeight.toString() : '',
       maxWeight: event.maxWeight ? event.maxWeight.toString() : '',
       prizeDistribution: event.prizeDistribution || [
-        { tierName: 'Top 1-15', startRank: 1, endRank: 15, percentage: 80 },
-        { tierName: 'Top 16-20', startRank: 16, endRank: 20, percentage: 20 }
+        { tierName: 'Tier 1', startRank: 1, endRank: 5, percentage: 100 }
       ]
     })
     setEditEventDialogOpen(true)

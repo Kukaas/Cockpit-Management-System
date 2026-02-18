@@ -265,6 +265,12 @@ const EventForm = ({
                   variant="outline"
                   size="sm"
                   onClick={() => {
+                    const currentTotal = formData.prizeDistribution.reduce((sum, t) => sum + Number(t.percentage || 0), 0);
+                    const remainingPercent = Math.max(0, 100 - currentTotal);
+                    const lastTierPercent = formData.prizeDistribution.length > 0
+                      ? Number(formData.prizeDistribution[formData.prizeDistribution.length - 1].percentage || 0)
+                      : 100;
+
                     const newTier = {
                       tierName: `Tier ${formData.prizeDistribution.length + 1}`,
                       startRank: formData.prizeDistribution.length > 0
@@ -273,7 +279,7 @@ const EventForm = ({
                       endRank: formData.prizeDistribution.length > 0
                         ? formData.prizeDistribution[formData.prizeDistribution.length - 1].endRank + 5
                         : 5,
-                      percentage: 0
+                      percentage: Math.min(remainingPercent, lastTierPercent)
                     };
                     onInputChange('prizeDistribution', [...formData.prizeDistribution, newTier]);
                   }}
@@ -347,9 +353,42 @@ const EventForm = ({
                       value={tier.percentage}
                       onChange={(e) => {
                         const updated = [...formData.prizeDistribution];
-                        const value = e.target.value === '' ? '' : Number(e.target.value);
-                        // Cap percentage at 100
-                        updated[index].percentage = value === '' ? '' : Math.min(value, 100);
+                        let value = e.target.value === '' ? '' : Number(e.target.value);
+
+                        // Validation: Tier N cannot be higher than Tier N-1
+                        if (index > 0) {
+                          const prevTierPercent = Number(updated[index - 1].percentage || 0);
+                          value = value === '' ? '' : Math.min(value, prevTierPercent);
+                        } else {
+                          // Tier 1 capped at 100
+                          value = value === '' ? '' : Math.min(value, 100);
+                        }
+
+                        updated[index].percentage = value;
+
+                        // Auto-calculate and cascade for ALL subsequent tiers
+                        for (let i = index + 1; i < updated.length; i++) {
+                          const currentPercentage = Number(updated[i].percentage || 0);
+                          const prevPercentage = Number(updated[i - 1].percentage || 0);
+
+                          // Rule 1: Tier N <= Tier N-1
+                          let newValue = Math.min(currentPercentage, prevPercentage);
+
+                          // Rule 2: If it's the IMMEDIATELY NEXT tier, try to take the remainder
+                          if (i === index + 1) {
+                            const sumBefore = updated.slice(0, i).reduce((sum, t) => sum + Number(t.percentage || 0), 0);
+                            const remaining = Math.max(0, 100 - sumBefore);
+                            newValue = Math.min(remaining, prevPercentage);
+                          } else {
+                            // For tiers further down, just ensure Tier N <= Tier N-1
+                            // We don't automatically sum them to 100 to avoid confusing the user
+                            // but we do ensure they don't break the "cannot be higher" rule
+                            newValue = Math.min(currentPercentage, prevPercentage);
+                          }
+
+                          updated[i].percentage = newValue;
+                        }
+
                         onInputChange('prizeDistribution', updated);
                       }}
                       min="0"
