@@ -5,6 +5,7 @@ import CustomAlertDialog from '@/components/custom/CustomAlertDialog'
 import InputField from '@/components/custom/InputField'
 import NativeSelect from '@/components/custom/NativeSelect'
 import { Calendar, Hash, Clock, Users, FileText, DollarSign, Weight } from 'lucide-react'
+import { toast } from 'sonner'
 
 const EventForm = ({
   open,
@@ -265,23 +266,34 @@ const EventForm = ({
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    const currentTotal = formData.prizeDistribution.reduce((sum, t) => sum + Number(t.percentage || 0), 0);
-                    const remainingPercent = Math.max(0, 100 - currentTotal);
-                    const lastTierPercent = formData.prizeDistribution.length > 0
-                      ? Number(formData.prizeDistribution[formData.prizeDistribution.length - 1].percentage || 0)
-                      : 100;
+                    const tiers = [...formData.prizeDistribution];
+                    if (tiers.length > 0) {
+                      const lastIndex = tiers.length - 1;
+                      const lastPercentage = Number(tiers[lastIndex].percentage || 0);
+                      const half = Math.floor(lastPercentage / 2);
+                      const remainingHalf = lastPercentage - half;
 
-                    const newTier = {
-                      tierName: `Tier ${formData.prizeDistribution.length + 1}`,
-                      startRank: formData.prizeDistribution.length > 0
-                        ? formData.prizeDistribution[formData.prizeDistribution.length - 1].endRank + 1
-                        : 1,
-                      endRank: formData.prizeDistribution.length > 0
-                        ? formData.prizeDistribution[formData.prizeDistribution.length - 1].endRank + 5
-                        : 5,
-                      percentage: Math.min(remainingPercent, lastTierPercent)
-                    };
-                    onInputChange('prizeDistribution', [...formData.prizeDistribution, newTier]);
+                      // Update last tier to have half
+                      tiers[lastIndex].percentage = half;
+
+                      // Create new tier with the other half
+                      const newTier = {
+                        tierName: `Tier ${tiers.length + 1}`,
+                        startRank: tiers[lastIndex].endRank + 1,
+                        endRank: tiers[lastIndex].endRank + 5,
+                        percentage: remainingHalf
+                      };
+                      onInputChange('prizeDistribution', [...tiers, newTier]);
+                    } else {
+                      // Fallback if somehow there are no tiers
+                      const newTier = {
+                        tierName: 'Tier 1',
+                        startRank: 1,
+                        endRank: 5,
+                        percentage: 100
+                      };
+                      onInputChange('prizeDistribution', [newTier]);
+                    }
                   }}
                 >
                   Add Tier
@@ -355,38 +367,47 @@ const EventForm = ({
                         const updated = [...formData.prizeDistribution];
                         let value = e.target.value === '' ? '' : Number(e.target.value);
 
-                        // Validation: Tier N cannot be higher than Tier N-1
+                        // Rule: Tier N cannot be higher than Tier N-1
+                        let maxAllowed = 100;
                         if (index > 0) {
-                          const prevTierPercent = Number(updated[index - 1].percentage || 0);
-                          value = value === '' ? '' : Math.min(value, prevTierPercent);
-                        } else {
-                          // Tier 1 capped at 100
-                          value = value === '' ? '' : Math.min(value, 100);
+                          maxAllowed = Number(updated[index - 1].percentage || 0);
+                        }
+
+                        if (value !== '' && value > maxAllowed) {
+                          toast.error(`Tier ${index + 1} cannot exceed ${maxAllowed}% (Tier ${index} limit)`, {
+                            id: `tier-max-${index}`
+                          });
+                          value = maxAllowed;
+                        }
+
+                        // NEW: Minimum Check Notification
+                        const sumBeforeThis = updated.slice(0, index).reduce((sum, t) => sum + Number(t.percentage || 0), 0);
+                        const remainingToDistribute = 100 - sumBeforeThis;
+                        const remainingTiersCount = updated.length - index;
+                        const minRequired = Number((remainingToDistribute / remainingTiersCount).toFixed(2));
+
+                        if (value !== '' && value < minRequired && remainingTiersCount > 1) {
+                          toast.info(`Note: Tier ${index + 1} should be at least ${minRequired}% to reach 100%.`, {
+                            id: `tier-min-${index}`
+                          });
                         }
 
                         updated[index].percentage = value;
 
-                        // Auto-calculate and cascade for ALL subsequent tiers
+                        // Auto-calculate and distribute remainder for ALL subsequent tiers
                         for (let i = index + 1; i < updated.length; i++) {
-                          const currentPercentage = Number(updated[i].percentage || 0);
+                          const sumBefore = updated.slice(0, i).reduce((sum, t) => sum + Number(t.percentage || 0), 0);
+                          const remaining = Math.max(0, 100 - sumBefore);
+                          const remainingTiersCount = updated.length - i;
+
+                          // Divide remainder equally
+                          const idealShare = Number((remaining / remainingTiersCount).toFixed(2));
                           const prevPercentage = Number(updated[i - 1].percentage || 0);
 
-                          // Rule 1: Tier N <= Tier N-1
-                          let newValue = Math.min(currentPercentage, prevPercentage);
-
-                          // Rule 2: If it's the IMMEDIATELY NEXT tier, try to take the remainder
-                          if (i === index + 1) {
-                            const sumBefore = updated.slice(0, i).reduce((sum, t) => sum + Number(t.percentage || 0), 0);
-                            const remaining = Math.max(0, 100 - sumBefore);
-                            newValue = Math.min(remaining, prevPercentage);
-                          } else {
-                            // For tiers further down, just ensure Tier N <= Tier N-1
-                            // We don't automatically sum them to 100 to avoid confusing the user
-                            // but we do ensure they don't break the "cannot be higher" rule
-                            newValue = Math.min(currentPercentage, prevPercentage);
-                          }
-
-                          updated[i].percentage = newValue;
+                          // Rule: Tier N must be <= the tier above it
+                          // This will naturally cap the sum to 100 if possible,
+                          // but won't force Tier 1 to a minimum value.
+                          updated[i].percentage = Math.min(idealShare, prevPercentage);
                         }
 
                         onInputChange('prizeDistribution', updated);
