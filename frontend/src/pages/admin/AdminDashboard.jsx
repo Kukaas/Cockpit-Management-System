@@ -87,9 +87,9 @@ const AdminDashboard = () => {
   })
 
   const filteredEntrances = entrances.filter(entrance => {
-    const entranceDate = new Date(entrance.createdAt)
-    const matchesMonth = entranceDate.getMonth() === selectedMonth
-    const matchesYear = entranceDate.getFullYear() === selectedYear
+    const eventDate = new Date(entrance.eventID?.date)
+    const matchesMonth = eventDate.getMonth() === selectedMonth
+    const matchesYear = eventDate.getFullYear() === selectedYear
     return matchesMonth && matchesYear
   })
 
@@ -154,21 +154,21 @@ const AdminDashboard = () => {
   }, {});
 
   const eventTypeData = Object.entries(participantsByEventType)
-    .map(([name, count]) => ({ name: name.replace('_', ' ').toUpperCase(), count }))
-    .sort((a, b) => b.count - a.count);
+    .map(([name, participants]) => ({ name: name.replace('_', ' ').toUpperCase(), participants }))
+    .sort((a, b) => b.participants - a.participants);
 
-  const participantsByEvent = filteredParticipants.reduce((acc, p) => {
-    const name = p.eventID?.eventName;
-    if (name) {
-      acc[name] = (acc[name] || 0) + 1;
+  const entrancesByEventType = filteredEntrances.reduce((acc, e) => {
+    const type = e.eventID?.eventType;
+    if (type) {
+      acc[type] = (acc[type] || 0) + (e.count || 0);
     }
     return acc;
   }, {});
 
-  const topEventsData = Object.entries(participantsByEvent)
-    .map(([name, count]) => ({ name, count }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 5); // Top 5 events
+  const topEntranceTypesData = Object.entries(entrancesByEventType)
+    .map(([name, entrances]) => ({ name: name.replace('_', ' ').toUpperCase(), entrances }))
+    .sort((a, b) => b.entrances - a.entrances)
+    .slice(0, 5); // Top 5 event types
 
 
   // Month options
@@ -231,7 +231,7 @@ const AdminDashboard = () => {
 
     // Add entrance data
     filteredEntrances.forEach(entrance => {
-      const date = new Date(entrance.createdAt).toISOString().split('T')[0]
+      const date = new Date(entrance.date || entrance.createdAt).toISOString().split('T')[0]
       if (!groupedByDate[date]) {
         groupedByDate[date] = { date, plazada: 0, rentals: 0, entrances: 0, entryFees: 0 }
       }
@@ -296,7 +296,11 @@ const AdminDashboard = () => {
   const participantsChartConfig = {
     participants: {
       label: "Participants",
-      color: "hsl(var(--chart-1))",
+      color: "var(--chart-2)",
+    },
+    entrances: {
+      label: "Entrances",
+      color: "var(--chart-3)",
     },
   }
 
@@ -482,7 +486,7 @@ const AdminDashboard = () => {
                         cursor={false}
                         content={<ChartTooltipContent indicator="dashed" />}
                       />
-                      <Bar dataKey="count" fill="var(--color-entrances)" radius={4} barSize={40} />
+                      <Bar dataKey="participants" fill="var(--color-participants)" radius={4} barSize={40} />
                     </BarChart>
                   </ResponsiveContainer>
                 </ChartContainer>
@@ -503,16 +507,16 @@ const AdminDashboard = () => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-sm font-medium">
-                <Trophy className="h-4 w-4 text-amber-500" />
-                Top 5 Events by Participation
+                <Ticket className="h-4 w-4 text-purple-500" />
+                Top 5 Event Types by Entrance
               </CardTitle>
-              <CardDescription>Events with highest attendance</CardDescription>
+              <CardDescription>Event types with most entrances recorded</CardDescription>
             </CardHeader>
             <CardContent>
-              {topEventsData.length > 0 ? (
+              {topEntranceTypesData.length > 0 ? (
                 <ChartContainer config={participantsChartConfig} className="h-[250px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={topEventsData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                    <BarChart data={topEntranceTypesData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} />
                       <XAxis
                         dataKey="name"
@@ -532,7 +536,7 @@ const AdminDashboard = () => {
                         cursor={false}
                         content={<ChartTooltipContent indicator="dashed" />}
                       />
-                      <Bar dataKey="count" fill="#f59e0b" radius={4} barSize={40} />
+                      <Bar dataKey="entrances" fill="var(--color-entrances)" radius={4} barSize={40} />
                     </BarChart>
                   </ResponsiveContainer>
                 </ChartContainer>

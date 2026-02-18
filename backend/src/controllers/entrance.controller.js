@@ -61,7 +61,7 @@ export const recordEntrance = async (req, res) => {
 
     // Populate references for response
     await entrance.populate([
-      { path: 'eventID', select: 'eventName date location entranceFee' },
+      { path: 'eventID', select: 'eventName date location entranceFee eventType' },
       { path: 'recordedBy', select: 'username firstName lastName' }
     ]);
 
@@ -109,14 +109,14 @@ export const getAllEntrances = async (req, res) => {
 
     if (page) {
       entrances = await Entrance.find(query)
-        .populate('eventID', 'eventName date location entranceFee')
+        .populate('eventID', 'eventName date location entranceFee eventType')
         .populate('recordedBy', 'username firstName lastName')
         .sort({ date: -1 })
 
     } else {
       // Get all records without pagination
       entrances = await Entrance.find(query)
-        .populate('eventID', 'eventName date location entranceFee')
+        .populate('eventID', 'eventName date location entranceFee eventType')
         .populate('recordedBy', 'username firstName lastName')
         .sort({ date: -1 });
     }
@@ -142,7 +142,7 @@ export const getEntranceById = async (req, res) => {
     const { id } = req.params;
 
     const entrance = await Entrance.findById(id)
-      .populate('eventID', 'eventName date location entranceFee')
+      .populate('eventID', 'eventName date location entranceFee eventType')
       .populate('recordedBy', 'username firstName lastName');
 
     if (!entrance) {
@@ -209,7 +209,7 @@ export const updateEntrance = async (req, res) => {
       },
       { new: true, runValidators: true }
     ).populate([
-      { path: 'eventID', select: 'eventName date location entranceFee' },
+      { path: 'eventID', select: 'eventName date location entranceFee eventType' },
       { path: 'recordedBy', select: 'username firstName lastName' }
     ]);
 
@@ -263,7 +263,7 @@ export const getEntrancesByEvent = async (req, res) => {
     const { eventID } = req.params;
 
     const entrances = await Entrance.find({ eventID })
-      .populate('eventID', 'eventName date location entranceFee')
+      .populate('eventID', 'eventName date location entranceFee eventType')
       .populate('recordedBy', 'username firstName lastName')
       .sort({ date: -1 })
 
