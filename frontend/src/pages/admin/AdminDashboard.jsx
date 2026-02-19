@@ -508,7 +508,7 @@ const AdminDashboard = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-sm font-medium">
                 <Ticket className="h-4 w-4 text-purple-500" />
-                Top 5 Event Types by Entrance
+                Entrance by Event Type
               </CardTitle>
               <CardDescription>Event types with most entrances recorded</CardDescription>
             </CardHeader>
