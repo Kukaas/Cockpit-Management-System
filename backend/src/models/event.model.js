@@ -134,6 +134,12 @@ const eventSchema = new mongoose.Schema({
         required: true,
         min: 0,
         default: 20
+    },
+    host: {
+        type: String,
+        trim: true,
+        maxlength: 200,
+        default: ''
     }
 }, {
     timestamps: true

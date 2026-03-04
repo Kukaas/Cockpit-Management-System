@@ -35,9 +35,9 @@ const Events = () => {
     entranceFee: '',
     entryFee: '',
     cageRentalFee: '',
-    minWeight: '',
     maxWeight: '',
     weightGap: '',
+    host: '',
     prizeDistribution: [
       { tierName: 'Tier 1', startRank: 1, endRank: 5, percentage: 100 }
     ]
@@ -54,9 +54,9 @@ const Events = () => {
     entranceFee: '',
     entryFee: '',
     cageRentalFee: '',
-    minWeight: '',
     maxWeight: '',
     weightGap: '',
+    host: '',
     prizeDistribution: [
       { tierName: 'Tier 1', startRank: 1, endRank: 5, percentage: 100 }
     ]
@@ -563,6 +563,7 @@ const Events = () => {
       cageRentalFee: event.cageRentalFee ? event.cageRentalFee.toString() : '',
       minWeight: event.minWeight ? event.minWeight.toString() : '',
       maxWeight: event.maxWeight ? event.maxWeight.toString() : '',
+      host: event.host || '',
       prizeDistribution: event.prizeDistribution || [
         { tierName: 'Tier 1', startRank: 1, endRank: 5, percentage: 100 }
       ]

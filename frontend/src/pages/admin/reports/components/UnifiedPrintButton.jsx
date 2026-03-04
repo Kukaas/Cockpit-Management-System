@@ -4,60 +4,60 @@ import { Printer } from 'lucide-react'
 import { useGetAll } from '@/hooks/useApiQueries'
 
 const UnifiedPrintButton = ({ event, formatCurrency, formatDate }) => {
-    const eventId = event?._id
+  const eventId = event?._id
 
-    // Fetch all data needed for reports
-    const { data: rentalsData = [] } = useGetAll(
-        eventId ? `/cage-rentals/event/${eventId}` : null
-    )
+  // Fetch all data needed for reports
+  const { data: rentalsData = [] } = useGetAll(
+    eventId ? `/cage-rentals/event/${eventId}` : null
+  )
 
-    const { data: entrancesData = [] } = useGetAll(
-        eventId ? `/entrances?eventID=${eventId}` : null
-    )
+  const { data: entrancesData = [] } = useGetAll(
+    eventId ? `/entrances?eventID=${eventId}` : null
+  )
 
-    const { data: matchResultsData = [] } = useGetAll(
-        eventId ? `/match-results/event/${eventId}` : null
-    )
+  const { data: matchResultsData = [] } = useGetAll(
+    eventId ? `/match-results/event/${eventId}` : null
+  )
 
-    const { data: participantsData = [] } = useGetAll(
-        eventId ? `/participants?eventID=${eventId}` : null
-    )
+  const { data: participantsData = [] } = useGetAll(
+    eventId ? `/participants?eventID=${eventId}` : null
+  )
 
-    // Process Rentals Data
-    const rentals = rentalsData || []
-    const totalRentals = rentals.length
-    const totalRentalRevenue = rentals.reduce((sum, rental) => sum + (rental.totalPrice || 0), 0)
-    const paidRentals = rentals.filter(r => r.paymentStatus === 'paid').length
-    const unpaidRentals = rentals.filter(r => r.paymentStatus === 'unpaid').length
+  // Process Rentals Data
+  const rentals = rentalsData || []
+  const totalRentals = rentals.length
+  const totalRentalRevenue = rentals.reduce((sum, rental) => sum + (rental.totalPrice || 0), 0)
+  const paidRentals = rentals.filter(r => r.paymentStatus === 'paid').length
+  const unpaidRentals = rentals.filter(r => r.paymentStatus === 'unpaid').length
 
-    // Process Entrances Data
-    const entrances = entrancesData || []
-    const totalEntrances = entrances.reduce((sum, entrance) => sum + (entrance.count || 0), 0)
-    const totalEntranceRevenue = totalEntrances * (event?.entranceFee || 0)
+  // Process Entrances Data
+  const entrances = entrancesData || []
+  const totalEntrances = entrances.reduce((sum, entrance) => sum + (entrance.count || 0), 0)
+  const totalEntranceRevenue = totalEntrances * (event?.entranceFee || 0)
 
-    // Process Plazada Data
-    const matchResults = matchResultsData || []
-    const totalPlazada = matchResults
-        .filter(r => r.betWinner === 'Meron' || r.betWinner === 'Wala')
-        .reduce((sum, result) => sum + (result.totalPlazada || 0), 0)
-    const totalMatches = matchResults.length
-    const meronWins = matchResults.filter(r => r.betWinner === 'Meron').length
-    const walaWins = matchResults.filter(r => r.betWinner === 'Wala').length
-    const draws = matchResults.filter(r => r.betWinner === 'Draw').length
+  // Process Plazada Data
+  const matchResults = matchResultsData || []
+  const totalPlazada = matchResults
+    .filter(r => r.betWinner === 'Meron' || r.betWinner === 'Wala')
+    .reduce((sum, result) => sum + (result.totalPlazada || 0), 0)
+  const totalMatches = matchResults.length
+  const meronWins = matchResults.filter(r => r.betWinner === 'Meron').length
+  const walaWins = matchResults.filter(r => r.betWinner === 'Wala').length
+  const draws = matchResults.filter(r => r.betWinner === 'Draw').length
 
-    // Process Entry Fees Data
-    const participants = participantsData || []
-    const participantsWithEntryFee = participants.filter(p => p.entryFee && p.entryFee > 0)
-    const totalEntryFeeParticipants = participantsWithEntryFee.length
-    const totalEntryFeeRevenue = participantsWithEntryFee.reduce((sum, participant) => sum + (participant.entryFee || 0), 0)
+  // Process Entry Fees Data
+  const participants = participantsData || []
+  const participantsWithEntryFee = participants.filter(p => p.entryFee && p.entryFee > 0)
+  const totalEntryFeeParticipants = participantsWithEntryFee.length
+  const totalEntryFeeRevenue = participantsWithEntryFee.reduce((sum, participant) => sum + (participant.entryFee || 0), 0)
 
-    // Grand Total
-    const grandTotalRevenue = totalRentalRevenue + totalEntranceRevenue + totalPlazada + totalEntryFeeRevenue
+  // Grand Total
+  const grandTotalRevenue = totalRentalRevenue + totalEntranceRevenue + totalPlazada + totalEntryFeeRevenue
 
-    const handlePrintAll = () => {
-        const printWindow = window.open('', '_blank')
+  const handlePrintAll = () => {
+    const printWindow = window.open('', '_blank')
 
-        const printContent = `
+    const printContent = `
       <!DOCTYPE html>
       <html>
         <head>
@@ -141,9 +141,38 @@ const UnifiedPrintButton = ({ event, formatCurrency, formatDate }) => {
             .text-right {
               text-align: right;
             }
-            .page-break {
-              page-break-before: always;
+            .signature-section {
+              margin-top: 50px;
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 40px;
+              page-break-inside: avoid;
             }
+            .signature-box {
+              text-align: center;
+            }
+            .signature-line {
+              border-top: 1px solid #333;
+              margin-bottom: 5px;
+              width: 80%;
+              margin-left: auto;
+              margin-right: auto;
+            }
+            .signature-label {
+              font-size: 12px;
+              font-weight: bold;
+              text-transform: uppercase;
+            }
+            .host-signature {
+              margin-top: 40px;
+              text-align: center;
+              page-break-inside: avoid;
+            }
+            .host-name {
+              font-weight: bold;
+              margin-bottom: 2px;
+            }
+
             @media print {
               body { margin: 0; }
               .no-print { display: none; }
@@ -156,10 +185,10 @@ const UnifiedPrintButton = ({ event, formatCurrency, formatDate }) => {
             <div class="event-title">Full Event Report</div>
             <div class="event-title">${event?.eventName || 'Event Name'}</div>
             <div class="event-details">Date: ${event?.date ? new Date(event.date).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        }) : 'N/A'}</div>
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    }) : 'N/A'}</div>
             <div class="event-details">Report Generated: ${new Date().toLocaleString('en-US')}</div>
           </div>
 
@@ -258,23 +287,40 @@ const UnifiedPrintButton = ({ event, formatCurrency, formatDate }) => {
             GRAND TOTAL REVENUE: ${formatCurrency(grandTotalRevenue)}
           </div>
 
+          <div class="signature-section">
+            <div class="signature-box">
+              <div class="signature-line"></div>
+              <div class="signature-label">Name and Signature of Owner</div>
+            </div>
+            <div class="signature-box">
+              <div class="signature-line"></div>
+              <div class="signature-label">Name and Signature of Admin</div>
+            </div>
+          </div>
+
+          <div class="host-signature">
+            <div class="host-name">${event?.host || ''}</div>
+            <div class="signature-line" style="width: 40%;"></div>
+            <div class="signature-label">Name and Signature of Host</div>
+          </div>
+
         </body>
       </html>
     `
 
-        printWindow.document.write(printContent)
-        printWindow.document.close()
-        printWindow.focus()
-        printWindow.print()
-        printWindow.close()
-    }
+    printWindow.document.write(printContent)
+    printWindow.document.close()
+    printWindow.focus()
+    printWindow.print()
+    printWindow.close()
+  }
 
-    return (
-        <Button onClick={handlePrintAll} variant="default" className="gap-2">
-            <Printer className="h-4 w-4" />
-            Print All Reports
-        </Button>
-    )
+  return (
+    <Button onClick={handlePrintAll} variant="default" className="gap-2">
+      <Printer className="h-4 w-4" />
+      Print All Reports
+    </Button>
+  )
 }
 
 export default UnifiedPrintButton

@@ -75,6 +75,16 @@ const EventForm = ({
           required
         />
 
+        {/* Host Name */}
+        <InputField
+          id={isEdit ? "editHost" : "host"}
+          label="Host Name"
+          icon={Users}
+          value={formData.host}
+          onChange={(e) => onInputChange('host', e.target.value)}
+          placeholder="Enter host name (optional)"
+        />
+
         {/* Date and Time */}
         <InputField
           id={isEdit ? "editDate" : "date"}

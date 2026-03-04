@@ -18,7 +18,8 @@ export const createEvent = async (req, res) => {
             minWeight,
             maxWeight,
             winnerCount,
-            prizeDistribution
+            prizeDistribution,
+            host
         } = req.body;
 
         // Validate required fields based on event type
@@ -128,7 +129,8 @@ export const createEvent = async (req, res) => {
             minimumParticipants: Number(minimumParticipants),
             entranceFee: Number(entranceFee),
             cageRentalFee: Number(cageRentalFee),
-            registrationDeadline: registrationDeadline ? new Date(registrationDeadline) : null
+            registrationDeadline: registrationDeadline ? new Date(registrationDeadline) : null,
+            host: host || ''
         };
 
         // Add entryFee if provided (optional)

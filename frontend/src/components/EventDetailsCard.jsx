@@ -101,6 +101,10 @@ const EventDetailsCard = ({ event, formatDate, formatCurrency, showCapacity = fa
                         <p className="font-medium">{event.eventName}</p>
                     </div>
                     <div className="space-y-1">
+                        <p className="text-sm font-medium text-muted-foreground">Host Name</p>
+                        <p className="font-medium">{event.host || 'N/A'}</p>
+                    </div>
+                    <div className="space-y-1">
                         <p className="text-sm font-medium text-muted-foreground">Date & Time</p>
                         <p className="flex items-center gap-1">
                             <Clock className="h-4 w-4" />

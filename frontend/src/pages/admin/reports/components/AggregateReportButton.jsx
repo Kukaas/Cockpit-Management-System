@@ -195,6 +195,29 @@ const AggregateReportButton = ({ events = [] }) => {
             th { background: #f5f5f5; text-align: center; }
             td:first-child { text-align: left; }
 
+            .signature-section {
+              margin-top: 80px;
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 40px;
+              page-break-inside: avoid;
+            }
+            .signature-box {
+              text-align: center;
+            }
+            .signature-line {
+              border-top: 1px solid #333;
+              margin-bottom: 5px;
+              width: 80%;
+              margin-left: auto;
+              margin-right: auto;
+            }
+            .signature-label {
+              font-size: 12px;
+              font-weight: bold;
+              text-transform: uppercase;
+            }
+
             @media print {
               body { margin: 0; }
               .no-print { display: none; }
@@ -264,6 +287,17 @@ const AggregateReportButton = ({ events = [] }) => {
               `).join('')}
             </tbody>
           </table>
+
+          <div class="signature-section">
+            <div class="signature-box">
+              <div class="signature-line"></div>
+              <div class="signature-label">Name and Signature of Owner</div>
+            </div>
+            <div class="signature-box">
+              <div class="signature-line"></div>
+              <div class="signature-label">Name and Signature of Admin</div>
+            </div>
+          </div>
 
         </body>
       </html>

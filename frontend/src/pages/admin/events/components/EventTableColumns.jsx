@@ -21,6 +21,15 @@ export const createEventColumns = (
       )
     },
     {
+      key: 'host',
+      label: 'Host',
+      sortable: true,
+      filterable: false,
+      render: (value) => (
+        <span className="text-sm">{value || 'N/A'}</span>
+      )
+    },
+    {
       key: 'date',
       label: 'Date & Time',
       sortable: true,
